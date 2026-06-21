@@ -178,9 +178,12 @@ export async function analyzeProject(
     if (!content) return generateFallbackAnalysis(project, promptType);
 
     const parsed = JSON.parse(content) as AIAnalysis;
-    if (!parsed.prompts) {
-      parsed.prompts = generateFallbackAnalysis(project, promptType).prompts;
-    }
+    const fallback = generateFallbackAnalysis(project, promptType);
+    if (!parsed.prompts) parsed.prompts = fallback.prompts;
+    if (!parsed.uatItems?.length) parsed.uatItems = fallback.uatItems;
+    if (!parsed.tasks?.length) parsed.tasks = fallback.tasks;
+    if (!parsed.phases?.length) parsed.phases = fallback.phases;
+    if (!parsed.enhancements?.length) parsed.enhancements = fallback.enhancements;
     return parsed;
   } catch (error) {
     console.error("AI analysis failed:", error);
