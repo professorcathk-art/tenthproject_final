@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "@/lib/auth/session";
-import { analyzeProject, getPromptForTool, formatBugFixPrompt } from "@/lib/ai/analyze";
+import { analyzeProject, formatBugFixPrompt, regenerateMasterPrompt } from "@/lib/ai/analyze";
 import { getProject, addPromptRun, logActivity } from "@/lib/db/store";
 import type { AITool, PromptType } from "@/types";
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       };
 
       const analysis = await analyzeProject(project, project.artifacts ?? [], existingState, promptType);
-      promptText = getPromptForTool(analysis, selectedTool);
+      promptText = await regenerateMasterPrompt(project, analysis, selectedTool, promptType, existingState);
     }
 
     const promptRun = {

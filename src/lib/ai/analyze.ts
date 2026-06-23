@@ -1,5 +1,10 @@
 import OpenAI from "openai";
 import type { AIAnalysis, AITool, Project, ProjectArtifact } from "@/types";
+import {
+  generateMasterPrompts,
+  buildMasterPromptsFromTemplate,
+  type PromptType,
+} from "@/lib/ai/master-prompt";
 
 const SYSTEM_PROMPT = `You are an AI product development coach for non-technical founders using vibe coding tools like Cursor, Lovable, Gemini, Claude, and ChatGPT.
 
@@ -20,15 +25,17 @@ Analyze the project context and return ONLY valid JSON matching this schema:
   "nextAction": "string",
   "acceptanceCriteria": ["string"],
   "prompts": {
-    "cursor": "string - detailed prompt for Cursor IDE with file paths, tech stack, acceptance criteria",
-    "lovable": "string - prompt optimized for Lovable with UI/UX focus",
-    "gemini": "string - prompt for Gemini with clear steps",
-    "claude": "string - prompt for Claude with structured sections",
-    "general": "string - tool-agnostic prompt"
+    "cursor": "placeholder — will be replaced by master prompt generator",
+    "lovable": "placeholder",
+    "gemini": "placeholder",
+    "claude": "placeholder",
+    "general": "placeholder"
   }
 }
 
-Keep language simple for non-technical users. Prompts must be actionable and copy-paste ready.`;
+Focus analysis quality on phases, tasks, UAT items, and acceptance criteria. Prompts will be generated separately as comprehensive master prompts.
+
+Keep language simple for non-technical users.`;
 
 function buildContext(project: Partial<Project>, artifacts: ProjectArtifact[] = [], existingState?: Record<string, unknown>) {
   const artifactSummary = artifacts
@@ -71,21 +78,7 @@ function generateFallbackAnalysis(
   const name = project.name ?? "your project";
   const goal = project.goal ?? project.description ?? "build your product";
 
-  const basePrompt = `I'm building "${name}" — ${goal}.
-
-Current stage: ${project.stage ?? "developing"}
-Product type: ${project.product_type ?? "webapp"}
-Target audience: ${project.target_audience ?? "general users"}
-
-Please help me with the next development step. Focus on practical, incremental progress.
-
-Acceptance criteria:
-- Feature works on desktop and mobile
-- Clear user feedback for all actions
-- No console errors
-- Matches the product goal`;
-
-  return {
+  const partialAnalysis = {
     projectSummary: `${name} is a ${project.product_type ?? "webapp"} aimed at ${project.target_audience ?? "users who need this solution"}. ${project.description ?? ""}`,
     productGoal: goal,
     currentStageAssessment: `You're in the ${project.stage ?? "developing"} stage. Focus on core functionality first, then polish.`,
@@ -129,13 +122,15 @@ Acceptance criteria:
       "Mobile-friendly layout",
       "Clear feedback for user actions",
     ],
-    prompts: {
-      cursor: `# ${name} — Development Task\n\n${basePrompt}\n\n## Tech Stack\n- Next.js App Router\n- TypeScript\n- Tailwind CSS\n\n## Instructions for Cursor\n1. Read existing codebase structure first\n2. Implement incrementally with minimal scope\n3. Add loading/error/empty states\n4. Test on mobile viewport`,
-      lovable: `# Build: ${name}\n\n${basePrompt}\n\n## Design Requirements\n- Clean, modern light-mode UI\n- Professional like Linear or Notion\n- Mobile responsive\n- Clear CTAs and empty states`,
-      gemini: `Project: ${name}\nGoal: ${goal}\n\nStep-by-step task:\n1. Review current state\n2. Implement next priority feature\n3. Add user feedback (loading, success, error)\n4. Test on mobile\n\n${basePrompt}`,
-      claude: `## Context\nBuilding "${name}" for ${project.target_audience ?? "target users"}.\n\n## Goal\n${goal}\n\n## Task\n${basePrompt}\n\n## Constraints\n- Keep changes focused\n- Non-technical user will copy this prompt\n- Include acceptance criteria`,
-      general: basePrompt,
-    },
+  };
+
+  return {
+    ...partialAnalysis,
+    prompts: buildMasterPromptsFromTemplate({
+      project,
+      analysis: partialAnalysis as unknown as AIAnalysis,
+      promptType,
+    }),
   };
 }
 
@@ -184,6 +179,16 @@ export async function analyzeProject(
     if (!parsed.tasks?.length) parsed.tasks = fallback.tasks;
     if (!parsed.phases?.length) parsed.phases = fallback.phases;
     if (!parsed.enhancements?.length) parsed.enhancements = fallback.enhancements;
+
+    // Generate comprehensive master prompts (dedicated pass + template fallback)
+    parsed.prompts = await generateMasterPrompts({
+      project,
+      analysis: parsed,
+      promptType,
+      artifacts,
+      existingState,
+    });
+
     return parsed;
   } catch (error) {
     console.error("AI analysis failed:", error);
@@ -207,6 +212,25 @@ export function getPromptForTool(analysis: AIAnalysis, tool: AITool): string {
     default:
       return prompts.general;
   }
+}
+
+/** Regenerate a single tool's master prompt with full enrichment */
+export async function regenerateMasterPrompt(
+  project: Partial<Project>,
+  analysis: AIAnalysis,
+  tool: AITool,
+  promptType: PromptType = "next-step",
+  existingState?: Record<string, unknown>,
+  artifacts?: ProjectArtifact[]
+): Promise<string> {
+  const masterPrompts = await generateMasterPrompts({
+    project,
+    analysis,
+    promptType,
+    artifacts,
+    existingState,
+  });
+  return getPromptForTool({ ...analysis, prompts: masterPrompts }, tool);
 }
 
 export function formatBugFixPrompt(bugTitle: string, bugDescription: string, tool: AITool, projectName: string): string {

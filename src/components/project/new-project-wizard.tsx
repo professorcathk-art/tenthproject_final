@@ -357,7 +357,7 @@ export function NewProjectWizard() {
                 Your project is ready! Copy the prompt below into {form.selected_tool}.
               </div>
               <div className="relative">
-                <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-80">
+                <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-[32rem]">
                   {promptText}
                 </pre>
                 <Button
