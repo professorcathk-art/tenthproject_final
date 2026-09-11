@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MarketingShell } from "@/components/layout/app-shell";
+import { AcademyCurriculum } from "@/components/marketing/academy-curriculum";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Clock, ArrowRight, Award, Users } from "lucide-react";
@@ -17,23 +18,28 @@ export default async function CoursesPage() {
 
   return (
     <MarketingShell>
-      <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-medium text-slate-700 mb-4 shadow-sm">
-            <GraduationCap className="h-4 w-4" /> {dict.courses.badge}
+          <div className="inline-flex rounded-full p-[1px] badge-shine mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-1.5 text-sm font-medium text-slate-700 backdrop-blur-md dark:bg-slate-950/80 dark:text-slate-200">
+              <GraduationCap className="h-4 w-4" /> {dict.courses.badge}
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">{dict.courses.title}</h1>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-gradient">{dict.courses.title}</h1>
           <p className="text-slate-600 mt-3 max-w-2xl mx-auto leading-relaxed">{dict.courses.subtitle}</p>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-sm text-slate-700">
+          <p className="text-sm text-slate-500 mt-3 max-w-xl mx-auto">{dict.courses.philosophy}</p>
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-sm text-slate-700">
             <Users className="h-4 w-4" /> {dict.courses.instructors}
           </div>
         </div>
+
+        <AcademyCurriculum />
 
         <div className="space-y-6">
           {courses.map((course) => (
             <article
               key={course.id}
-              className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-2xl glass-panel glow-card p-8"
             >
               <Badge variant="secondary" className="mb-3">{course.level}</Badge>
               <h2 className="text-2xl font-semibold tracking-tight">{course.title}</h2>
@@ -49,7 +55,7 @@ export default async function CoursesPage() {
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 {isAuthenticated ? (
                   <Link href={`/courses/${course.slug}`}>
-                    <Button size="lg" className="h-11 px-6 font-semibold">
+                    <Button size="lg" className="h-11 px-6 font-semibold shadow-[0_0_20px_rgba(59,130,246,0.28)]">
                       {dict.nav.classroom} <ArrowRight className="h-4 w-4 ml-1" />
                     </Button>
                   </Link>
@@ -60,7 +66,7 @@ export default async function CoursesPage() {
                         {dict.courses.outline}
                       </Button>
                     </Link>
-                    <Link href={`/login?redirect=/courses/${course.slug}`}>
+                    <Link href={`/signup?redirect=/courses/${course.slug}`}>
                       <Button size="lg" className="h-11 px-6 font-semibold">
                         {dict.courses.enroll} <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>

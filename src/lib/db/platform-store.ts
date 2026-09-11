@@ -235,7 +235,9 @@ export async function getCaseStudies(category?: string, publishedOnly = true): P
     const store = await ensurePlatformStore();
     rows = store.caseStudies.filter((c) => !publishedOnly || c.is_published).map(normalizeCaseStudy);
   }
-  if (category && category !== "all") rows = rows.filter((c) => c.category === category);
+  if (category && category !== "all") {
+    rows = rows.filter((c) => (c.categories?.length ? c.categories : [c.category]).includes(category as CaseStudy["category"]));
+  }
   return rows;
 }
 
@@ -246,7 +248,7 @@ export async function getCaseStudyBySlug(slug: string): Promise<CaseStudy | null
   }
   const store = await ensurePlatformStore();
   const cs = store.caseStudies.find((c) => c.slug === slug);
-  return cs ?? null;
+  return cs ? normalizeCaseStudy(cs) : null;
 }
 
 function parseStack(raw: unknown): string[] {
@@ -259,22 +261,25 @@ function parseStack(raw: unknown): string[] {
 }
 
 function persistCaseStudy(cs: CaseStudy): CaseStudy {
-  const cleanStack = cs.tech_stack.filter((t) => !t.startsWith("cat:"));
-  const allowed = cs.category === "workflow_agent" ? "ai_agent" : "vibe_coding";
+  const { categories: extraCategories, ...rest } = cs;
+  const cleanStack = rest.tech_stack.filter((t) => !t.startsWith("cat:"));
+  const cats = extraCategories?.length ? extraCategories : [cs.category];
+  const allowed = cats.includes("workflow_agent") ? "ai_agent" : "vibe_coding";
   return {
-    ...cs,
+    ...rest,
     category: allowed as unknown as CaseStudy["category"],
-    tech_stack: [`cat:${cs.category}`, ...cleanStack],
+    tech_stack: [...cats.map((c) => `cat:${c}`), ...cleanStack],
   };
 }
 
 function normalizeCaseStudy(cs: CaseStudy): CaseStudy {
   const stack = parseStack(cs.tech_stack);
-  const tagged = stack.find((t) => t.startsWith("cat:"))?.slice(4);
-  const category = (tagged || cs.category) as CaseStudy["category"];
+  const tagged = stack.filter((t) => t.startsWith("cat:")).map((t) => t.slice(4)) as CaseStudy["category"][];
+  const categories = tagged.length ? tagged : cs.categories?.length ? cs.categories : [cs.category];
   return {
     ...cs,
-    category,
+    category: categories[0],
+    categories,
     tech_stack: stack.filter((t) => !t.startsWith("cat:")),
   };
 }

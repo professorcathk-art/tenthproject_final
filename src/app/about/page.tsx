@@ -1,4 +1,5 @@
 import { MarketingShell } from "@/components/layout/app-shell";
+import { PUBLIC_CONTACT_EMAIL, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 import { getDict, getLocale } from "@/lib/i18n/server";
 
 export default async function AboutPage() {
@@ -23,7 +24,7 @@ export default async function AboutPage() {
               <strong>Felix Zhu（技術負責人）</strong> — {dict.founders.felix}
             </p>
             <p>
-              <strong>Chris Liu（商業需求與轉型負責人）</strong> — {dict.founders.chris}
+              <strong>Chris Lau（商業需求與轉型負責人）</strong> — {dict.founders.chris}
             </p>
             <h2>我們做什麼</h2>
             <ul>
@@ -32,7 +33,17 @@ export default async function AboutPage() {
               <li>靈感庫：真實上線產品的架構與提示詞拆解。</li>
               <li>專案中心：路線圖、UAT 與 Cursor MCP 雙向同步。</li>
             </ul>
-            <p>立足香港。合作請前往企業方案，或來信 chris.lau@tenthproject.com。</p>
+            <p>
+              立足香港。合作請前往企業方案，來信{" "}
+              <a href={`mailto:${PUBLIC_CONTACT_EMAIL}`} className="text-slate-900 underline underline-offset-2">
+                {PUBLIC_CONTACT_EMAIL}
+              </a>
+              ，或 WhatsApp{" "}
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-slate-900 underline underline-offset-2">
+                {WHATSAPP_DISPLAY}
+              </a>
+              。
+            </p>
           </>
         ) : (
           <>
@@ -44,7 +55,7 @@ export default async function AboutPage() {
               <strong>Felix Zhu, Head of Technology</strong> — {dict.founders.felix}
             </p>
             <p>
-              <strong>Chris Liu, Head of Business Requirements & Transformation</strong> — {dict.founders.chris}
+              <strong>Chris Lau, Head of Business Requirements & Transformation</strong> — {dict.founders.chris}
             </p>
             <h2>What we offer</h2>
             <ul>
@@ -53,7 +64,17 @@ export default async function AboutPage() {
               <li>Inspiration Vault: architecture and prompts from shipped products.</li>
               <li>Project Hub: roadmaps, UAT, and Cursor MCP.</li>
             </ul>
-            <p>Based in Hong Kong. For partnerships, visit Enterprise or write to chris.lau@tenthproject.com.</p>
+            <p>
+              Based in Hong Kong. For partnerships, visit Enterprise, write to{" "}
+              <a href={`mailto:${PUBLIC_CONTACT_EMAIL}`} className="text-slate-900 underline underline-offset-2">
+                {PUBLIC_CONTACT_EMAIL}
+              </a>
+              , or WhatsApp{" "}
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-slate-900 underline underline-offset-2">
+                {WHATSAPP_DISPLAY}
+              </a>
+              .
+            </p>
           </>
         )}
       </article>

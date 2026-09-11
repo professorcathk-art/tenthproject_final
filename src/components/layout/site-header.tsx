@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useI18n } from "@/components/i18n/provider";
 import { cn } from "@/lib/utils";
 
@@ -70,11 +71,11 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/65 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/55">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex items-center gap-6 min-w-0">
           <Link href={variant === "app" ? "/dashboard" : "/"} className="flex items-center gap-2.5 font-semibold text-slate-900 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white shadow-[0_0_16px_rgba(59,130,246,0.35)]">
               <Sparkles className="h-4 w-4" />
             </div>
             <span className="hidden sm:inline tracking-tight">Tenth Project</span>
@@ -89,7 +90,9 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
                   href={item.href}
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    active
+                      ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-950"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -101,6 +104,7 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <LanguageToggle />
           {variant === "app" ? (
             <Button variant="ghost" size="sm" onClick={handleLogout} className="hidden sm:flex text-slate-600">
@@ -110,8 +114,8 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
           ) : showAuth ? (
             loggedIn ? (
               <>
-                <Link href="/courses/ai-vibecoding" className="hidden sm:block">
-                  <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.continueLearning}</Button>
+                <Link href="/dashboard" className="hidden sm:block">
+                  <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.learningHub}</Button>
                 </Link>
                 <Link href="/courses">
                   <Button size="sm" className="font-semibold">{dict.nav.classroom}</Button>
@@ -119,11 +123,11 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
               </>
             ) : (
               <>
-                <Link href="/login?redirect=/courses" className="hidden sm:block">
+                <Link href="/login?redirect=/dashboard" className="hidden sm:block">
                   <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.login}</Button>
                 </Link>
-                <Link href="/courses">
-                  <Button size="sm" className="font-semibold">{dict.nav.signup}</Button>
+                <Link href="/signup?redirect=/courses">
+                  <Button size="sm" className="font-semibold shadow-[0_0_18px_rgba(59,130,246,0.28)]">{dict.nav.signup}</Button>
                 </Link>
               </>
             )
@@ -148,6 +152,16 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
                     </Link>
                   );
                 })}
+                {variant === "marketing" && showAuth && (
+                  <>
+                    <Link href={loggedIn ? "/dashboard" : "/login?redirect=/dashboard"} className="mt-3 px-3 py-2 text-sm font-semibold">
+                      {loggedIn ? dict.nav.learningHub : dict.nav.login}
+                    </Link>
+                    <Link href={loggedIn ? "/courses" : "/signup?redirect=/courses"} className="px-3 py-2 text-sm font-semibold">
+                      {loggedIn ? dict.nav.classroom : dict.nav.signup}
+                    </Link>
+                  </>
+                )}
                 {variant === "app" && (
                   <Button variant="ghost" onClick={handleLogout} className="justify-start mt-4 text-slate-600">
                     <LogOut className="h-4 w-4 mr-2" />

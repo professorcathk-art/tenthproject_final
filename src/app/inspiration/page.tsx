@@ -14,10 +14,10 @@ export default async function InspirationPage() {
     <MarketingShell>
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-100 px-4 py-1.5 text-sm font-medium text-amber-800 mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-sm font-medium text-slate-700 mb-4">
             <Lightbulb className="h-4 w-4" /> {dict.inspiration.badge}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-semibold tracking-tight text-gradient">
             {dict.inspiration.title}
           </h1>
           <p className="text-slate-600 mt-2 max-w-2xl leading-relaxed">{dict.inspiration.subtitle}</p>

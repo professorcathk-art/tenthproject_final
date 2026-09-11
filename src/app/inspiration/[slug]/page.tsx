@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { getCaseStudyBySlug } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getDict } from "@/lib/i18n/server";
+import { caseCategories } from "@/types/platform";
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
   await ensurePlatformSeeded();
@@ -21,7 +22,11 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <Link href="/inspiration" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-4">
           <ArrowLeft className="h-4 w-4 mr-1" /> {dict.inspiration.back}
         </Link>
-        <Badge className="mb-3">{dict.inspiration.cats[study.category as keyof typeof dict.inspiration.cats] ?? study.category}</Badge>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {caseCategories(study).map((cat) => (
+            <Badge key={cat}>{dict.inspiration.cats[cat as keyof typeof dict.inspiration.cats] ?? cat}</Badge>
+          ))}
+        </div>
         <h1 className="text-2xl font-bold mb-2 tracking-tight">{study.title}</h1>
         <p className="text-slate-600 mb-4 leading-relaxed">{study.summary}</p>
         <div className="flex flex-wrap gap-2 mb-8">

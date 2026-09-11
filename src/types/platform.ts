@@ -63,6 +63,7 @@ export interface CaseStudy {
   title: string;
   slug: string;
   category: CaseStudyCategory;
+  categories?: CaseStudyCategory[];
   summary: string;
   breakdown_md: string;
   tech_stack: string[];
@@ -70,6 +71,10 @@ export interface CaseStudy {
   author_id: string | null;
   is_published: boolean;
   created_at: string;
+}
+
+export function caseCategories(study: Pick<CaseStudy, "category" | "categories">): CaseStudyCategory[] {
+  return study.categories?.length ? study.categories : [study.category];
 }
 
 export interface EnterpriseEnquiry {

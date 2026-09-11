@@ -4,13 +4,15 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { useI18n } from "@/components/i18n/provider";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { PUBLIC_CONTACT_EMAIL, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 
 export function SiteFooter() {
   const { dict } = useI18n();
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-50">
+    <footer className="border-t border-slate-200/80 bg-slate-50/80 backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-950/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-3">
@@ -21,7 +23,10 @@ export function SiteFooter() {
               Tenth Project
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed max-w-xs">{dict.footer.tagline}</p>
-            <LanguageToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-900 mb-3">{dict.footer.product}</p>
@@ -42,8 +47,18 @@ export function SiteFooter() {
             </ul>
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900 mb-3">{dict.footer.legal}</p>
+            <p className="text-sm font-semibold text-slate-900 mb-3">{dict.footer.contact}</p>
             <ul className="space-y-2 text-sm text-slate-600">
+              <li>
+                <a href={`mailto:${PUBLIC_CONTACT_EMAIL}`} className="hover:text-slate-900">
+                  {PUBLIC_CONTACT_EMAIL}
+                </a>
+              </li>
+              <li>
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900">
+                  WhatsApp {WHATSAPP_DISPLAY}
+                </a>
+              </li>
               <li><Link href="/privacy" className="hover:text-slate-900">{dict.nav.privacy}</Link></li>
               <li><Link href="/terms" className="hover:text-slate-900">{dict.nav.terms}</Link></li>
             </ul>
@@ -51,7 +66,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between gap-2 text-xs text-slate-400">
           <span>© {year} {dict.footer.copyright}</span>
-          <a href="mailto:professor.cat.hk@gmail.com" className="hover:text-slate-600">professor.cat.hk@gmail.com</a>
+          <span>Hong Kong</span>
         </div>
       </div>
     </footer>

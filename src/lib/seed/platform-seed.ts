@@ -7,13 +7,13 @@ export const FLAGSHIP_SLUG = "ai-vibecoding";
 export const SEED_COURSES: Course[] = [
   {
     id: FLAGSHIP_COURSE_ID,
-    title: "Vibe Coding 與 AI Agent 從零到高手全攻略",
+    title: "Tenth Project Vibe Coding 課程 + 社群限時 Lifetime Plan",
     slug: FLAGSHIP_SLUG,
     description:
-      "Felix Zhu 與 Chris Liu 雙導師親授。從 Cursor／Lovable 基礎、Master Prompt、Supabase 全端，到 AI Agent、MCP 與商業化上線——項目導向，完成測驗即可取得可公開驗證證書。",
+      "項目導向學習（PBL）× AI 技術。Felix Zhu 與 Chris Lau 親授，21 天內從零打造可盈利海外工具站（復刻 StealthWriter，含 Stripe）。10 小時必修 + 六大專題 Workshop，完成測驗即可取得可公開驗證證書。",
     cover_image: null,
     level: "beginner",
-    duration_hours: 21,
+    duration_hours: 24,
     published: true,
     created_at: new Date().toISOString(),
   },
@@ -21,7 +21,7 @@ export const SEED_COURSES: Course[] = [
 
 const modules: Omit<Lesson, "id" | "course_id" | "created_at">[] = [
   {
-    title: "Module 1：Vibe Coding 思維重構與 Cursor / Lovable 基礎",
+    title: "第1課：需求挖掘 + 產品設計",
     order_index: 0,
     video_url: null,
     content_md: `# Module 1：Vibe Coding 思維重構
@@ -53,7 +53,7 @@ Felix Zhu（前阿里技術專家）強調：先有架構直覺，再讓工具�
     ],
   },
   {
-    title: "Module 2：實戰 Prompt 工程與 Master Prompt 撰寫技巧",
+    title: "第2課：MVP 構建 — Humanizer 及用戶體系",
     order_index: 1,
     video_url: null,
     content_md: `# Module 2：Prompt 工程與 Master Prompt
@@ -82,7 +82,7 @@ Tenth Project 專案中心可自動產出可貼到 Cursor 的主提示詞——�
     ],
   },
   {
-    title: "Module 3：應用 Supabase、API 與 AI 模組構建 Full-Stack 產品",
+    title: "第3課：產品擴展 — 構建完整 Stealth Writer",
     order_index: 2,
     video_url: null,
     content_md: `# Module 3：Full-Stack 產品骨架
@@ -110,7 +110,7 @@ Tenth Project 專案中心可自動產出可貼到 Cursor 的主提示詞——�
     ],
   },
   {
-    title: "Module 4：AI Agent 架構解析、Tool Calling 與 MCP 本地端整合",
+    title: "第4課：商業化閉環 — 支付與數據觀測",
     order_index: 3,
     video_url: null,
     content_md: `# Module 4：AI Agent 與 MCP
@@ -142,7 +142,7 @@ Agent 與聊天機器人的分別：它會**自主使用工具**完成目標。
     ],
   },
   {
-    title: "Module 5：UAT 自動化測試、產品上線與商業化營運",
+    title: "加值課：AI Agent、MCP 與 UAT 上線節奏",
     order_index: 4,
     video_url: null,
     content_md: `# Module 5：驗收、上線、收款
@@ -187,6 +187,7 @@ const CASES: Array<{
   title: string;
   slug: string;
   category: CaseStudyCategory;
+  categories: CaseStudyCategory[];
   stack: string[];
   summary: string;
   body: string;
@@ -196,8 +197,9 @@ const CASES: Array<{
     title: "CalAI",
     slug: "calai",
     category: "saas",
-    stack: ["Cursor", "Next.js", "Computer Vision API"],
-    summary: "非技術創作者如何利用 Vibe Coding 打造月營收爆發的 AI 熱量計算 App，從概念到 App Store 上線全拆解。",
+    categories: ["saas", "tooling"],
+    stack: ["Cursor", "Next.js", "Computer Vision API", "Stripe"],
+    summary: "非技術創作者如何利用 Vibe Coding 打造月營收爆發的 AI 食物熱量計算 App，拆解從視像辨識到訂閱制收費流程。",
     body: `# CalAI
 
 ## 問題
@@ -225,9 +227,10 @@ App / Web → Next.js API → Computer Vision → 營養資料庫 → 訂閱與�
     id: "44444444-4444-4444-4444-444444444402",
     title: "StealthWriter",
     slug: "stealthwriter",
-    category: "tooling",
-    stack: ["Claude 3.5", "Python", "Tailwind"],
-    summary: "解決 AI 內文重寫與 Humanizer 需求，精準調教 Prompt 與 API 串接的商業化案例。",
+    category: "saas",
+    categories: ["saas", "workflow_agent"],
+    stack: ["Claude 3.5 Sonnet", "Python", "Tailwind CSS", "Supabase"],
+    summary: "月入 6 位數美金的 AI 內容重寫與 Humanizer 產品，解析 Prompt 鏈調校與 Token 計費設計。",
     body: `# StealthWriter
 
 ## 問題
@@ -256,8 +259,9 @@ App / Web → Next.js API → Computer Vision → 營養資料庫 → 訂閱與�
     title: "Image Prompt Org",
     slug: "image-prompt-org",
     category: "platform",
+    categories: ["platform", "content"],
     stack: ["Next.js", "Supabase", "Midjourney API"],
-    summary: "提示詞社群平台設計，如何透過社群 UGC 與 AI 圖像生成介面實現高流量留存。",
+    summary: "提示詞分享與 AI 圖像生成社群平台，分析高流量留存與 UGC 社群裂變機制。",
     body: `# Image Prompt Org
 
 ## 問題
@@ -281,6 +285,37 @@ Next.js → Supabase（用戶、收藏、內容）→ Midjourney / 圖像 API �
 高留存來自「還想再跑一次提示詞」——產品與社群是同一條工作流。
 `,
   },
+  {
+    id: "44444444-4444-4444-4444-444444444404",
+    title: "HumanAIAgent",
+    slug: "humanaiagent",
+    category: "workflow_agent",
+    categories: ["workflow_agent", "tooling"],
+    stack: ["LangChain", "OpenAI API", "Node.js", "MCP Server"],
+    summary: "客製化擬人 AI 代理工作流，剖析如何讓 Agent 自動調用 Tool Calling 完成多步驟任務。",
+    body: `# HumanAIAgent
+
+## 問題
+一般聊天機器人只能回答，不能做事。企業與創作者需要一個會規劃、會呼叫工具、會把多步驟任務做完的擬人 Agent。
+
+## 方案
+以 LangChain + OpenAI Tool Calling 建立行動迴圈：觀察 → 決策 → 呼叫工具 → 再觀察。MCP Server 把本地專案脈絡（路線圖、UAT、檔案）接進同一個 Agent。
+
+## 架構
+\`\`\`
+使用者意圖 → Agent 規劃 → OpenAI Tool Calling → LangChain Tools / MCP → 結果回寫
+\`\`\`
+
+## 關鍵學習
+1. Tool schema 要比 Prompt 更早定清楚
+2. 每一步都要可觀測，否則 Agent 會在迴圈裡空轉
+3. MCP 讓 Agent 讀到真實專案狀態，而不是憑空猜測
+4. 「擬人」來自穩定的角色、記憶與驗收，而不是更長的人設段落
+
+## 結果
+可複製的 Agent 工作流：不是一次示範，而是能反覆完成任務的工具鏈。
+`,
+  },
 ];
 
 export function getSeedCaseStudies(): CaseStudy[] {
@@ -290,6 +325,7 @@ export function getSeedCaseStudies(): CaseStudy[] {
     title: c.title,
     slug: c.slug,
     category: c.category,
+    categories: c.categories,
     summary: c.summary,
     breakdown_md: c.body,
     tech_stack: c.stack,

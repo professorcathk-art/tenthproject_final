@@ -63,7 +63,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             const href = isAuthenticated ? `/courses/${slug}/lessons/${lesson.id}` : `/login?redirect=/courses/${slug}/lessons/${lesson.id}`;
             return (
               <Link key={lesson.id} href={href}>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+                <div className="flex items-center gap-3 rounded-xl glass-panel glow-card p-4">
                   {done ? (
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
                   ) : isAuthenticated ? (
