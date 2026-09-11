@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { requireAdmin } from "@/lib/auth/session";
 import { upsertCaseStudy, deleteCaseStudy } from "@/lib/db/platform-store";
 import type { CaseStudy } from "@/types/platform";
+import { CASE_CATEGORIES } from "@/types/platform";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       id: body.id || uuidv4(),
       title: body.title,
       slug: slugSource || `case-${Date.now().toString(36)}`,
-      category: body.category === "ai_agent" ? "ai_agent" : "vibe_coding",
+      category: CASE_CATEGORIES.some((c) => c.value === body.category) ? body.category : "saas",
       summary: body.summary,
       breakdown_md: body.breakdown_md,
       tech_stack: body.tech_stack ?? [],

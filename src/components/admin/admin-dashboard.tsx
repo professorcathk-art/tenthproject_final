@@ -63,7 +63,7 @@ export function AdminDashboard({
   const [newStudy, setNewStudy] = useState({
     title: "",
     summary: "",
-    category: "vibe_coding",
+    category: "saas",
     breakdown_md: "",
     tech_stack: "",
   });
@@ -196,7 +196,7 @@ export function AdminDashboard({
     const data = await res.json();
     if (data.caseStudy) {
       setCaseStudies((s) => [data.caseStudy, ...s]);
-      setNewStudy({ title: "", summary: "", category: "vibe_coding", breakdown_md: "", tech_stack: "" });
+      setNewStudy({ title: "", summary: "", category: "saas", breakdown_md: "", tech_stack: "" });
     }
   }
 
@@ -439,8 +439,11 @@ export function AdminDashboard({
               <Select value={newStudy.category} onValueChange={(v) => v && setNewStudy({ ...newStudy, category: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="vibe_coding">Vibe Coding</SelectItem>
-                  <SelectItem value="ai_agent">AI Agent</SelectItem>
+                  <SelectItem value="tooling">{dict.inspiration.cats.tooling}</SelectItem>
+                  <SelectItem value="platform">{dict.inspiration.cats.platform}</SelectItem>
+                  <SelectItem value="content">{dict.inspiration.cats.content}</SelectItem>
+                  <SelectItem value="saas">{dict.inspiration.cats.saas}</SelectItem>
+                  <SelectItem value="workflow_agent">{dict.inspiration.cats.workflow_agent}</SelectItem>
                 </SelectContent>
               </Select>
               <Textarea placeholder={a.body} value={newStudy.breakdown_md} onChange={(e) => setNewStudy({ ...newStudy, breakdown_md: e.target.value })} rows={4} />

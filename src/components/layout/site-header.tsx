@@ -109,16 +109,21 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
             </Button>
           ) : showAuth ? (
             loggedIn ? (
-              <Link href="/dashboard">
-                <Button size="sm">{dict.nav.hub}</Button>
-              </Link>
+              <>
+                <Link href="/courses/ai-vibecoding" className="hidden sm:block">
+                  <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.continueLearning}</Button>
+                </Link>
+                <Link href="/courses">
+                  <Button size="sm" className="font-semibold">{dict.nav.classroom}</Button>
+                </Link>
+              </>
             ) : (
               <>
-                <Link href="/login" className="hidden sm:block">
-                  <Button variant="ghost" size="sm">{dict.nav.login}</Button>
+                <Link href="/login?redirect=/courses" className="hidden sm:block">
+                  <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.login}</Button>
                 </Link>
-                <Link href="/signup">
-                  <Button size="sm">{dict.nav.signup}</Button>
+                <Link href="/courses">
+                  <Button size="sm" className="font-semibold">{dict.nav.signup}</Button>
                 </Link>
               </>
             )

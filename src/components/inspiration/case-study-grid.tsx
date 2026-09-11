@@ -2,50 +2,63 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { CaseStudy } from "@/types/platform";
+import type { CaseStudy, CaseStudyCategory } from "@/types/platform";
+import { CASE_CATEGORIES } from "@/types/platform";
 import { useI18n } from "@/components/i18n/provider";
+
+const FILTERS = ["all", ...CASE_CATEGORIES.map((c) => c.value)] as const;
 
 export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
   const { dict } = useI18n();
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
   const filtered = filter === "all" ? studies : studies.filter((s) => s.category === filter);
+  const cats = dict.inspiration.cats;
+
+  function label(key: string) {
+    return cats[key as keyof typeof cats] ?? key;
+  }
 
   return (
     <div className="space-y-6">
-      <Tabs value={filter} onValueChange={(v) => v && setFilter(v)}>
-        <TabsList>
-          <TabsTrigger value="all">{dict.inspiration.all} ({studies.length})</TabsTrigger>
-          <TabsTrigger value="vibe_coding">
-            {dict.inspiration.vibe} ({studies.filter((s) => s.category === "vibe_coding").length})
-          </TabsTrigger>
-          <TabsTrigger value="ai_agent">
-            {dict.inspiration.agent} ({studies.filter((s) => s.category === "ai_agent").length})
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 sm:mx-0 sm:px-0 sm:rounded-full sm:border sm:bg-white/80">
+        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap sm:justify-center">
+          {FILTERS.map((value) => {
+            const count = value === "all" ? studies.length : studies.filter((s) => s.category === value).length;
+            const active = filter === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFilter(value)}
+                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${
+                  active
+                    ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {label(value)} ({count})
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((study) => (
           <Link key={study.id} href={`/inspiration/${study.slug}`}>
-            <Card className="h-full hover:shadow-md hover:border-slate-300 transition-all">
-              <CardHeader className="pb-2">
-                <Badge variant={study.category === "ai_agent" ? "default" : "secondary"} className="w-fit mb-2">
-                  {study.category === "ai_agent" ? dict.inspiration.agent : dict.inspiration.vibe}
-                </Badge>
-                <CardTitle className="text-base leading-snug">{study.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-600 line-clamp-2">{study.summary}</p>
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {study.tech_stack.slice(0, 3).map((t) => (
-                    <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <article className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+              <Badge variant="secondary" className="mb-3">
+                {label(study.category as CaseStudyCategory)}
+              </Badge>
+              <h2 className="text-lg font-semibold leading-snug text-slate-900">{study.title}</h2>
+              <p className="text-sm text-slate-600 mt-3 line-clamp-3 leading-relaxed">{study.summary}</p>
+              <div className="flex flex-wrap gap-1.5 mt-4">
+                {study.tech_stack.map((t) => (
+                  <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                ))}
+              </div>
+            </article>
           </Link>
         ))}
       </div>

@@ -21,9 +21,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <Link href="/inspiration" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-4">
           <ArrowLeft className="h-4 w-4 mr-1" /> {dict.inspiration.back}
         </Link>
-        <Badge className="mb-3">
-          {study.category === "ai_agent" ? dict.inspiration.agent : dict.inspiration.vibe}
-        </Badge>
+        <Badge className="mb-3">{dict.inspiration.cats[study.category as keyof typeof dict.inspiration.cats] ?? study.category}</Badge>
         <h1 className="text-2xl font-bold mb-2 tracking-tight">{study.title}</h1>
         <p className="text-slate-600 mb-4 leading-relaxed">{study.summary}</p>
         <div className="flex flex-wrap gap-2 mb-8">

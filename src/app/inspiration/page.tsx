@@ -17,8 +17,8 @@ export default async function InspirationPage() {
           <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-100 px-4 py-1.5 text-sm font-medium text-amber-800 mb-4">
             <Lightbulb className="h-4 w-4" /> {dict.inspiration.badge}
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            {studies.length}+ {dict.inspiration.title}
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+            {dict.inspiration.title}
           </h1>
           <p className="text-slate-600 mt-2 max-w-2xl leading-relaxed">{dict.inspiration.subtitle}</p>
         </div>

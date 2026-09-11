@@ -1,3 +1,13 @@
+export type CaseStudyCategory = "tooling" | "platform" | "content" | "saas" | "workflow_agent";
+
+export const CASE_CATEGORIES: { value: CaseStudyCategory }[] = [
+  { value: "tooling" },
+  { value: "platform" },
+  { value: "content" },
+  { value: "saas" },
+  { value: "workflow_agent" },
+];
+
 export interface Course {
   id: string;
   title: string;
@@ -52,7 +62,7 @@ export interface CaseStudy {
   id: string;
   title: string;
   slug: string;
-  category: "ai_agent" | "vibe_coding";
+  category: CaseStudyCategory;
   summary: string;
   breakdown_md: string;
   tech_stack: string[];
@@ -88,18 +98,18 @@ export interface McpApiKey {
 }
 
 export const SERVICE_TYPES = [
-  { value: "workflow_automation", label: "Workflow Automation" },
-  { value: "custom_agent", label: "Custom AI Agent" },
-  { value: "digital_transformation", label: "Digital Transformation" },
-  { value: "vibe_coding_training", label: "Vibe Coding Team Training" },
-  { value: "uat_qa_system", label: "UAT & QA System Setup" },
+  { value: "custom_agent", zh: "客製 AI Agent", en: "Custom AI Agent" },
+  { value: "workflow_automation", zh: "RPA 與流程自動化", en: "RPA & workflow automation" },
+  { value: "digital_transformation", zh: "數碼轉型顧問", en: "Digital transformation advisory" },
+  { value: "vibe_coding_training", zh: "團隊 Vibe Coding 培訓", en: "Team vibe coding workshops" },
+  { value: "uat_qa_system", zh: "UAT 與品質系統", en: "UAT & QA system setup" },
 ];
 
 export const BUDGET_RANGES = [
-  { value: "under_10k", label: "Under $10,000" },
-  { value: "10k_50k", label: "$10,000 – $50,000" },
-  { value: "50k_100k", label: "$50,000 – $100,000" },
-  { value: "100k_plus", label: "$100,000+" },
+  { value: "under_100k", zh: "港幣 10 萬以下", en: "Under HK$100,000" },
+  { value: "100k_500k", zh: "港幣 10–50 萬", en: "HK$100,000 – 500,000" },
+  { value: "500k_1m", zh: "港幣 50–100 萬", en: "HK$500,000 – 1,000,000" },
+  { value: "1m_plus", zh: "港幣 100 萬以上", en: "HK$1,000,000+" },
 ];
 
 export interface Member {
@@ -113,9 +123,9 @@ export interface Member {
 }
 
 export const COMPANY_SIZES = [
-  { value: "1-10", label: "1–10 employees" },
-  { value: "11-50", label: "11–50 employees" },
-  { value: "51-200", label: "51–200 employees" },
-  { value: "201-1000", label: "201–1,000 employees" },
-  { value: "1000+", label: "1,000+ employees" },
+  { value: "1-10", zh: "1–10 人", en: "1–10 employees" },
+  { value: "11-50", zh: "11–50 人", en: "11–50 employees" },
+  { value: "51-200", zh: "51–200 人", en: "51–200 employees" },
+  { value: "201-1000", zh: "201–1,000 人", en: "201–1,000 employees" },
+  { value: "1000+", zh: "1,000 人以上", en: "1,000+ employees" },
 ];

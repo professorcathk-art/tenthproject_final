@@ -225,16 +225,18 @@ export async function getUserCertificate(userId: string, courseId: string): Prom
 // ─── Case Studies ──────────────────────────────────────────
 
 export async function getCaseStudies(category?: string, publishedOnly = true): Promise<CaseStudy[]> {
+  let rows: CaseStudy[] = [];
   if (isSupabaseConfigured()) {
     let q = createServiceClient().from("case_studies").select("*").order("created_at", { ascending: false });
     if (publishedOnly) q = q.eq("is_published", true);
-    if (category && category !== "all") q = q.eq("category", category);
     const { data } = await q;
-    return ((data ?? []) as CaseStudy[]).map(normalizeCaseStudy);
+    rows = ((data ?? []) as CaseStudy[]).map(normalizeCaseStudy);
+  } else {
+    const store = await ensurePlatformStore();
+    rows = store.caseStudies.filter((c) => !publishedOnly || c.is_published).map(normalizeCaseStudy);
   }
-  const store = await ensurePlatformStore();
-  return store.caseStudies
-    .filter((c) => (!publishedOnly || c.is_published) && (!category || category === "all" || c.category === category));
+  if (category && category !== "all") rows = rows.filter((c) => c.category === category);
+  return rows;
 }
 
 export async function getCaseStudyBySlug(slug: string): Promise<CaseStudy | null> {
@@ -247,13 +249,41 @@ export async function getCaseStudyBySlug(slug: string): Promise<CaseStudy | null
   return cs ?? null;
 }
 
+function parseStack(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw as string[];
+  try {
+    return JSON.parse(String(raw || "[]")) as string[];
+  } catch {
+    return [];
+  }
+}
+
+function persistCaseStudy(cs: CaseStudy): CaseStudy {
+  const cleanStack = cs.tech_stack.filter((t) => !t.startsWith("cat:"));
+  const allowed = cs.category === "workflow_agent" ? "ai_agent" : "vibe_coding";
+  return {
+    ...cs,
+    category: allowed as unknown as CaseStudy["category"],
+    tech_stack: [`cat:${cs.category}`, ...cleanStack],
+  };
+}
+
 function normalizeCaseStudy(cs: CaseStudy): CaseStudy {
-  return { ...cs, tech_stack: Array.isArray(cs.tech_stack) ? cs.tech_stack : JSON.parse(String(cs.tech_stack || "[]")) };
+  const stack = parseStack(cs.tech_stack);
+  const tagged = stack.find((t) => t.startsWith("cat:"))?.slice(4);
+  const category = (tagged || cs.category) as CaseStudy["category"];
+  return {
+    ...cs,
+    category,
+    tech_stack: stack.filter((t) => !t.startsWith("cat:")),
+  };
 }
 
 export async function upsertCaseStudy(cs: CaseStudy) {
+  const row = persistCaseStudy(cs);
   if (isSupabaseConfigured()) {
-    await createServiceClient().from("case_studies").upsert(cs);
+    const { error } = await createServiceClient().from("case_studies").upsert(row);
+    if (error) throw new Error(error.message);
     return;
   }
   const store = await ensurePlatformStore();
@@ -384,28 +414,42 @@ export async function revokeMcpApiKey(id: string, userId: string) {
 
 // ─── Bulk seed helper ──────────────────────────────────────
 
-export async function seedPlatformData(courses: Course[], lessons: Lesson[], caseStudies: CaseStudy[]) {
+export async function seedPlatformData(courses: Course[], lessons: Lesson[]) {
   if (isSupabaseConfigured()) {
     const supabase = createServiceClient();
-    if (courses.length) await supabase.from("courses").upsert(courses, { onConflict: "slug" });
+    if (courses.length) await supabase.from("courses").upsert(courses, { onConflict: "id" });
+    const courseIds = courses.map((c) => c.id);
+    if (courseIds.length) {
+      await supabase.from("lessons").delete().in("course_id", courseIds);
+    }
     if (lessons.length) await supabase.from("lessons").upsert(lessons);
-    if (caseStudies.length) await supabase.from("case_studies").upsert(caseStudies, { onConflict: "slug" });
     return;
   }
   const store = await ensurePlatformStore();
   for (const c of courses) {
-    const idx = store.courses.findIndex((x) => x.slug === c.slug);
+    const idx = store.courses.findIndex((x) => x.id === c.id || x.slug === c.slug);
     if (idx >= 0) store.courses[idx] = c;
     else store.courses.push(c);
   }
-  for (const l of lessons) {
-    if (!store.lessons.find((x) => x.id === l.id)) store.lessons.push(l);
+  const courseIds = new Set(courses.map((c) => c.id));
+  store.lessons = store.lessons.filter((l) => !courseIds.has(l.course_id));
+  store.lessons.push(...lessons);
+  await savePlatformStore(store);
+}
+
+export async function replaceCaseStudies(studies: CaseStudy[]) {
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const { error: delError } = await supabase.from("case_studies").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (delError) throw new Error(delError.message);
+    if (studies.length) {
+      const { error } = await supabase.from("case_studies").upsert(studies.map(persistCaseStudy));
+      if (error) throw new Error(error.message);
+    }
+    return;
   }
-  for (const cs of caseStudies) {
-    const idx = store.caseStudies.findIndex((x) => x.slug === cs.slug);
-    if (idx >= 0) store.caseStudies[idx] = cs;
-    else store.caseStudies.push(cs);
-  }
+  const store = await ensurePlatformStore();
+  store.caseStudies = studies;
   await savePlatformStore(store);
 }
 
