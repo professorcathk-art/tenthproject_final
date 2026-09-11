@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UAT_STATUSES, AI_TOOLS, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
+import { McpSettings } from "@/components/project/mcp-settings";
 import { formatDistanceToNow } from "date-fns";
 
 interface ProjectDetailProps {
@@ -292,6 +293,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           <TabsTrigger value="uat">UAT</TabsTrigger>
           <TabsTrigger value="bugs">Bugs</TabsTrigger>
           <TabsTrigger value="prompt">Prompt</TabsTrigger>
+          <TabsTrigger value="mcp">MCP</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -495,6 +497,10 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-96">
             {promptText || "No prompt generated yet. Click Regenerate or Next Sprint."}
           </pre>
+        </TabsContent>
+
+        <TabsContent value="mcp" className="mt-4">
+          <McpSettings projectId={project.id} projectName={project.name} />
         </TabsContent>
 
         <TabsContent value="activity" className="mt-4">

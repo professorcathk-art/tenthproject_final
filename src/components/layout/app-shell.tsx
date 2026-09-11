@@ -9,14 +9,22 @@ import {
   LogOut,
   Sparkles,
   Menu,
+  GraduationCap,
+  Lightbulb,
+  Building2,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Project Hub", icon: LayoutDashboard },
+  { href: "/courses", label: "Academy", icon: GraduationCap },
+  { href: "/inspiration", label: "Inspiration", icon: Lightbulb },
+  { href: "/enterprise", label: "Enterprise", icon: Building2 },
   { href: "/projects/new", label: "New Project", icon: Plus },
+  { href: "/admin", label: "Admin", icon: Shield },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
