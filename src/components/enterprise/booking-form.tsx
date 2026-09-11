@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { SERVICE_TYPES, BUDGET_RANGES, COMPANY_SIZES } from "@/types/platform";
+import { useI18n } from "@/components/i18n/provider";
 
 export function EnterpriseBookingForm() {
+  const { dict } = useI18n();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
@@ -38,7 +40,6 @@ export function EnterpriseBookingForm() {
     });
     setLoading(false);
     if (res.ok) setSubmitted(true);
-    else alert("Submission failed. Please try again.");
   }
 
   if (submitted) {
@@ -46,63 +47,63 @@ export function EnterpriseBookingForm() {
       <Card className="text-center py-12">
         <CardContent>
           <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Enquiry Received!</h2>
-          <p className="text-slate-600">Our team will contact you within 1–2 business days.</p>
+          <h2 className="text-xl font-bold mb-2">{dict.enterprise.successTitle}</h2>
+          <p className="text-slate-600">{dict.enterprise.successBody}</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle>Book a Consultation</CardTitle>
+        <CardTitle>{dict.enterprise.book}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Company name *</Label>
+              <Label>{dict.enterprise.company} *</Label>
               <Input required value={form.company_name} onChange={(e) => update("company_name", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Contact name *</Label>
+              <Label>{dict.enterprise.contact} *</Label>
               <Input required value={form.contact_name} onChange={(e) => update("contact_name", e.target.value)} />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Email *</Label>
+              <Label>{dict.enterprise.email} *</Label>
               <Input type="email" required value={form.email} onChange={(e) => update("email", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Phone</Label>
+              <Label>{dict.enterprise.phone}</Label>
               <Input value={form.phone} onChange={(e) => update("phone", e.target.value)} />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label>Service type *</Label>
+              <Label>{dict.enterprise.service} *</Label>
               <Select value={form.service_type} onValueChange={(v) => v && update("service_type", v)}>
-                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={dict.enterprise.select} /></SelectTrigger>
                 <SelectContent>
                   {SERVICE_TYPES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Company size</Label>
+              <Label>{dict.enterprise.size}</Label>
               <Select value={form.company_size} onValueChange={(v) => v && update("company_size", v)}>
-                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={dict.enterprise.select} /></SelectTrigger>
                 <SelectContent>
                   {COMPANY_SIZES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Budget range</Label>
+              <Label>{dict.enterprise.budget}</Label>
               <Select value={form.budget_range} onValueChange={(v) => v && update("budget_range", v)}>
-                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={dict.enterprise.select} /></SelectTrigger>
                 <SelectContent>
                   {BUDGET_RANGES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                 </SelectContent>
@@ -110,11 +111,11 @@ export function EnterpriseBookingForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Describe your project / target workflows *</Label>
-            <Textarea required rows={5} placeholder="Tell us about the AI workflows you want to automate, your current tools, and expected outcomes..." value={form.project_description} onChange={(e) => update("project_description", e.target.value)} />
+            <Label>{dict.enterprise.describe} *</Label>
+            <Textarea required rows={5} placeholder={dict.enterprise.placeholder} value={form.project_description} onChange={(e) => update("project_description", e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Submitting...</> : "Submit Enquiry"}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {dict.enterprise.submitting}</> : dict.enterprise.submit}
           </Button>
         </form>
       </CardContent>

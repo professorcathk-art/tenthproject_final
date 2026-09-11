@@ -102,6 +102,16 @@ export const BUDGET_RANGES = [
   { value: "100k_plus", label: "$100,000+" },
 ];
 
+export interface Member {
+  id: string;
+  email: string;
+  name: string;
+  plan: "free" | "academy" | "enterprise";
+  status: "active" | "paused";
+  notes: string | null;
+  created_at: string;
+}
+
 export const COMPANY_SIZES = [
   { value: "1-10", label: "1–10 employees" },
   { value: "11-50", label: "11–50 employees" },

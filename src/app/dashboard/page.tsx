@@ -8,11 +8,16 @@ import { getSession } from "@/lib/auth/session";
 import { getProjects, getRecentActivity } from "@/lib/db/store";
 import { redirect } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { zhTW, enUS } from "date-fns/locale";
+import { getDict, getLocale } from "@/lib/i18n/server";
 
 export default async function DashboardPage() {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) redirect("/login");
 
+  const dict = await getDict();
+  const locale = await getLocale();
+  const dateLocale = locale === "zh" ? zhTW : enUS;
   const projects = await getProjects(user.id);
   const activity = await getRecentActivity(user.id);
 
@@ -21,13 +26,13 @@ export default async function DashboardPage() {
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-            <p className="text-slate-600 mt-1">Track your projects and see what to do next.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{dict.dashboard.title}</h1>
+            <p className="text-slate-600 mt-1">{dict.dashboard.subtitle}</p>
           </div>
           <Link href="/projects/new">
             <Button>
               <Plus className="h-4 w-4 mr-1" />
-              New project
+              {dict.dashboard.newProject}
             </Button>
           </Link>
         </div>
@@ -36,14 +41,12 @@ export default async function DashboardPage() {
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <FolderOpen className="h-12 w-12 text-slate-300 mb-4" />
-              <h2 className="text-lg font-semibold mb-2">No projects yet</h2>
-              <p className="text-slate-500 mb-6 max-w-sm">
-                Start your first project and get a personalized roadmap, UAT checklist, and AI prompts.
-              </p>
+              <h2 className="text-lg font-semibold mb-2">{dict.dashboard.emptyTitle}</h2>
+              <p className="text-slate-500 mb-6 max-w-sm">{dict.dashboard.emptyDesc}</p>
               <Link href="/projects/new">
                 <Button>
                   <Plus className="h-4 w-4 mr-1" />
-                  Create your first project
+                  {dict.dashboard.emptyCta}
                 </Button>
               </Link>
             </CardContent>
@@ -66,7 +69,7 @@ export default async function DashboardPage() {
                       <Badge variant="outline" className="text-xs">{project.stage.replace("_", " ")}</Badge>
                     </div>
                     <p className="text-xs text-slate-400">
-                      Updated {formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })}
+                      {dict.dashboard.updated} {formatDistanceToNow(new Date(project.updated_at), { addSuffix: true, locale: dateLocale })}
                     </p>
                   </CardContent>
                 </Card>
@@ -78,14 +81,14 @@ export default async function DashboardPage() {
         {activity.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Recent activity</CardTitle>
+              <CardTitle className="text-base">{dict.dashboard.activity}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {activity.map((log) => (
                 <div key={log.id} className="flex items-start justify-between text-sm border-b pb-3 last:border-0">
                   <span>{log.message}</span>
                   <span className="text-xs text-slate-400 shrink-0 ml-4">
-                    {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: dateLocale })}
                   </span>
                 </div>
               ))}

@@ -33,12 +33,17 @@ import {
 import { UAT_STATUSES, AI_TOOLS, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
 import { McpSettings } from "@/components/project/mcp-settings";
 import { formatDistanceToNow } from "date-fns";
+import { zhTW, enUS } from "date-fns/locale";
+import { useI18n } from "@/components/i18n/provider";
 
 interface ProjectDetailProps {
   initialProject: ProjectWithRelations;
 }
 
 export function ProjectDetail({ initialProject }: ProjectDetailProps) {
+  const { dict, locale } = useI18n();
+  const p = dict.project;
+  const dateLocale = locale === "zh" ? zhTW : enUS;
   const [project, setProject] = useState(initialProject);
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedTool, setSelectedTool] = useState<AITool>(project.selected_tool as AITool);
@@ -174,7 +179,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
     const config = UAT_STATUSES.find((s) => s.value === status);
     return (
       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${config?.color ?? "bg-slate-100"}`}>
-        {config?.label ?? status}
+        {p.uatStatuses[status as keyof typeof p.uatStatuses] ?? config?.label ?? status}
       </span>
     );
   };
@@ -185,7 +190,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
         <div>
           <Link href="/dashboard" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-2">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to dashboard
+            {p.back}
           </Link>
           <h1 className="text-2xl font-bold text-slate-900">{project.name}</h1>
           <p className="text-slate-600 mt-1">{project.description}</p>
@@ -198,12 +203,12 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
         <div className="flex flex-wrap gap-2">
           <Button onClick={nextSprint} disabled={loading === "sprint"}>
             {loading === "sprint" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-            Next sprint
+            {p.nextSprint}
           </Button>
           <Link href={`/projects/${project.id}/prompts`}>
             <Button variant="outline">
               <Sparkles className="h-4 w-4 mr-1" />
-              Prompts
+              {p.prompts}
             </Button>
           </Link>
         </div>
@@ -212,31 +217,31 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tasks</CardDescription>
+            <CardDescription>{p.tasks}</CardDescription>
             <CardTitle className="text-2xl">{doneTasks}/{tasks.length}</CardTitle>
           </CardHeader>
           <CardContent><Progress value={taskProgress} className="h-2" /></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>UAT passed</CardDescription>
+            <CardDescription>{p.uatPassed}</CardDescription>
             <CardTitle className="text-2xl">{passedUAT}/{uatItems.length}</CardTitle>
           </CardHeader>
           <CardContent><Progress value={uatProgress} className="h-2" /></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Open bugs</CardDescription>
+            <CardDescription>{p.openBugs}</CardDescription>
             <CardTitle className="text-2xl">{bugs.filter((b) => b.status === "open").length}</CardTitle>
           </CardHeader>
-          <CardContent><p className="text-xs text-slate-500">{bugs.length} total bugs tracked</p></CardContent>
+          <CardContent><p className="text-xs text-slate-500">{bugs.length} {p.totalBugs}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Phases</CardDescription>
+            <CardDescription>{p.phases}</CardDescription>
             <CardTitle className="text-2xl">{phases.filter((p) => p.status === "completed").length}/{phases.length}</CardTitle>
           </CardHeader>
-          <CardContent><p className="text-xs text-slate-500">{enhancements.length} enhancements suggested</p></CardContent>
+          <CardContent><p className="text-xs text-slate-500">{enhancements.length} {p.enhancementsN}</p></CardContent>
         </Card>
       </div>
 
@@ -244,29 +249,29 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Globe className="h-4 w-4" />
-            Project links
+            {p.links}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 space-y-2">
             <Input
-              placeholder="Website URL"
+              placeholder={p.websiteUrl}
               value={websiteUrl}
               onChange={(e) => setWebsiteUrl(e.target.value)}
             />
           </div>
           <div className="flex-1 space-y-2">
             <Input
-              placeholder="GitHub URL"
+              placeholder={p.githubUrl}
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={saveUrls}>Save</Button>
+            <Button variant="outline" onClick={saveUrls}>{p.save}</Button>
             <Button onClick={runWebsiteCheck} disabled={!websiteUrl || loading === "check"}>
               {loading === "check" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
-              Run check
+              {p.runCheck}
             </Button>
           </div>
         </CardContent>
@@ -288,24 +293,24 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
 
       <Tabs defaultValue="overview">
         <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="uat">UAT</TabsTrigger>
-          <TabsTrigger value="bugs">Bugs</TabsTrigger>
-          <TabsTrigger value="prompt">Prompt</TabsTrigger>
-          <TabsTrigger value="mcp">MCP</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="overview">{p.overview}</TabsTrigger>
+          <TabsTrigger value="tasks">{p.tasks}</TabsTrigger>
+          <TabsTrigger value="uat">{p.uat}</TabsTrigger>
+          <TabsTrigger value="bugs">{p.bugs}</TabsTrigger>
+          <TabsTrigger value="prompt">{p.prompt}</TabsTrigger>
+          <TabsTrigger value="mcp">{p.mcp}</TabsTrigger>
+          <TabsTrigger value="activity">{p.activity}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 mt-4">
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Phase roadmap</CardTitle>
+                <CardTitle className="text-base">{p.roadmap}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {phases.length === 0 ? (
-                  <p className="text-sm text-slate-500">No phases yet. Run AI analysis to generate a roadmap.</p>
+                  <p className="text-sm text-slate-500">{p.noPhases}</p>
                 ) : (
                   phases.map((phase, i) => (
                     <div key={phase.id} className="flex items-start gap-3">
@@ -328,12 +333,12 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Lightbulb className="h-4 w-4" />
-                  Enhancements
+                  {p.enhancements}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {enhancements.length === 0 ? (
-                  <p className="text-sm text-slate-500">No enhancements yet.</p>
+                  <p className="text-sm text-slate-500">{p.noEnhancements}</p>
                 ) : (
                   enhancements.slice(0, 5).map((e) => (
                     <div key={e.id} className="rounded-lg border p-3 text-sm">
@@ -348,7 +353,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           {project.test_runs && project.test_runs.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Latest website check</CardTitle>
+                <CardTitle className="text-base">{p.latestCheck}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm mb-3">{project.test_runs[0].result_summary}</p>
@@ -369,7 +374,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           <Card>
             <CardContent className="pt-6 space-y-2">
               {tasks.length === 0 ? (
-                <p className="text-sm text-slate-500 py-4 text-center">No tasks yet.</p>
+                <p className="text-sm text-slate-500 py-4 text-center">{p.noTasks}</p>
               ) : (
                 tasks.map((task) => (
                   <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
@@ -382,10 +387,10 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="todo">To do</SelectItem>
-                        <SelectItem value="in_progress">In progress</SelectItem>
-                        <SelectItem value="done">Done</SelectItem>
-                        <SelectItem value="blocked">Blocked</SelectItem>
+                        <SelectItem value="todo">{p.todo}</SelectItem>
+                        <SelectItem value="in_progress">{p.inProgress}</SelectItem>
+                        <SelectItem value="done">{p.done}</SelectItem>
+                        <SelectItem value="blocked">{p.blocked}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -402,16 +407,16 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="all">{p.allStatuses}</SelectItem>
                 {UAT_STATUSES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>{p.uatStatuses[s.value]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             {filteredUAT.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-slate-500">No UAT items match this filter.</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-slate-500">{p.noUat}</CardContent></Card>
             ) : (
               filteredUAT.map((item) => (
                 <Card key={item.id}>
@@ -425,7 +430,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                           {statusBadge(item.status)}
                           <Badge variant="outline" className="text-xs">{item.severity}</Badge>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Expected: {item.expected_result}</p>
+                        <p className="text-xs text-slate-500 mt-1">{p.expected}: {item.expected_result}</p>
                         {item.remark && <p className="text-xs text-slate-600 mt-1 italic">&quot;{item.remark}&quot;</p>}
                       </div>
                       <Select value={item.status} onValueChange={(v) => v && updateUATStatus(item.id, v as UATStatus)}>
@@ -434,7 +439,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                         </SelectTrigger>
                         <SelectContent>
                           {UAT_STATUSES.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                            <SelectItem key={s.value} value={s.value}>{p.uatStatuses[s.value]}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -450,7 +455,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           <Card>
             <CardContent className="pt-6 space-y-2">
               {bugs.length === 0 ? (
-                <p className="text-sm text-slate-500 py-4 text-center">No bugs tracked.</p>
+                <p className="text-sm text-slate-500 py-4 text-center">{p.noBugs}</p>
               ) : (
                 bugs.map((bug) => (
                   <div key={bug.id} className="flex items-start justify-between rounded-lg border p-3">
@@ -464,7 +469,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                     <div className="flex items-center gap-2">
                       <Badge variant={bug.status === "open" ? "destructive" : "secondary"}>{bug.status}</Badge>
                       <Button size="sm" variant="outline" onClick={() => generatePrompt("bug-fix")}>
-                        Fix prompt
+                        {p.fixPrompt}
                       </Button>
                     </div>
                   </div>
@@ -487,7 +492,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
               </SelectContent>
             </Select>
             <Button size="sm" variant="outline" onClick={() => generatePrompt("next-step")} disabled={!!loading}>
-              Regenerate
+              {p.regenerate}
             </Button>
             <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(promptText)}>
               <ClipboardCopy className="h-4 w-4 mr-1" />
@@ -495,7 +500,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
             </Button>
           </div>
           <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-96">
-            {promptText || "No prompt generated yet. Click Regenerate or Next Sprint."}
+            {promptText || p.noPrompt}
           </pre>
         </TabsContent>
 
@@ -507,14 +512,14 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           <Card>
             <CardContent className="pt-6 space-y-3">
               {(project.activity_logs ?? []).length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-4">No activity yet.</p>
+                <p className="text-sm text-slate-500 text-center py-4">{p.noActivity}</p>
               ) : (
                 (project.activity_logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-3 text-sm border-b pb-3 last:border-0">
                     <ListChecks className="h-4 w-4 text-slate-400 mt-0.5" />
                     <div>
                       <p>{log.message}</p>
-                      <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}</p>
+                      <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: dateLocale })}</p>
                     </div>
                   </div>
                 ))

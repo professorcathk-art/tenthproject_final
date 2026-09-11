@@ -6,19 +6,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CaseStudy } from "@/types/platform";
+import { useI18n } from "@/components/i18n/provider";
 
 export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
+  const { dict } = useI18n();
   const [filter, setFilter] = useState("all");
-
   const filtered = filter === "all" ? studies : studies.filter((s) => s.category === filter);
 
   return (
     <div className="space-y-6">
       <Tabs value={filter} onValueChange={(v) => v && setFilter(v)}>
         <TabsList>
-          <TabsTrigger value="all">All ({studies.length})</TabsTrigger>
-          <TabsTrigger value="vibe_coding">Vibe Coding ({studies.filter((s) => s.category === "vibe_coding").length})</TabsTrigger>
-          <TabsTrigger value="ai_agent">AI Agents ({studies.filter((s) => s.category === "ai_agent").length})</TabsTrigger>
+          <TabsTrigger value="all">{dict.inspiration.all} ({studies.length})</TabsTrigger>
+          <TabsTrigger value="vibe_coding">
+            {dict.inspiration.vibe} ({studies.filter((s) => s.category === "vibe_coding").length})
+          </TabsTrigger>
+          <TabsTrigger value="ai_agent">
+            {dict.inspiration.agent} ({studies.filter((s) => s.category === "ai_agent").length})
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -28,7 +33,7 @@ export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
             <Card className="h-full hover:shadow-md hover:border-slate-300 transition-all">
               <CardHeader className="pb-2">
                 <Badge variant={study.category === "ai_agent" ? "default" : "secondary"} className="w-fit mb-2">
-                  {study.category === "ai_agent" ? "AI Agent" : "Vibe Coding"}
+                  {study.category === "ai_agent" ? dict.inspiration.agent : dict.inspiration.vibe}
                 </Badge>
                 <CardTitle className="text-base leading-snug">{study.title}</CardTitle>
               </CardHeader>

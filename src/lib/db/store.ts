@@ -176,6 +176,25 @@ export async function getProject(projectId: string, userId: string) {
   };
 }
 
+export async function ensureProfile(user: {
+  id: string;
+  email: string;
+  name: string;
+  default_ai_model?: string;
+  default_tool?: string;
+}) {
+  if (!isSupabaseConfigured()) return;
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("profiles").upsert({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    default_ai_model: user.default_ai_model ?? "openai",
+    default_tool: user.default_tool ?? "cursor",
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function createProject(
   userId: string,
   data: Omit<Project, "id" | "user_id" | "created_at" | "updated_at" | "status">
@@ -193,7 +212,7 @@ export async function createProject(
   if (isSupabaseConfigured()) {
     const supabase = createServiceClient();
     const { data: created, error } = await supabase.from("projects").insert(project).select().single();
-    if (error) throw error;
+    if (error) throw new Error(error.message);
     await logActivity(created.id, "project_created", `Project "${created.name}" created`);
     return created as Project;
   }

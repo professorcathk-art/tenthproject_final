@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/auth/admin";
+import { isAdmin } from "@/lib/auth/session";
 import { AppShell } from "@/components/layout/app-shell";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { getCaseStudies, getEnterpriseEnquiries, getCourses } from "@/lib/db/platform-store";
+import { getCaseStudies, getEnterpriseEnquiries, getCoursesWithLessons, getMembers } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 
 export default async function AdminPage() {
@@ -10,10 +10,11 @@ export default async function AdminPage() {
   if (!admin) redirect("/dashboard");
 
   await ensurePlatformSeeded();
-  const [caseStudies, enquiries, courses] = await Promise.all([
+  const [caseStudies, enquiries, courses, members] = await Promise.all([
     getCaseStudies(undefined, false),
     getEnterpriseEnquiries(),
-    getCourses(false),
+    getCoursesWithLessons(),
+    getMembers(),
   ]);
 
   return (
@@ -22,6 +23,7 @@ export default async function AdminPage() {
         initialCaseStudies={caseStudies}
         initialEnquiries={enquiries}
         initialCourses={courses}
+        initialMembers={members}
       />
     </AppShell>
   );

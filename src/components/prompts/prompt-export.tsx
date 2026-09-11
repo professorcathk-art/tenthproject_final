@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { AI_TOOLS, type AITool, type PromptRun } from "@/types";
 import { formatDistanceToNow } from "date-fns";
+import { zhTW, enUS } from "date-fns/locale";
+import { useI18n } from "@/components/i18n/provider";
 
 interface PromptExportProps {
   projectId: string;
@@ -23,6 +25,9 @@ interface PromptExportProps {
 }
 
 export function PromptExportView({ projectId, projectName, selectedTool: initialTool, promptRuns }: PromptExportProps) {
+  const { dict, locale } = useI18n();
+  const p = dict.project;
+  const dateLocale = locale === "zh" ? zhTW : enUS;
   const [tool, setTool] = useState<AITool>(initialTool);
   const [promptText, setPromptText] = useState(promptRuns[0]?.prompt_text ?? "");
   const [loading, setLoading] = useState(false);
@@ -58,10 +63,10 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
       <div>
         <Link href={`/projects/${projectId}`} className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-2">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to {projectName}
+          {p.back} · {projectName}
         </Link>
-        <h1 className="text-2xl font-bold">Prompt export</h1>
-        <p className="text-slate-600 mt-1">Copy a ready-to-use prompt for your AI tool.</p>
+        <h1 className="text-2xl font-bold">{p.promptExport}</h1>
+        <p className="text-slate-600 mt-1">{p.promptExportDesc}</p>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
@@ -77,10 +82,10 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
         </Select>
         <Button onClick={() => navigator.clipboard.writeText(promptText)}>
           <ClipboardCopy className="h-4 w-4 mr-1" />
-          Copy prompt
+          {p.copyPrompt}
         </Button>
         <Button variant="outline" onClick={regenerate} disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Regenerate"}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : p.regenerate}
         </Button>
       </div>
 
@@ -90,7 +95,7 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
         </CardHeader>
         <CardContent>
           <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-[500px]">
-            {loading ? "Generating..." : promptText || "No prompt yet. Click Regenerate."}
+            {loading ? dict.common.loading : promptText || p.noPrompt}
           </pre>
         </CardContent>
       </Card>
@@ -98,7 +103,7 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
       {history.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Version history</CardTitle>
+            <CardTitle className="text-base">{p.history}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {history.map((run) => (
@@ -110,7 +115,7 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
               >
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">{run.prompt_type} · {run.tool}</span>
-                  <span className="text-slate-400">{formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}</span>
+                  <span className="text-slate-400">{formatDistanceToNow(new Date(run.created_at), { addSuffix: true, locale: dateLocale })}</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-1 truncate">{run.prompt_text.slice(0, 100)}...</p>
               </button>

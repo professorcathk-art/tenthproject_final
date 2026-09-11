@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizDialog } from "@/components/courses/quiz-dialog";
+import { useI18n } from "@/components/i18n/provider";
 import type { Course, Lesson } from "@/types/platform";
 
 interface LessonClientProps {
@@ -17,6 +18,7 @@ interface LessonClientProps {
 }
 
 export function LessonClient({ course, lesson, prevLesson, nextLesson, isCompleted }: LessonClientProps) {
+  const { dict } = useI18n();
   const [completed, setCompleted] = useState(isCompleted);
   const [quizOpen, setQuizOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export function LessonClient({ course, lesson, prevLesson, nextLesson, isComplet
     setCompleted(true);
     setLoading(false);
     if (data.certificate) {
-      alert(`Congratulations! Certificate issued: ${data.certificate.certificate_code}`);
+      alert(`${dict.courses.certificateIssued}${data.certificate.certificate_code}`);
     }
   }
 
@@ -76,20 +78,20 @@ export function LessonClient({ course, lesson, prevLesson, nextLesson, isComplet
       <div className="flex items-center justify-between pt-4 border-t">
         {prevLesson ? (
           <Link href={`/courses/${course.slug}/lessons/${prevLesson.id}`}>
-            <Button variant="outline"><ArrowLeft className="h-4 w-4 mr-1" /> Previous</Button>
+            <Button variant="outline"><ArrowLeft className="h-4 w-4 mr-1" /> {dict.courses.previous}</Button>
           </Link>
         ) : <div />}
         <div className="flex gap-2">
           {!completed ? (
             <Button onClick={handleCompleteClick} disabled={loading}>
-              {loading ? "Saving..." : "Mark Complete"}
+              {loading ? dict.courses.saving : dict.courses.markComplete}
             </Button>
           ) : (
-            <span className="flex items-center gap-1 text-green-700 text-sm"><CheckCircle2 className="h-4 w-4" /> Completed</span>
+            <span className="flex items-center gap-1 text-green-700 text-sm"><CheckCircle2 className="h-4 w-4" /> {dict.courses.completed}</span>
           )}
           {nextLesson && (
             <Link href={`/courses/${course.slug}/lessons/${nextLesson.id}`}>
-              <Button>Next <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              <Button>{dict.courses.next} <ArrowRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth/admin";
+import { requireAdmin } from "@/lib/auth/session";
 import { updateEnquiryStatus } from "@/lib/db/platform-store";
 
 export async function PATCH(request: NextRequest) {

@@ -1,30 +1,27 @@
-import { PlatformHeader } from "@/components/layout/platform-nav";
+import { MarketingShell } from "@/components/layout/app-shell";
 import { EnterpriseBookingForm } from "@/components/enterprise/booking-form";
 import { Building2, Bot, Workflow, GraduationCap } from "lucide-react";
+import { getDict } from "@/lib/i18n/server";
 
-const services = [
-  { icon: Bot, title: "Custom AI Agents", desc: "Production-ready agents with tool calling, MCP, and monitoring." },
-  { icon: Workflow, title: "Workflow Automation", desc: "Automate repetitive business processes with AI-powered pipelines." },
-  { icon: Building2, title: "Digital Transformation", desc: "Modernize legacy workflows with vibe coding and AI integration." },
-  { icon: GraduationCap, title: "Team Training", desc: "Upskill your team on Cursor, AI agents, and UAT-driven development." },
-];
+export default async function EnterprisePage() {
+  const dict = await getDict();
+  const services = [
+    { icon: Bot, ...dict.enterprise.services.agent },
+    { icon: Workflow, ...dict.enterprise.services.workflow },
+    { icon: Building2, ...dict.enterprise.services.digital },
+    { icon: GraduationCap, ...dict.enterprise.services.training },
+  ];
 
-export default function EnterprisePage() {
   return (
-    <div className="min-h-screen bg-white">
-      <PlatformHeader />
+    <MarketingShell>
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-2">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-700 mb-4">
-              <Building2 className="h-4 w-4" /> Enterprise AI Solutions
+              <Building2 className="h-4 w-4" /> {dict.enterprise.badge}
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              AI transformation for your business
-            </h1>
-            <p className="text-slate-600 mt-4 leading-relaxed">
-              From custom AI agents to full digital transformation — we help enterprises adopt vibe coding and AI workflows at scale.
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">{dict.enterprise.title}</h1>
+            <p className="text-slate-600 mt-4 leading-relaxed">{dict.enterprise.subtitle}</p>
             <div className="mt-8 space-y-4">
               {services.map((s) => {
                 const Icon = s.icon;
@@ -45,6 +42,6 @@ export default function EnterprisePage() {
           <EnterpriseBookingForm />
         </div>
       </div>
-    </div>
+    </MarketingShell>
   );
 }

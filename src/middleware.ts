@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedPaths = ["/dashboard", "/projects", "/settings", "/admin", "/courses"];
+const protectedExact = ["/dashboard", "/settings", "/admin", "/projects/new"];
+const protectedPrefixes = ["/dashboard/", "/settings/", "/admin/", "/projects/"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isProtected = protectedPaths.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`)
-  );
+  const isLesson = pathname.includes("/courses/") && pathname.includes("/lessons/");
+  const isProtected =
+    isLesson ||
+    protectedExact.includes(pathname) ||
+    protectedPrefixes.some((p) => pathname.startsWith(p));
 
   if (isProtected) {
-    const session = request.cookies.get("tenth_project_session");
-    if (session?.value !== "authenticated") {
+    const session = request.cookies.get("tenth_project_session")?.value;
+    const loggedIn = Boolean(session && session !== "");
+    if (!loggedIn) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
@@ -22,5 +26,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/projects/:path*", "/settings/:path*", "/admin/:path*", "/courses/:path*/lessons/:path*"],
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/projects/:path*",
+    "/settings",
+    "/settings/:path*",
+    "/admin",
+    "/admin/:path*",
+    "/courses/:path*",
+  ],
 };

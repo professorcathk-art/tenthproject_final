@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { UAT_STATUSES, type UATItem, type UATRemark } from "@/types";
 import { formatDistanceToNow } from "date-fns";
+import { zhTW, enUS } from "date-fns/locale";
+import { useI18n } from "@/components/i18n/provider";
 
 interface UATDetailProps {
   projectId: string;
@@ -18,6 +20,9 @@ interface UATDetailProps {
 }
 
 export function UATDetailView({ projectId, projectName, item: initialItem, remarks: initialRemarks }: UATDetailProps) {
+  const { dict, locale } = useI18n();
+  const p = dict.project;
+  const dateLocale = locale === "zh" ? zhTW : enUS;
   const [item, setItem] = useState(initialItem);
   const [remarks, setRemarks] = useState(initialRemarks);
   const [newRemark, setNewRemark] = useState("");
@@ -68,7 +73,7 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
     const data = await res.json();
     if (data.promptRun) {
       navigator.clipboard.writeText(data.promptRun.prompt_text);
-      alert("Re-test prompt copied to clipboard!");
+      alert(p.retestCopied);
     }
     setLoading(false);
   }
@@ -78,19 +83,19 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
       <div>
         <Link href={`/projects/${projectId}`} className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-2">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to {projectName}
+          {p.back} · {projectName}
         </Link>
         <h1 className="text-xl font-bold">{item.title}</h1>
         <div className="flex gap-2 mt-2">
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig?.color}`}>
-            {statusConfig?.label}
+            {p.uatStatuses[item.status] ?? statusConfig?.label}
           </span>
           <Badge variant="outline">{item.severity}</Badge>
         </div>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Expected result</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{p.expected}</CardTitle></CardHeader>
         <CardContent><p className="text-sm text-slate-600">{item.expected_result}</p></CardContent>
       </Card>
 
@@ -102,10 +107,10 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Update status</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{p.updateStatus}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <Textarea
-            placeholder="Add a remark, e.g. 'CTA button too small on mobile'"
+            placeholder={p.addRemark}
             value={newRemark}
             onChange={(e) => setNewRemark(e.target.value)}
             rows={3}
@@ -119,13 +124,13 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
                 onClick={() => updateStatus(status)}
                 disabled={loading}
               >
-                {UAT_STATUSES.find((s) => s.value === status)?.label}
+                {p.uatStatuses[status]}
               </Button>
             ))}
           </div>
           <Button variant="outline" onClick={retest} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-            Re-test (copy prompt)
+            {p.retest}
           </Button>
         </CardContent>
       </Card>
@@ -144,13 +149,13 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
         <CardHeader><CardTitle className="text-base">Remark history</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {remarks.length === 0 ? (
-            <p className="text-sm text-slate-500">No remarks yet.</p>
+            <p className="text-sm text-slate-500">{p.noActivity}</p>
           ) : (
             remarks.map((r) => (
               <div key={r.id} className="border-b pb-3 last:border-0">
                 <p className="text-sm">{r.remark}</p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {r.updated_by} · {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                  {r.updated_by} · {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: dateLocale })}
                   {r.status_before && r.status_after && ` · ${r.status_before} → ${r.status_after}`}
                 </p>
               </div>

@@ -1,40 +1,49 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useI18n } from "@/components/i18n/provider";
 
 interface AuthFormProps {
   mode: "login" | "signup" | "reset";
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+function AuthFormInner({ mode }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { dict } = useI18n();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("demo@tenthproject.app");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
   const titles = {
-    login: { title: "Welcome back", desc: "Sign in to continue building your project" },
-    signup: { title: "Create your account", desc: "Start organizing your vibe coding journey" },
-    reset: { title: "Reset password", desc: "We'll send you a link to reset your password" },
+    login: { title: dict.auth.loginTitle, desc: dict.auth.loginDesc },
+    signup: { title: dict.auth.signupTitle, desc: dict.auth.signupDesc },
+    reset: { title: dict.auth.resetTitle, desc: dict.auth.resetDesc },
   };
-
   const { title, desc } = titles[mode];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/auth/demo", { method: "POST" });
-    router.push("/dashboard");
+    await fetch("/api/auth/demo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name }),
+    });
+    const next = searchParams.get("redirect") || "/dashboard";
+    router.push(next);
+    router.refresh();
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
+    <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md border-slate-200 shadow-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
@@ -47,15 +56,16 @@ export function AuthForm({ mode }: AuthFormProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode !== "reset" && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Your name" defaultValue="Demo User" />
+                <Label htmlFor="name">{dict.auth.name}</Label>
+                <Input id="name" placeholder={dict.auth.name} value={name} onChange={(e) => setName(e.target.value)} />
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{dict.auth.email}</Label>
               <Input
                 id="email"
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -63,46 +73,58 @@ export function AuthForm({ mode }: AuthFormProps) {
             </div>
             {mode !== "reset" && (
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{dict.auth.password}</Label>
                 <Input id="password" type="password" defaultValue="demo1234" />
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+              {loading
+                ? dict.auth.signingIn
+                : mode === "login"
+                  ? dict.auth.signIn
+                  : mode === "signup"
+                    ? dict.auth.createAccount
+                    : dict.auth.sendReset}
             </Button>
           </form>
-          <p className="mt-4 text-center text-xs text-slate-500">
-            Demo mode — click sign in to enter the app instantly.
-          </p>
+          <p className="mt-4 text-center text-xs text-slate-500 leading-relaxed">{dict.auth.demoNote}</p>
           <div className="mt-4 text-center text-sm text-slate-600">
             {mode === "login" && (
               <>
-                No account?{" "}
+                {dict.auth.noAccount}{" "}
                 <Link href="/signup" className="font-medium text-slate-900 hover:underline">
-                  Sign up
+                  {dict.auth.createAccount}
                 </Link>
                 {" · "}
                 <Link href="/reset-password" className="font-medium text-slate-900 hover:underline">
-                  Forgot password?
+                  {dict.auth.forgot}
                 </Link>
               </>
             )}
             {mode === "signup" && (
               <>
-                Already have an account?{" "}
+                {dict.auth.hasAccount}{" "}
                 <Link href="/login" className="font-medium text-slate-900 hover:underline">
-                  Sign in
+                  {dict.auth.signIn}
                 </Link>
               </>
             )}
             {mode === "reset" && (
               <Link href="/login" className="font-medium text-slate-900 hover:underline">
-                Back to sign in
+                {dict.auth.backToLogin}
               </Link>
             )}
           </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export function AuthForm(props: AuthFormProps) {
+  return (
+    <Suspense>
+      <AuthFormInner {...props} />
+    </Suspense>
   );
 }

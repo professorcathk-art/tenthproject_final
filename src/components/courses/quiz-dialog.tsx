@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { QuizQuestion } from "@/types/platform";
+import { useI18n } from "@/components/i18n/provider";
 
 interface QuizDialogProps {
   questions: QuizQuestion[];
@@ -13,27 +14,27 @@ interface QuizDialogProps {
 }
 
 export function QuizDialog({ questions, open, onClose, onComplete }: QuizDialogProps) {
+  const { dict } = useI18n();
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   if (!questions.length) return null;
 
-  const score = submitted
-    ? Math.round((questions.filter((q) => answers[q.id] === q.correctIndex).length / questions.length) * 100)
-    : 0;
-
   function handleSubmit() {
+    const next = Math.round(
+      (questions.filter((q) => answers[q.id] === q.correctIndex).length / questions.length) * 100
+    );
+    setScore(next);
     setSubmitted(true);
-    if (score >= 70 || questions.every((q) => answers[q.id] === q.correctIndex)) {
-      onComplete(score);
-    }
+    if (next >= 70) onComplete(next);
   }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Module Quiz</DialogTitle>
+          <DialogTitle>{dict.courses.quiz}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {questions.map((q, qi) => (
@@ -61,12 +62,12 @@ export function QuizDialog({ questions, open, onClose, onComplete }: QuizDialogP
         <DialogFooter>
           {!submitted ? (
             <Button onClick={handleSubmit} disabled={Object.keys(answers).length < questions.length}>
-              Submit Quiz
+              {dict.courses.submitQuiz}
             </Button>
           ) : (
             <div className="text-sm">
-              Score: <strong>{score}%</strong>
-              {score >= 70 ? " — Passed!" : " — Try again (need 70%)"}
+              {dict.courses.score}: <strong>{score}%</strong>
+              {score >= 70 ? ` — ${dict.courses.passed}` : ` — ${dict.courses.retry}`}
             </div>
           )}
         </DialogFooter>

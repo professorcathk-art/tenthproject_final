@@ -9,26 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
-import {
-  PRODUCT_TYPES,
-  PROJECT_STAGES,
-  AI_TOOLS,
-  type ProductType,
-  type ProjectStage,
-  type AITool,
-} from "@/types";
-
-const STEPS = [
-  "Describe your idea",
-  "Product type",
-  "Current stage",
-  "AI tool",
-  "Upload context",
-  "AI brief",
-  "First prompt",
-];
+import { PRODUCT_TYPES, PROJECT_STAGES, AI_TOOLS, type ProductType, type ProjectStage, type AITool } from "@/types";
+import { useI18n } from "@/components/i18n/provider";
 
 export function NewProjectWizard() {
+  const { dict } = useI18n();
+  const w = dict.wizard;
+  const STEPS = w.steps;
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
@@ -144,7 +131,7 @@ export function NewProjectWizard() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-slate-600">
-            Step {step + 1} of {STEPS.length}
+            {w.stepOf.replace("{n}", String(step + 1)).replace("{total}", String(STEPS.length))}
           </span>
           <span className="text-sm text-slate-500">{STEPS[step]}</span>
         </div>
@@ -154,53 +141,45 @@ export function NewProjectWizard() {
       <Card className="border-slate-200">
         <CardHeader>
           <CardTitle>{STEPS[step]}</CardTitle>
-          <CardDescription>
-            {step === 0 && "Tell us about your product idea in plain language."}
-            {step === 1 && "What kind of thing are you building?"}
-            {step === 2 && "Where are you in the journey?"}
-            {step === 3 && "Which AI tool are you using to build?"}
-            {step === 4 && "Share anything you already have — screenshots, URLs, docs."}
-            {step === 5 && "Review your AI-generated project brief."}
-            {step === 6 && "Copy your first prompt and start building!"}
-          </CardDescription>
+          <CardDescription>{w.hints[step]}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {step === 0 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Project name</Label>
+                <Label htmlFor="name">{w.name}</Label>
                 <Input
                   id="name"
-                  placeholder="e.g. My Fitness Tracker"
+                  placeholder={w.namePh}
                   value={form.name}
                   onChange={(e) => updateForm("name", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">What do you want to build?</Label>
+                <Label htmlFor="description">{w.what}</Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe your idea in a sentence or two..."
+                  placeholder={w.whatPh}
                   rows={3}
                   value={form.description}
                   onChange={(e) => updateForm("description", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="goal">What&apos;s the end goal?</Label>
+                <Label htmlFor="goal">{w.goal}</Label>
                 <Textarea
                   id="goal"
-                  placeholder="What should users be able to do when it's done?"
+                  placeholder={w.goalPh}
                   rows={2}
                   value={form.goal}
                   onChange={(e) => updateForm("goal", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="audience">Who is it for?</Label>
+                <Label htmlFor="audience">{w.audience}</Label>
                 <Input
                   id="audience"
-                  placeholder="e.g. Busy professionals who want to track workouts"
+                  placeholder={w.audiencePh}
                   value={form.target_audience}
                   onChange={(e) => updateForm("target_audience", e.target.value)}
                 />
@@ -221,7 +200,7 @@ export function NewProjectWizard() {
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  {type.label}
+                  {w.productTypes[type.value]}
                 </button>
               ))}
             </div>
@@ -240,8 +219,8 @@ export function NewProjectWizard() {
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <div className="font-medium">{stage.label}</div>
-                  <div className="text-sm text-slate-500 mt-1">{stage.description}</div>
+                  <div className="font-medium">{w.stages[stage.value].label}</div>
+                  <div className="text-sm text-slate-500 mt-1">{w.stages[stage.value].desc}</div>
                 </button>
               ))}
             </div>
@@ -269,7 +248,7 @@ export function NewProjectWizard() {
           {step === 4 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="website">Website URL (if you have one)</Label>
+                <Label htmlFor="website">{w.website}</Label>
                 <Input
                   id="website"
                   type="url"
@@ -279,7 +258,7 @@ export function NewProjectWizard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="github">GitHub repo URL</Label>
+                <Label htmlFor="github">{w.github}</Label>
                 <Input
                   id="github"
                   type="url"
@@ -289,17 +268,17 @@ export function NewProjectWizard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes / PRD / extra context</Label>
+                <Label htmlFor="notes">{w.notes}</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Paste any notes, requirements, or context here..."
+                  placeholder={w.notesPh}
                   rows={4}
                   value={form.notes}
                   onChange={(e) => updateForm("notes", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Screenshots or files</Label>
+                <Label>{w.files}</Label>
                 <Input
                   type="file"
                   multiple
@@ -307,7 +286,7 @@ export function NewProjectWizard() {
                   onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
                 />
                 {files.length > 0 && (
-                  <p className="text-sm text-slate-500">{files.length} file(s) selected</p>
+                  <p className="text-sm text-slate-500">{files.length} {w.filesSelected}</p>
                 )}
               </div>
             </div>
@@ -316,16 +295,16 @@ export function NewProjectWizard() {
           {step === 5 && analysis && (
             <div className="space-y-4">
               <div className="rounded-lg bg-slate-50 p-4">
-                <h3 className="font-medium mb-2">Summary</h3>
+                <h3 className="font-medium mb-2">{w.summary}</h3>
                 <p className="text-sm text-slate-600">{String(analysis.projectSummary)}</p>
               </div>
               <div className="rounded-lg bg-slate-50 p-4">
-                <h3 className="font-medium mb-2">Next action</h3>
+                <h3 className="font-medium mb-2">{w.nextAction}</h3>
                 <p className="text-sm text-slate-600">{String(analysis.nextAction)}</p>
               </div>
               {Array.isArray(analysis.phases) && (
                 <div>
-                  <h3 className="font-medium mb-2">Phases</h3>
+                  <h3 className="font-medium mb-2">{w.phases}</h3>
                   <div className="space-y-2">
                     {(analysis.phases as Array<{ name: string; description: string }>).map((p, i) => (
                       <div key={i} className="flex items-start gap-3 text-sm">
@@ -343,8 +322,7 @@ export function NewProjectWizard() {
               )}
               {Array.isArray(analysis.uatItems) && (
                 <p className="text-sm text-slate-500">
-                  {(analysis.uatItems as unknown[]).length} UAT items ·{" "}
-                  {Array.isArray(analysis.tasks) ? (analysis.tasks as unknown[]).length : 0} tasks generated
+                  {(analysis.uatItems as unknown[]).length} {w.generated.replace("{tasks}", String(Array.isArray(analysis.tasks) ? (analysis.tasks as unknown[]).length : 0))}
                 </p>
               )}
             </div>
@@ -354,7 +332,7 @@ export function NewProjectWizard() {
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-green-700 bg-green-50 rounded-lg p-3 text-sm">
                 <Check className="h-4 w-4" />
-                Your project is ready! Copy the prompt below into {form.selected_tool}.
+                {w.ready} {form.selected_tool}.
               </div>
               <div className="relative">
                 <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-[32rem]">
@@ -365,7 +343,7 @@ export function NewProjectWizard() {
                   className="absolute top-2 right-2"
                   onClick={() => navigator.clipboard.writeText(promptText)}
                 >
-                  Copy
+                  {w.copy}
                 </Button>
               </div>
               <Button
@@ -373,31 +351,31 @@ export function NewProjectWizard() {
                 onClick={() => router.push(`/projects/${projectId}`)}
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                Go to project dashboard
+                {w.goDashboard}
               </Button>
             </div>
           )}
 
-          {step < 6 && (
+          {step < 5 && (
             <div className="flex justify-between pt-4 border-t">
               <Button variant="ghost" onClick={handleBack} disabled={step === 0 || analyzing}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
+                {w.back}
               </Button>
               <Button onClick={handleNext} disabled={!canProceed() || analyzing}>
                 {analyzing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Analyzing...
+                    {w.analyzing}
                   </>
                 ) : step === 4 ? (
                   <>
-                    Generate plan
+                    {w.generate}
                     <Sparkles className="h-4 w-4 ml-1" />
                   </>
                 ) : (
                   <>
-                    Continue
+                    {w.continue}
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </>
                 )}
@@ -409,10 +387,10 @@ export function NewProjectWizard() {
             <div className="flex justify-between pt-4 border-t">
               <Button variant="ghost" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
+                {w.back}
               </Button>
               <Button onClick={() => setStep(6)}>
-                View prompt
+                {w.viewPrompt}
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
