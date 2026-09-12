@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { getDict, getLocale } from "@/lib/i18n/server";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "使用條款",
+  description: "Tenth Project 網站、課程與顧問服務的使用條款。",
+  path: "/terms",
+});
 
 export default async function TermsPage() {
   const dict = await getDict();

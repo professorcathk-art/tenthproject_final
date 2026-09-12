@@ -1,5 +1,16 @@
+import type { Metadata } from "next";
 import { PUBLIC_CONTACT_EMAIL, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 import { getDict, getLocale } from "@/lib/i18n/server";
+import { pageMetadata } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = await getDict();
+  return pageMetadata({
+    title: dict.nav.about,
+    description: "Tenth Project 創辦團隊、企業 AI 方法與 Vibe Coding 學院介紹。",
+    path: "/about",
+  });
+}
 
 export default async function AboutPage() {
   const dict = await getDict();

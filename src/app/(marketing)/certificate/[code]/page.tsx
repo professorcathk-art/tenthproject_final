@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/lib/seo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Award } from "lucide-react";
@@ -6,6 +8,15 @@ import { getCertificateByCode } from "@/lib/db/platform-store";
 import { format } from "date-fns";
 import { zhTW, enUS } from "date-fns/locale";
 import { getDict, getLocale } from "@/lib/i18n/server";
+
+export async function generateMetadata({ params }: { params: Promise<{ code: string }> }): Promise<Metadata> {
+  const { code } = await params;
+  return pageMetadata({
+    title: `修業證明 ${code}`,
+    description: "Tenth Project 可公開驗證的課程修業證明。",
+    path: `/certificate/${code}`,
+  });
+}
 
 export default async function CertificatePage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;

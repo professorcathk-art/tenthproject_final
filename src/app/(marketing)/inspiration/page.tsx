@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import { CaseStudyGrid } from "@/components/inspiration/case-study-grid";
 import { getCaseStudyCards } from "@/lib/db/platform-store";
 import { ensureCasesSeeded } from "@/lib/seed/init";
 import { Lightbulb } from "lucide-react";
 import { getDict } from "@/lib/i18n/server";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 300;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = await getDict();
+  return pageMetadata({
+    title: dict.inspiration.title,
+    description: dict.inspiration.subtitle,
+    path: "/inspiration",
+    keywords: ["創業靈感庫", "AI SaaS", "案例研究"],
+  });
+}
 
 export default async function InspirationPage() {
   await ensureCasesSeeded();

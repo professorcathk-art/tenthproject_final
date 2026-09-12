@@ -425,6 +425,244 @@ export async function updateBug(bugId: string, projectId: string, updates: Parti
   return store.bugs[idx];
 }
 
+export async function createTask(
+  projectId: string,
+  data: { title: string; description?: string | null; priority?: Task["priority"] },
+) {
+  const now = new Date().toISOString();
+  const task: Task = {
+    id: uuidv4(),
+    project_id: projectId,
+    phase_id: null,
+    title: data.title.trim(),
+    description: data.description?.trim() || null,
+    status: "todo",
+    priority: data.priority ?? "medium",
+    source: "manual",
+    created_at: now,
+    updated_at: now,
+  };
+  if (isSupabaseConfigured()) {
+    const { data: created, error } = await createServiceClient().from("tasks").insert(task).select().single();
+    if (error) throw new Error(error.message);
+    await logActivity(projectId, "task_created", `Task "${task.title}" added`);
+    return created as Task;
+  }
+  const store = await ensureStore();
+  store.tasks.push(task);
+  await saveStore(store);
+  await logActivity(projectId, "task_created", `Task "${task.title}" added`);
+  return task;
+}
+
+export async function deleteTask(taskId: string, projectId: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("tasks").delete().eq("id", taskId).eq("project_id", projectId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensureStore();
+  store.tasks = store.tasks.filter((item) => !(item.id === taskId && item.project_id === projectId));
+  await saveStore(store);
+}
+
+export async function createUATItem(
+  projectId: string,
+  data: { title: string; expected_result?: string | null; severity?: UATItem["severity"] },
+) {
+  const now = new Date().toISOString();
+  const item: UATItem = {
+    id: uuidv4(),
+    project_id: projectId,
+    task_id: null,
+    phase_id: null,
+    title: data.title.trim(),
+    expected_result: data.expected_result?.trim() || null,
+    actual_result: null,
+    status: "not_started",
+    severity: data.severity ?? "medium",
+    remark: null,
+    evidence_url: null,
+    owner: null,
+    priority: "medium",
+    created_at: now,
+    updated_at: now,
+  };
+  if (isSupabaseConfigured()) {
+    const { data: created, error } = await createServiceClient().from("uat_items").insert(item).select().single();
+    if (error) throw new Error(error.message);
+    await logActivity(projectId, "uat_created", `UAT "${item.title}" added`);
+    return created as UATItem;
+  }
+  const store = await ensureStore();
+  store.uatItems.push(item);
+  await saveStore(store);
+  await logActivity(projectId, "uat_created", `UAT "${item.title}" added`);
+  return item;
+}
+
+export async function deleteUATItem(uatId: string, projectId: string) {
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    await supabase.from("uat_remarks").delete().eq("uat_item_id", uatId);
+    const { error } = await supabase.from("uat_items").delete().eq("id", uatId).eq("project_id", projectId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensureStore();
+  store.uatRemarks = store.uatRemarks.filter((item) => item.uat_item_id !== uatId);
+  store.uatItems = store.uatItems.filter((item) => !(item.id === uatId && item.project_id === projectId));
+  await saveStore(store);
+}
+
+export async function createBug(
+  projectId: string,
+  data: { title: string; description?: string | null; severity?: Bug["severity"] },
+) {
+  const now = new Date().toISOString();
+  const bug: Bug = {
+    id: uuidv4(),
+    project_id: projectId,
+    linked_uat_item_id: null,
+    title: data.title.trim(),
+    description: data.description?.trim() || null,
+    severity: data.severity ?? "medium",
+    status: "open",
+    fix_note: null,
+    created_at: now,
+    updated_at: now,
+  };
+  if (isSupabaseConfigured()) {
+    const { data: created, error } = await createServiceClient().from("bugs").insert(bug).select().single();
+    if (error) throw new Error(error.message);
+    await logActivity(projectId, "bug_created", `Bug "${bug.title}" added`);
+    return created as Bug;
+  }
+  const store = await ensureStore();
+  store.bugs.push(bug);
+  await saveStore(store);
+  await logActivity(projectId, "bug_created", `Bug "${bug.title}" added`);
+  return bug;
+}
+
+export async function deleteBug(bugId: string, projectId: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("bugs").delete().eq("id", bugId).eq("project_id", projectId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensureStore();
+  store.bugs = store.bugs.filter((item) => !(item.id === bugId && item.project_id === projectId));
+  await saveStore(store);
+}
+
+export async function createEnhancement(
+  projectId: string,
+  data: { title: string; description?: string | null; priority?: Enhancement["priority"] },
+) {
+  const item: Enhancement = {
+    id: uuidv4(),
+    project_id: projectId,
+    title: data.title.trim(),
+    description: data.description?.trim() || null,
+    priority: data.priority ?? "medium",
+    status: "suggested",
+    created_at: new Date().toISOString(),
+  };
+  if (isSupabaseConfigured()) {
+    const { data: created, error } = await createServiceClient().from("enhancements").insert(item).select().single();
+    if (error) throw new Error(error.message);
+    return created as Enhancement;
+  }
+  const store = await ensureStore();
+  store.enhancements.push(item);
+  await saveStore(store);
+  return item;
+}
+
+export async function updateEnhancement(id: string, projectId: string, updates: Partial<Enhancement>) {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await createServiceClient()
+      .from("enhancements")
+      .update(updates)
+      .eq("id", id)
+      .eq("project_id", projectId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as Enhancement;
+  }
+  const store = await ensureStore();
+  const idx = store.enhancements.findIndex((item) => item.id === id && item.project_id === projectId);
+  if (idx === -1) throw new Error("Enhancement not found");
+  store.enhancements[idx] = { ...store.enhancements[idx], ...updates };
+  await saveStore(store);
+  return store.enhancements[idx];
+}
+
+export async function deleteEnhancement(id: string, projectId: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("enhancements").delete().eq("id", id).eq("project_id", projectId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensureStore();
+  store.enhancements = store.enhancements.filter((item) => !(item.id === id && item.project_id === projectId));
+  await saveStore(store);
+}
+
+export async function createPhase(projectId: string, data: { name: string; description?: string | null }) {
+  const phase: ProjectPhase = {
+    id: uuidv4(),
+    project_id: projectId,
+    name: data.name.trim(),
+    description: data.description?.trim() || null,
+    order: 99,
+    status: "pending",
+    created_at: new Date().toISOString(),
+  };
+  if (isSupabaseConfigured()) {
+    const { data: created, error } = await createServiceClient().from("project_phases").insert(phase).select().single();
+    if (error) throw new Error(error.message);
+    return created as ProjectPhase;
+  }
+  const store = await ensureStore();
+  store.phases.push(phase);
+  await saveStore(store);
+  return phase;
+}
+
+export async function updatePhase(id: string, projectId: string, updates: Partial<ProjectPhase>) {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await createServiceClient()
+      .from("project_phases")
+      .update(updates)
+      .eq("id", id)
+      .eq("project_id", projectId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as ProjectPhase;
+  }
+  const store = await ensureStore();
+  const idx = store.phases.findIndex((item) => item.id === id && item.project_id === projectId);
+  if (idx === -1) throw new Error("Phase not found");
+  store.phases[idx] = { ...store.phases[idx], ...updates };
+  await saveStore(store);
+  return store.phases[idx];
+}
+
+export async function deletePhase(id: string, projectId: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("project_phases").delete().eq("id", id).eq("project_id", projectId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensureStore();
+  store.phases = store.phases.filter((item) => !(item.id === id && item.project_id === projectId));
+  await saveStore(store);
+}
+
 export async function updateTask(taskId: string, projectId: string, updates: Partial<Task>) {
   const now = new Date().toISOString();
 

@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +10,17 @@ import { getCourseBySlug, getLessonProgress } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
 import { getDict } from "@/lib/i18n/server";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const course = await getCourseBySlug(slug);
+  if (!course) return {};
+  return pageMetadata({
+    title: course.title,
+    description: course.description || course.title,
+    path: `/courses/${course.slug}`,
+  });
+}
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   await ensurePlatformSeeded();

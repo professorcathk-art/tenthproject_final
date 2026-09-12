@@ -11,11 +11,14 @@ import {
   Globe,
   GitBranch,
   Loader2,
+  Pencil,
   Play,
+  Plus,
   RefreshCw,
   Sparkles,
   ListChecks,
   Lightbulb,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -51,6 +55,14 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const [websiteUrl, setWebsiteUrl] = useState(project.website_url ?? "");
   const [githubUrl, setGithubUrl] = useState(project.github_url ?? "");
   const [uatFilter, setUatFilter] = useState<string>("all");
+  const [taskDraft, setTaskDraft] = useState({ title: "", description: "" });
+  const [uatDraft, setUatDraft] = useState({ title: "", expected_result: "", severity: "medium" });
+  const [bugDraft, setBugDraft] = useState({ title: "", description: "", severity: "medium" });
+  const [enhDraft, setEnhDraft] = useState({ title: "", description: "" });
+  const [phaseDraft, setPhaseDraft] = useState({ name: "", description: "" });
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
 
   const tasks = project.tasks ?? [];
   const uatItems = project.uat_items ?? [];
@@ -170,6 +182,30 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
     await refreshProject();
   }
 
+  async function removeItem(action: string, payload: Record<string, unknown>) {
+    if (!window.confirm(locale === "zh" ? "確定刪除？此操作無法復原。" : "Delete this item? This cannot be undone.")) return;
+    await projectAction(action, payload);
+  }
+
+  async function projectAction(action: string, payload: Record<string, unknown>) {
+    const res = await fetch("/api/projects", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId: project.id, action, ...payload }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Update failed");
+    }
+    await refreshProject();
+  }
+
+  function startEdit(key: string, title: string, body = "") {
+    setEditing(key);
+    setEditTitle(title);
+    setEditBody(body);
+  }
+
   async function saveUrls() {
     await fetch("/api/projects", {
       method: "PATCH",
@@ -224,6 +260,17 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           </Link>
         </div>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{p.howToTitle}</CardTitle>
+          <CardDescription>{p.howToBody}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-slate-600">
+          <p>{p.nextSprintHint}</p>
+          <p>{p.runCheckHint}</p>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -320,6 +367,16 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                 <CardTitle className="text-base">{p.roadmap}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div className="space-y-2 rounded-lg border p-3">
+                  <Input placeholder={p.itemTitle} value={phaseDraft.name} onChange={(e) => setPhaseDraft({ ...phaseDraft, name: e.target.value })} />
+                  <Input placeholder={p.itemDesc} value={phaseDraft.description} onChange={(e) => setPhaseDraft({ ...phaseDraft, description: e.target.value })} />
+                  <Button size="sm" disabled={!phaseDraft.name.trim()} onClick={async () => {
+                    await projectAction("create_phase", { data: phaseDraft });
+                    setPhaseDraft({ name: "", description: "" });
+                  }}>
+                    <Plus className="mr-1 h-4 w-4" /> {p.addPhase}
+                  </Button>
+                </div>
                 {phases.length === 0 ? (
                   <p className="text-sm text-slate-500">{p.noPhases}</p>
                 ) : (
@@ -331,9 +388,33 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                       }`}>
                         {phase.status === "completed" ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                       </span>
-                      <div>
-                        <div className="font-medium text-sm">{phase.name}</div>
-                        <div className="text-xs text-slate-500">{phase.description}</div>
+                      <div className="flex-1">
+                        {editing === `phase:${phase.id}` ? (
+                          <div className="space-y-2">
+                            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                            <Input value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={async () => {
+                                await projectAction("update_phase", { phaseId: phase.id, data: { name: editTitle, description: editBody } });
+                                setEditing(null);
+                              }}>{p.save}</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="font-medium text-sm">{phase.name}</div>
+                            <div className="text-xs text-slate-500">{phase.description}</div>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => startEdit(`phase:${phase.id}`, phase.name, phase.description ?? "")}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => removeItem("delete_phase", { phaseId: phase.id })}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -348,13 +429,44 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <div className="space-y-2 rounded-lg border p-3">
+                  <Input placeholder={p.itemTitle} value={enhDraft.title} onChange={(e) => setEnhDraft({ ...enhDraft, title: e.target.value })} />
+                  <Input placeholder={p.itemDesc} value={enhDraft.description} onChange={(e) => setEnhDraft({ ...enhDraft, description: e.target.value })} />
+                  <Button size="sm" disabled={!enhDraft.title.trim()} onClick={async () => {
+                    await projectAction("create_enhancement", { data: enhDraft });
+                    setEnhDraft({ title: "", description: "" });
+                  }}>
+                    <Plus className="mr-1 h-4 w-4" /> {p.addEnhancement}
+                  </Button>
+                </div>
                 {enhancements.length === 0 ? (
                   <p className="text-sm text-slate-500">{p.noEnhancements}</p>
                 ) : (
-                  enhancements.slice(0, 5).map((e) => (
+                  enhancements.map((e) => (
                     <div key={e.id} className="rounded-lg border p-3 text-sm">
-                      <div className="font-medium">{e.title}</div>
-                      <div className="text-slate-500 text-xs mt-1">{e.description}</div>
+                      {editing === `enh:${e.id}` ? (
+                        <div className="space-y-2">
+                          <Input value={editTitle} onChange={(ev) => setEditTitle(ev.target.value)} />
+                          <Input value={editBody} onChange={(ev) => setEditBody(ev.target.value)} />
+                          <Button size="sm" onClick={async () => {
+                            await projectAction("update_enhancement", { enhancementId: e.id, data: { title: editTitle, description: editBody } });
+                            setEditing(null);
+                          }}>{p.save}</Button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="font-medium">{e.title}</div>
+                              <div className="text-slate-500 text-xs mt-1">{e.description}</div>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="ghost" onClick={() => startEdit(`enh:${e.id}`, e.title, e.description ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
+                              <Button size="sm" variant="ghost" onClick={() => removeItem("delete_enhancement", { enhancementId: e.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))
                 )}
@@ -383,27 +495,54 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
 
         <TabsContent value="tasks" className="mt-4">
           <Card>
-            <CardContent className="pt-6 space-y-2">
+            <CardContent className="pt-6 space-y-3">
+              <div className="space-y-2 rounded-lg border p-3">
+                <Input placeholder={p.itemTitle} value={taskDraft.title} onChange={(e) => setTaskDraft({ ...taskDraft, title: e.target.value })} />
+                <Textarea rows={2} placeholder={p.itemDesc} value={taskDraft.description} onChange={(e) => setTaskDraft({ ...taskDraft, description: e.target.value })} />
+                <Button size="sm" disabled={!taskDraft.title.trim()} onClick={async () => {
+                  await projectAction("create_task", { data: taskDraft });
+                  setTaskDraft({ title: "", description: "" });
+                }}>
+                  <Plus className="mr-1 h-4 w-4" /> {p.addTask}
+                </Button>
+              </div>
               {tasks.length === 0 ? (
                 <p className="text-sm text-slate-500 py-4 text-center">{p.noTasks}</p>
               ) : (
                 tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
-                    <div>
-                      <div className="font-medium text-sm">{task.title}</div>
-                      <div className="text-xs text-slate-500">{task.description}</div>
+                  <div key={task.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                    <div className="flex-1">
+                      {editing === `task:${task.id}` ? (
+                        <div className="space-y-2">
+                          <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                          <Textarea rows={2} value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                          <Button size="sm" onClick={async () => {
+                            await projectAction("update_task", { taskId: task.id, data: { title: editTitle, description: editBody } });
+                            setEditing(null);
+                          }}>{p.save}</Button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="font-medium text-sm">{task.title}</div>
+                          <div className="text-xs text-slate-500">{task.description}</div>
+                        </>
+                      )}
                     </div>
-                    <Select value={task.status} onValueChange={(v) => v && updateTaskStatus(task.id, v)}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todo">{p.todo}</SelectItem>
-                        <SelectItem value="in_progress">{p.inProgress}</SelectItem>
-                        <SelectItem value="done">{p.done}</SelectItem>
-                        <SelectItem value="blocked">{p.blocked}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-1">
+                      <Select value={task.status} onValueChange={(v) => v && updateTaskStatus(task.id, v)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="todo">{p.todo}</SelectItem>
+                          <SelectItem value="in_progress">{p.inProgress}</SelectItem>
+                          <SelectItem value="done">{p.done}</SelectItem>
+                          <SelectItem value="blocked">{p.blocked}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" onClick={() => startEdit(`task:${task.id}`, task.title, task.description ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => removeItem("delete_task", { taskId: task.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
                   </div>
                 ))
               )}
@@ -412,6 +551,29 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
         </TabsContent>
 
         <TabsContent value="uat" className="mt-4 space-y-4">
+          <Card>
+            <CardContent className="space-y-2 pt-4">
+              <Input placeholder={p.itemTitle} value={uatDraft.title} onChange={(e) => setUatDraft({ ...uatDraft, title: e.target.value })} />
+              <Textarea rows={2} placeholder={p.expectedResult} value={uatDraft.expected_result} onChange={(e) => setUatDraft({ ...uatDraft, expected_result: e.target.value })} />
+              <div className="flex flex-wrap gap-2">
+                <Select value={uatDraft.severity} onValueChange={(v) => v && setUatDraft({ ...uatDraft, severity: v })}>
+                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">low</SelectItem>
+                    <SelectItem value="medium">medium</SelectItem>
+                    <SelectItem value="high">high</SelectItem>
+                    <SelectItem value="critical">critical</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button size="sm" disabled={!uatDraft.title.trim()} onClick={async () => {
+                  await projectAction("create_uat", { data: uatDraft });
+                  setUatDraft({ title: "", expected_result: "", severity: "medium" });
+                }}>
+                  <Plus className="mr-1 h-4 w-4" /> {p.addUat}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           <div className="flex gap-2 flex-wrap">
             <Select value={uatFilter} onValueChange={(v) => v && setUatFilter(v)}>
               <SelectTrigger className="w-40">
@@ -434,26 +596,43 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                   <CardContent className="pt-4">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Link href={`/projects/${project.id}/uat/${item.id}`} className="font-medium text-sm hover:underline">
-                            {item.title}
-                          </Link>
-                          {statusBadge(item.status)}
-                          <Badge variant="outline" className="text-xs">{item.severity}</Badge>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">{p.expected}: {item.expected_result}</p>
-                        {item.remark && <p className="text-xs text-slate-600 mt-1 italic">&quot;{item.remark}&quot;</p>}
+                        {editing === `uat:${item.id}` ? (
+                          <div className="space-y-2">
+                            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                            <Textarea rows={2} value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                            <Button size="sm" onClick={async () => {
+                              await projectAction("update_uat", { uatId: item.id, data: { title: editTitle, expected_result: editBody } });
+                              setEditing(null);
+                            }}>{p.save}</Button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Link href={`/projects/${project.id}/uat/${item.id}`} className="font-medium text-sm hover:underline">
+                                {item.title}
+                              </Link>
+                              {statusBadge(item.status)}
+                              <Badge variant="outline" className="text-xs">{item.severity}</Badge>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">{p.expected}: {item.expected_result}</p>
+                            {item.remark && <p className="text-xs text-slate-600 mt-1 italic">&quot;{item.remark}&quot;</p>}
+                          </>
+                        )}
                       </div>
-                      <Select value={item.status} onValueChange={(v) => v && updateUATStatus(item.id, v as UATStatus)}>
-                        <SelectTrigger className="w-36">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {UAT_STATUSES.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>{p.uatStatuses[s.value]}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1">
+                        <Select value={item.status} onValueChange={(v) => v && updateUATStatus(item.id, v as UATStatus)}>
+                          <SelectTrigger className="w-36">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {UAT_STATUSES.map((s) => (
+                              <SelectItem key={s.value} value={s.value}>{p.uatStatuses[s.value]}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button size="sm" variant="ghost" onClick={() => startEdit(`uat:${item.id}`, item.title, item.expected_result ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => removeItem("delete_uat", { uatId: item.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -464,24 +643,58 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
 
         <TabsContent value="bugs" className="mt-4">
           <Card>
-            <CardContent className="pt-6 space-y-2">
+            <CardContent className="pt-6 space-y-3">
+              <div className="space-y-2 rounded-lg border p-3">
+                <Input placeholder={p.itemTitle} value={bugDraft.title} onChange={(e) => setBugDraft({ ...bugDraft, title: e.target.value })} />
+                <Textarea rows={2} placeholder={p.itemDesc} value={bugDraft.description} onChange={(e) => setBugDraft({ ...bugDraft, description: e.target.value })} />
+                <Button size="sm" disabled={!bugDraft.title.trim()} onClick={async () => {
+                  await projectAction("create_bug", { data: bugDraft });
+                  setBugDraft({ title: "", description: "", severity: "medium" });
+                }}>
+                  <Plus className="mr-1 h-4 w-4" /> {p.addBug}
+                </Button>
+              </div>
               {bugs.length === 0 ? (
                 <p className="text-sm text-slate-500 py-4 text-center">{p.noBugs}</p>
               ) : (
                 bugs.map((bug) => (
                   <div key={bug.id} className="flex items-start justify-between rounded-lg border p-3">
-                    <div className="flex items-start gap-2">
+                    <div className="flex items-start gap-2 flex-1">
                       <Bug className="h-4 w-4 text-red-500 mt-0.5" />
-                      <div>
-                        <div className="font-medium text-sm">{bug.title}</div>
-                        <div className="text-xs text-slate-500">{bug.description}</div>
+                      <div className="flex-1">
+                        {editing === `bug:${bug.id}` ? (
+                          <div className="space-y-2">
+                            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                            <Textarea rows={2} value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                            <Button size="sm" onClick={async () => {
+                              await projectAction("update_bug", { bugId: bug.id, data: { title: editTitle, description: editBody } });
+                              setEditing(null);
+                            }}>{p.save}</Button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="font-medium text-sm">{bug.title}</div>
+                            <div className="text-xs text-slate-500">{bug.description}</div>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={bug.status === "open" ? "destructive" : "secondary"}>{bug.status}</Badge>
+                    <div className="flex items-center gap-1">
+                      <Select value={bug.status} onValueChange={(v) => v && projectAction("update_bug", { bugId: bug.id, data: { status: v } })}>
+                        <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="open">open</SelectItem>
+                          <SelectItem value="in_progress">in_progress</SelectItem>
+                          <SelectItem value="fixed">fixed</SelectItem>
+                          <SelectItem value="verified">verified</SelectItem>
+                          <SelectItem value="closed">closed</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Button size="sm" variant="outline" onClick={() => generatePrompt("bug-fix")}>
                         {p.fixPrompt}
                       </Button>
+                      <Button size="sm" variant="ghost" onClick={() => startEdit(`bug:${bug.id}`, bug.title, bug.description ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => removeItem("delete_bug", { bugId: bug.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </div>
                   </div>
                 ))

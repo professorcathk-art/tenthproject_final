@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
@@ -10,6 +12,17 @@ import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { CaseArticle } from "@/components/inspiration/case-article";
 
 export const revalidate = 300;
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const study = await getCaseStudyBySlug(slug);
+  if (!study) return {};
+  return pageMetadata({
+    title: study.title,
+    description: study.summary,
+    path: `/inspiration/${study.slug}`,
+  });
+}
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
   await ensureCasesSeeded();

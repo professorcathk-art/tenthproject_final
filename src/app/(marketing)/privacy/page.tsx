@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { getDict, getLocale } from "@/lib/i18n/server";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "私隱政策",
+  description: "Tenth Project 如何收集、使用與保存個人資料。",
+  path: "/privacy",
+});
 
 export default async function PrivacyPage() {
   const dict = await getDict();

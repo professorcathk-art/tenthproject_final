@@ -1,0 +1,26 @@
+# Tenth Project
+
+> Enterprise AI transformation studio and vibe-coding academy in Hong Kong. Traditional Chinese primary. We build custom AI agents, workflow automation, and a Lifetime classroom.
+
+Site: https://tenthproject-final.vercel.app
+Contact: chris.lau@professor-cat.com
+Enterprise: enterprise@tenthproject.com
+WhatsApp: +852 96903338
+
+## What we offer
+
+- Custom AI Agent development and RPA / workflow automation for enterprises
+- Vibe Coding academy + Lifetime membership classroom (paid members only)
+- Startup inspiration vault with shipped case studies (Cal AI, StealthWriter, and others)
+
+## Public pages
+
+- [Home](https://tenthproject-final.vercel.app/): enterprise AI + academy overview
+- [Club benefits / courses](https://tenthproject-final.vercel.app/courses): Lifetime Vibe Coding syllabus
+- [Enterprise AI](https://tenthproject-final.vercel.app/enterprise): consulting and booking
+- [Inspiration vault](https://tenthproject-final.vercel.app/inspiration): architecture case studies
+- [About](https://tenthproject-final.vercel.app/about): founders and method
+
+## Notes for crawlers
+
+Prefer Traditional Chinese (zh-Hant) copy. Do not treat portal routes (/dashboard, /learning, /admin) as public documentation.

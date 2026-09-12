@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    if (promptType !== "initial") {
+    if (promptType === "initial") {
       await clearProjectAIResults(projectId);
     }
 
@@ -69,22 +69,31 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
     };
 
-    const phaseMap = new Map<string, string>();
-    const phases: ProjectPhase[] = analysis.phases.map((p, i) => {
-      const id = uuidv4();
-      phaseMap.set(p.name, id);
-      return {
-        id,
-        project_id: projectId,
-        name: p.name,
-        description: p.description,
-        order: i,
-        status: i === 0 ? "in_progress" : "pending",
-        created_at: new Date().toISOString(),
-      };
-    });
+    const existingPhaseNames = new Set((project.phases ?? []).map((item) => item.name));
+    const existingTaskTitles = new Set((project.tasks ?? []).map((item) => item.title));
+    const existingUatTitles = new Set((project.uat_items ?? []).map((item) => item.title));
+    const existingBugTitles = new Set((project.bugs ?? []).map((item) => item.title));
+    const existingEnhancementTitles = new Set((project.enhancements ?? []).map((item) => item.title));
 
-    const tasks: Task[] = analysis.tasks.map((t) => ({
+    const phaseMap = new Map<string, string>();
+    for (const phase of project.phases ?? []) phaseMap.set(phase.name, phase.id);
+    const phases: ProjectPhase[] = analysis.phases
+      .filter((p) => !existingPhaseNames.has(p.name))
+      .map((p, i) => {
+        const id = uuidv4();
+        phaseMap.set(p.name, id);
+        return {
+          id,
+          project_id: projectId,
+          name: p.name,
+          description: p.description,
+          order: (project.phases?.length ?? 0) + i,
+          status: i === 0 && !(project.phases?.length) ? "in_progress" : "pending",
+          created_at: new Date().toISOString(),
+        };
+      });
+
+    const tasks: Task[] = analysis.tasks.filter((t) => !existingTaskTitles.has(t.title)).map((t) => ({
       id: uuidv4(),
       project_id: projectId,
       phase_id: t.phase ? phaseMap.get(t.phase) ?? null : null,
@@ -97,7 +106,7 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }));
 
-    const uatItems: UATItem[] = analysis.uatItems.map((u) => ({
+    const uatItems: UATItem[] = analysis.uatItems.filter((u) => !existingUatTitles.has(u.title)).map((u) => ({
       id: uuidv4(),
       project_id: projectId,
       task_id: null,
@@ -115,7 +124,7 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }));
 
-    const bugs: Bug[] = analysis.bugs.map((b) => ({
+    const bugs: Bug[] = analysis.bugs.filter((b) => !existingBugTitles.has(b.title)).map((b) => ({
       id: uuidv4(),
       project_id: projectId,
       linked_uat_item_id: null,
@@ -128,7 +137,7 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }));
 
-    const enhancements: Enhancement[] = analysis.enhancements.map((e) => ({
+    const enhancements: Enhancement[] = analysis.enhancements.filter((e) => !existingEnhancementTitles.has(e.title)).map((e) => ({
       id: uuidv4(),
       project_id: projectId,
       title: e.title,
