@@ -4,7 +4,7 @@ import { MarketingShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, ArrowLeft, Award, Lock } from "lucide-react";
+import { CheckCircle2, Circle, ArrowLeft, Lock } from "lucide-react";
 import { getCourseBySlug, getLessonProgress } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
@@ -37,12 +37,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         <h1 className="text-3xl font-semibold tracking-tight mt-1">{course.title}</h1>
         <p className="text-slate-600 mt-3 leading-relaxed">{course.description}</p>
         <div className="flex flex-wrap gap-2 mt-4">
-          <Badge>{course.level}</Badge>
           <Badge variant="outline">{lessons.length} {dict.courses.lessons}</Badge>
-        </div>
-        <div className="mt-4 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-          <Award className="h-4 w-4 mt-0.5 shrink-0" />
-          {dict.courses.certBadge}
         </div>
 
         {isAuthenticated ? (
@@ -53,9 +48,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             </div>
             <Progress value={progressPct} className="h-2" />
           </div>
-        ) : (
-          <p className="mt-6 text-sm text-slate-500">{dict.courses.guestHint}</p>
-        )}
+        ) : null}
 
         <div className="mt-8 space-y-2">
           {lessons.map((lesson, i) => {

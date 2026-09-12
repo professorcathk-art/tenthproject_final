@@ -24,22 +24,22 @@ export default async function McpGuidePage() {
   return (
     <MarketingShell>
       <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-medium text-slate-700 mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-sm font-medium text-slate-600 mb-6">
           <Plug className="h-4 w-4" /> MCP
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">{dict.mcpPage.title}</h1>
-        <p className="mt-4 text-lg text-slate-600 leading-relaxed max-w-2xl">{dict.mcpPage.subtitle}</p>
+        <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] text-slate-950 dark:text-white">{dict.mcpPage.title}</h1>
+        <p className="mt-4 text-lg text-slate-500 leading-relaxed max-w-2xl">{dict.mcpPage.subtitle}</p>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h2 className="font-semibold text-slate-900">{dict.mcpPage.whyTitle}</h2>
-          <p className="text-sm text-slate-600 mt-2 leading-relaxed">{dict.mcpPage.whyBody}</p>
+        <div className="mt-8 rounded-2xl glass-panel p-6">
+          <h2 className="font-semibold">{dict.mcpPage.whyTitle}</h2>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">{dict.mcpPage.whyBody}</p>
         </div>
 
         <ol className="mt-10 space-y-4">
           {steps.map((s) => {
             const Icon = s.icon;
             return (
-              <li key={s.title} className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-5">
+              <li key={s.title} className="flex gap-4 rounded-2xl glass-panel p-5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white">
                   <Icon className="h-5 w-5" />
                 </span>

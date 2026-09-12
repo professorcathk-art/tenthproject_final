@@ -33,9 +33,9 @@ export const dictionaries = {
     },
     lang: { zh: "繁", en: "EN" },
     hero: {
-      badge: "✨ AI Agent 落地與 Vibe Coding 敏捷開發首選",
-      title: "用 AI 重新定義生產力：從企業流程自動化，到個人創作者的 Vibe Coding",
-      titleAccent: "",
+      badge: "AI Agent 落地 · Vibe Coding",
+      title: "用 AI 重新定義生產力",
+      titleAccent: "從企業自動化，到創作者的 Vibe Coding",
       subtitle:
         "我們熱愛科技，專注於解決問題、極致提升效率與創造實質價值。協助企業實現數位轉型，幫助個人將願景轉化為可盈利產品。",
       ctaPrimary: "預約企業免費諮詢",
@@ -548,9 +548,9 @@ export const dictionaries = {
     },
     lang: { zh: "繁", en: "EN" },
     hero: {
-      badge: "✨ The preferred partner for AI agent delivery and vibe-coding sprints",
-      title: "Redefine productivity with AI: from enterprise automation to creator vibe coding",
-      titleAccent: "",
+      badge: "AI agents · Vibe coding",
+      title: "Redefine productivity with AI",
+      titleAccent: "From enterprise automation to creator vibe coding",
       subtitle:
         "We love technology, and we stay obsessed with solving real problems, compounding efficiency, and creating measurable value. We help companies transform digitally — and help individuals turn a vision into a product that can earn.",
       ctaPrimary: "Book a free enterprise consult",

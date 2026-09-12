@@ -17,10 +17,10 @@ export default async function InspirationPage() {
           <div className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-sm font-medium text-slate-700 mb-4">
             <Lightbulb className="h-4 w-4" /> {dict.inspiration.badge}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-gradient">
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] text-slate-950 dark:text-white">
             {dict.inspiration.title}
           </h1>
-          <p className="text-slate-600 mt-2 max-w-2xl leading-relaxed">{dict.inspiration.subtitle}</p>
+          <p className="text-slate-500 mt-3 max-w-2xl leading-relaxed">{dict.inspiration.subtitle}</p>
         </div>
         <CaseStudyGrid studies={studies} />
       </div>

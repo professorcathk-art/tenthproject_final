@@ -160,7 +160,7 @@ export function BookingCalendar() {
           <Textarea required rows={5} placeholder={dict.enterprise.placeholder} value={form.project_description} onChange={(e) => update("project_description", e.target.value)} />
         </div>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <Button type="submit" className="w-full h-11 font-semibold shadow-[0_0_20px_rgba(59,130,246,0.25)]" disabled={loading || services.length === 0}>
+        <Button type="submit" className="w-full h-11 rounded-full font-semibold" disabled={loading || services.length === 0}>
           {loading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {dict.enterprise.submitting}</> : dict.enterprise.submit}
         </Button>
       </form>
@@ -186,7 +186,7 @@ export function BookingCalendar() {
                 className={cn(
                   "rounded-xl border px-1.5 py-2 text-center text-xs transition-all",
                   active
-                    ? "border-slate-900 bg-slate-900 text-white shadow-[0_0_16px_rgba(59,130,246,0.3)]"
+                    ? "border-slate-900 bg-slate-900 text-white"
                     : "border-slate-200 bg-white/70 hover:border-slate-300",
                   disabled && "opacity-40"
                 )}

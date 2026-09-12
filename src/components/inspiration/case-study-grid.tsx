@@ -37,7 +37,7 @@ export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
                 onClick={() => setFilter(value)}
                 className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${
                   active
-                    ? "border-slate-900 bg-slate-900 text-white shadow-[0_0_16px_rgba(59,130,246,0.28)]"
+                    ? "border-slate-900 bg-slate-900 text-white"
                     : "border-slate-200 bg-white/70 text-slate-600 hover:border-slate-300"
                 }`}
               >

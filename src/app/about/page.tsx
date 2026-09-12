@@ -11,7 +11,7 @@ export default async function AboutPage() {
     <MarketingShell>
       <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 space-y-6 text-slate-700 leading-relaxed [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-slate-900 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-slate-900 [&_h2]:mt-8 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2">
         <p className="text-sm text-slate-500">{dict.nav.about}</p>
-        <h1 className="text-3xl font-semibold tracking-tight mt-2">
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.035em] mt-2">
           {zh ? "關於 Tenth Project" : "About Tenth Project"}
         </h1>
         {zh ? (

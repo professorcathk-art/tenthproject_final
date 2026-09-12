@@ -7,10 +7,9 @@ export const FLAGSHIP_SLUG = "ai-vibecoding";
 export const SEED_COURSES: Course[] = [
   {
     id: FLAGSHIP_COURSE_ID,
-    title: "Tenth Project Vibe Coding 課程 + 社群限時 Lifetime Plan",
+    title: "Tenth Project Vibe Coding 課程+社群限時Lifetime Plan",
     slug: FLAGSHIP_SLUG,
-    description:
-      "項目導向學習（PBL）× AI 技術。Felix Zhu 與 Chris Lau 親授，21 天內從零打造可盈利海外工具站（復刻 StealthWriter，含 Stripe）。10 小時必修 + 六大專題 Workshop，完成測驗即可取得可公開驗證證書。",
+    description: "項目導向學習 × AI技術，從零打造可盈利海外工具站",
     cover_image: null,
     level: "beginner",
     duration_hours: 24,
@@ -24,24 +23,13 @@ const modules: Omit<Lesson, "id" | "course_id" | "created_at">[] = [
     title: "第1課：需求挖掘 + 產品設計",
     order_index: 0,
     video_url: null,
-    content_md: `# Module 1：Vibe Coding 思維重構
+    content_md: `# 第1課：需求挖掘 + 產品設計
 
-Vibe Coding 不是「叫 AI 寫幾行 code」，而是用清楚的產品意圖、可測試的範圍，以及可複製的開發節奏，把產品做出來。
+**核心目標：**明確目標受眾痛點和商業邏輯
 
-## 這一課你會學會
-- 用一句話定義產品目標與完成樣貌
-- 安裝並設定 Cursor、Lovable
-- 用小步衝刺取代一次生成整份專案
-- 分辨什麼該交給 AI、什麼必須由你驗收
-
-## 實作節奏
-1. 寫下目標使用者與核心痛點
-2. 定義 MVP：只做能驗證需求的最小功能
-3. 在 Cursor 裡用 Chat 規劃、用 Inline Edit 改檔
-4. 每一輪改動後手動走一次主要路徑
-
-## 導師觀點
-Felix Zhu（前阿里技術專家）強調：先有架構直覺，再讓工具加速。不要把對話當版本控制——路線圖與 UAT 才是進度來源。
+- 使用 AI 挖掘 + 市場驗證方法
+- 設計定價模型（訂閱制/積分制/一次性付費）
+- 定義 MVP：最小可行功能
 `,
     quiz_data: [
       {
@@ -53,24 +41,29 @@ Felix Zhu（前阿里技術專家）強調：先有架構直覺，再讓工具�
     ],
   },
   {
-    title: "第2課：MVP 構建 — Humanizer 及用戶體系",
+    title: "第2課：MVP 構建 - Humanizer 及用戶體系",
     order_index: 1,
     video_url: null,
-    content_md: `# Module 2：Prompt 工程與 Master Prompt
+    content_md: `# 第2課：MVP 構建 - Humanizer 及用戶體系
 
-好的提示詞像一份可執行的專案簡報，而不是一句願望。
+- 理解從 MVP 出發構建 LLM 應用的核心思路
+- 掌握 LLM Wrapper 基礎封裝與 Prompt Engineering 技巧
+- 掌握用戶註冊/登錄系統的構建與 Supabase 集成
 
-## Master Prompt 應包含
-- 產品願景與目標使用者
-- 技術棧與檔案結構
-- 本衝刺範圍（做什麼／不做什麼）
-- 驗收標準（Acceptance Criteria）
-- 已知限制與風險
+## 核心內容
 
-## 實戰練習
-對齊 StealthWriter 類 LLM Wrapper：先生成，再 Humanize，再以檢測器驗證。把這個流程寫進 Master Prompt，而不是每次重講一次。
+### 階段1：MVP 核心功能開發（60分鐘）
+- 實現 LLM Wrapper + Humanizer 功能
+- Prompt Engineering 講解與實踐
+- 使用 Cursor 快速搭建 Humanizer 頁面
+- 基於 Humanizer 延展 demo 主題
 
-Tenth Project 專案中心可自動產出可貼到 Cursor 的主提示詞——課堂會拆解為什麼這樣寫。
+### 階段2：用戶體系接入（60分鐘）
+- 在 Supabase 中創建用戶表
+- 使用 Supabase Auth 實現註冊/登錄
+- 集成 Sign Up/Sign In 頁面
+
+**產出：**一個基於 Supabase 的用戶管理系統 + LLM Wrapper
 `,
     quiz_data: [
       {
@@ -82,23 +75,21 @@ Tenth Project 專案中心可自動產出可貼到 Cursor 的主提示詞——�
     ],
   },
   {
-    title: "第3課：產品擴展 — 構建完整 Stealth Writer",
+    title: "第3課：產品擴展 - 構建完整 Stealth Writer",
     order_index: 2,
     video_url: null,
-    content_md: `# Module 3：Full-Stack 產品骨架
+    content_md: `# 第3課：產品擴展 - 構建完整 Stealth Writer
 
-沒有帳號、資料與 API，產品只是靜態頁。
+**教學目標：**掌握功能模塊化設計與 prompt 驅動開發思維
 
-## 本課模組
-- Supabase Auth：註冊／登入
-- 使用者資料表與權限思路
-- LLM Wrapper：把 Prompt 封成穩定 API
-- 用量、套餐與功能開關的資料模型
+| 模塊 | 功能描述 |
+| --- | --- |
+| 定價系統 | 基於使用量設計計費方案 |
+| 對話長度設定 | 控制上下文長度、重置上下文 |
+| AI 檢測器 | 判別 AI 生成或人工撰寫 |
+| Generator + Humanizer | 生成初稿→改寫→輸出人類風格 |
 
-## 對齊實戰產品
-課程以可收款的海外工具站為藍本（如 Humanizer／StealthWriter 結構）：生成 → 改寫 → 輸出，再接上使用者體系。
-
-產出：一個可登入的 LLM 應用骨架，而不是示範用的單頁。
+**產出：**功能完整的 Stealth Writer MVP
 `,
     quiz_data: [
       {
@@ -110,62 +101,26 @@ Tenth Project 專案中心可自動產出可貼到 Cursor 的主提示詞——�
     ],
   },
   {
-    title: "第4課：商業化閉環 — 支付與數據觀測",
+    title: "第4課：商業化閉環 - 支付與數據觀測",
     order_index: 3,
     video_url: null,
-    content_md: `# Module 4：AI Agent 與 MCP
+    content_md: `# 第4課：商業化閉環 - 支付與數據觀測
 
-Agent 與聊天機器人的分別：它會**自主使用工具**完成目標。
+**教學目標：**掌握產品商業化與數據分析的基本實現方式
 
-## 架構元件
-- LLM 決策層
-- Tool / Function schema
-- 短期記憶與專案脈絡
-- 行動迴圈（觀察 → 決策 → 呼叫 → 再觀察）
+| 模塊 | 教學重點 |
+| --- | --- |
+| Stripe 支付集成 | 接入 Stripe Checkout/Portal 及 Webhook |
+| 使用計費聯動 | 購買套餐→更新使用權限 |
+| GA 數據觀測 | 追踪用戶行為、事件埋點 |
 
-## MCP（Model Context Protocol）
-把 Cursor 接到 Tenth Project 之後，對話不再憑空開始：
-- \`get_active_roadmap\`：下一步做什麼
-- \`fetch_uat_status\`：哪些驗收還沒過
-- \`update_uat_item\`：把測試結果寫回
-- \`log_bug\`：建置失敗時登記錯誤
-
-課堂會帶你產生金鑰、寫 \`.cursor/mcp.json\`，並用真實專案走一次。
+**產出：**完整可用的 LLM 產品原型
 `,
     quiz_data: [
       {
         id: "m4q1",
-        question: "MCP 對 Vibe Coding 最直接的價值是？",
-        options: ["讓網站變漂亮", "讓 Cursor 讀取路線圖與 UAT，而不是把進度留在對話裡", "取代所有測試", "自動向投資人簡報"],
-        correctIndex: 1,
-      },
-    ],
-  },
-  {
-    title: "加值課：AI Agent、MCP 與 UAT 上線節奏",
-    order_index: 4,
-    video_url: null,
-    content_md: `# Module 5：驗收、上線、收款
-
-能跑的 demo 與能營運的產品，差在驗收與商業閉環。
-
-## 上線清單
-- UAT 逐項：預期結果 vs 實際結果
-- 部署到 Vercel，環境變數齊全
-- Stripe Checkout／Portal 與 Webhook
-- 套餐購買後更新使用權限
-- 基礎 GA／事件追蹤
-
-## 可複製方法論
-需求發現 → AI 開發 SOP → 收款部署 → 用同一套流程做第二個產品。
-
-完成本課測驗且通過全部單元，即可獲發 Tenth Project 可公開驗證畢業證書。
-`,
-    quiz_data: [
-      {
-        id: "m5q1",
-        question: "商業化閉環最少要打通哪一層？",
-        options: ["只做 Landing Page", "支付、權限與可觀測的使用數據", "每天發一篇社交媒體", "先融資再做產品"],
+        question: "第4課的商業化閉環包含哪一項？",
+        options: ["只做 Landing Page", "Stripe 支付集成、使用計費聯動與 GA 數據觀測", "每天發一篇社交媒體", "先融資再做產品"],
         correctIndex: 1,
       },
     ],

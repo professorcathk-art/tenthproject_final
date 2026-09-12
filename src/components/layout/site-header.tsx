@@ -75,7 +75,7 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex items-center gap-6 min-w-0">
           <Link href={variant === "app" ? "/dashboard" : "/"} className="flex items-center gap-2.5 font-semibold text-slate-900 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white shadow-[0_0_16px_rgba(59,130,246,0.35)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
               <Sparkles className="h-4 w-4" />
             </div>
             <span className="hidden sm:inline tracking-tight">Tenth Project</span>
@@ -118,7 +118,7 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
                   <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.learningHub}</Button>
                 </Link>
                 <Link href="/courses">
-                  <Button size="sm" className="font-semibold">{dict.nav.classroom}</Button>
+                  <Button size="sm" className="rounded-full font-semibold">{dict.nav.classroom}</Button>
                 </Link>
               </>
             ) : (
@@ -127,7 +127,7 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
                   <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.login}</Button>
                 </Link>
                 <Link href="/signup?redirect=/courses">
-                  <Button size="sm" className="font-semibold shadow-[0_0_18px_rgba(59,130,246,0.28)]">{dict.nav.signup}</Button>
+                  <Button size="sm" className="rounded-full font-semibold">{dict.nav.signup}</Button>
                 </Link>
               </>
             )

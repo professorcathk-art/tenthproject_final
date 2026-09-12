@@ -13,9 +13,8 @@ export async function ensurePlatformSeeded() {
   try {
     const existing = seeded ? await getCaseStudies(undefined, false) : [];
     const hasCanonical = CANONICAL_CASE_SLUGS.every((slug) => existing.some((c) => c.slug === slug));
-    if (seeded && hasCanonical) return;
-
     await seedPlatformData(SEED_COURSES, getSeedLessons());
+    if (seeded && hasCanonical) return;
     await deleteCourse(LEGACY_AGENT_COURSE_ID).catch(() => undefined);
 
     const latest = await getCaseStudies(undefined, false);

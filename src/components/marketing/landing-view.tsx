@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   Sparkles,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/motion/fade-in";
+import { Hero } from "@/components/marketing/hero";
 import { useI18n } from "@/components/i18n/provider";
 import { useState } from "react";
 
@@ -47,50 +47,13 @@ export function LandingView() {
 
   return (
     <>
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.12),_transparent_55%)] dark:bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex rounded-full p-[1px] badge-shine mb-6 shadow-[0_0_24px_rgba(59,130,246,0.25)]">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-1.5 text-sm font-medium text-slate-700 backdrop-blur-md dark:bg-slate-950/80 dark:text-slate-200">
-                <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-                {dict.hero.badge}
-              </div>
-            </div>
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="text-3xl sm:text-5xl lg:text-[3.15rem] font-semibold tracking-tight leading-[1.2] text-gradient"
-            >
-              {dict.hero.title}
-            </motion.h1>
-            <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">{dict.hero.subtitle}</p>
-            <p className="mt-5 text-[11px] uppercase tracking-[0.22em] text-slate-400">
-              Cursor · Claude · ChatGPT · Gemini · MCP
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/enterprise">
-                <Button size="lg" className="w-full sm:w-auto h-11 px-6 font-semibold shadow-[0_0_28px_rgba(59,130,246,0.35)]">
-                  {dict.hero.ctaPrimary} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/courses">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto h-11 px-6 font-semibold glass-panel">
-                  {dict.hero.ctaSecondary}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       <section className="py-20 border-t border-slate-200/70 dark:border-slate-800/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center tracking-tight">{dict.vision.title}</h2>
-            <p className="text-center text-slate-600 mt-3 mb-12 max-w-2xl mx-auto">{dict.vision.subtitle}</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.vision.title}</h2>
+            <p className="text-center text-slate-500 mt-3 mb-12 max-w-2xl mx-auto">{dict.vision.subtitle}</p>
           </FadeIn>
           <div className="grid gap-5 md:grid-cols-3">
             {vision.map((item, i) => {
@@ -114,8 +77,8 @@ export function LandingView() {
       <section className="py-20 bg-[#f7f7f5] dark:bg-transparent">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center tracking-tight">{dict.founders.title}</h2>
-            <p className="text-center text-slate-600 mt-3 mb-12 max-w-2xl mx-auto">{dict.founders.subtitle}</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.founders.title}</h2>
+            <p className="text-center text-slate-500 mt-3 mb-12 max-w-2xl mx-auto">{dict.founders.subtitle}</p>
           </FadeIn>
           <div className="grid gap-6 lg:grid-cols-2">
             {[
@@ -166,8 +129,8 @@ export function LandingView() {
       <section className="py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center tracking-tight">{dict.membership.title}</h2>
-            <p className="text-center text-slate-600 mt-3 mb-12 max-w-2xl mx-auto">{dict.membership.subtitle}</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.membership.title}</h2>
+            <p className="text-center text-slate-500 mt-3 mb-12 max-w-2xl mx-auto">{dict.membership.subtitle}</p>
           </FadeIn>
           <div className="grid gap-5 md:grid-cols-2">
             {membership.map((item, i) => {
@@ -193,8 +156,8 @@ export function LandingView() {
       <section className="py-20 bg-[#f7f7f5] border-t border-slate-200 dark:bg-transparent dark:border-slate-800/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center tracking-tight">{dict.preview.title}</h2>
-            <p className="text-center text-slate-600 mt-3 mb-10 max-w-2xl mx-auto">{dict.preview.subtitle}</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.preview.title}</h2>
+            <p className="text-center text-slate-500 mt-3 mb-10 max-w-2xl mx-auto">{dict.preview.subtitle}</p>
           </FadeIn>
           <div className="flex flex-wrap justify-center gap-2 mb-8">
             {previewTabs.map((t) => {
@@ -207,7 +170,7 @@ export function LandingView() {
                   onClick={() => setTab(t.id)}
                   className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                     active
-                      ? "border-slate-900 bg-slate-900 text-white shadow-[0_0_20px_rgba(59,130,246,0.28)]"
+                      ? "border-slate-900 bg-slate-900 text-white"
                       : "border-slate-200 bg-white/70 text-slate-600 hover:border-slate-300"
                   }`}
                 >
@@ -247,7 +210,7 @@ export function LandingView() {
           </FadeIn>
           <div className="mt-8 text-center">
             <Link href="/login?redirect=/projects/new">
-              <Button size="lg" variant="outline" className="h-11 px-6 font-semibold">
+              <Button size="lg" variant="outline" className="h-11 px-6 rounded-full font-semibold">
                 {dict.preview.cta} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -267,7 +230,7 @@ export function LandingView() {
             ))}
           </div>
           <Link href="/enterprise">
-            <Button size="lg" variant="secondary" className="h-11 px-6 font-semibold">
+            <Button size="lg" variant="secondary" className="h-11 px-6 rounded-full font-semibold">
               {dict.ctaBand.button} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>

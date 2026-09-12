@@ -16,15 +16,15 @@ export default async function EnterprisePage() {
   return (
     <MarketingShell>
       <section className="relative overflow-hidden border-b border-slate-200/70 dark:border-slate-800/50">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.1),_transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 hero-canvas" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-sm font-medium text-slate-700 mb-5">
             <Building2 className="h-4 w-4" /> {dict.enterprise.badge}
           </div>
-          <h1 className="max-w-3xl text-3xl sm:text-5xl font-semibold tracking-tight leading-[1.2] text-gradient">
+          <h1 className="max-w-3xl text-3xl sm:text-5xl font-semibold tracking-[-0.035em] leading-[1.12] text-slate-950 dark:text-white">
             {dict.enterprise.title}
           </h1>
-          <p className="mt-5 max-w-2xl text-lg text-slate-600 leading-relaxed">{dict.enterprise.subtitle}</p>
+          <p className="mt-5 max-w-2xl text-lg text-slate-500 leading-relaxed">{dict.enterprise.subtitle}</p>
         </div>
       </section>
 

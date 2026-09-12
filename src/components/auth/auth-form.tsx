@@ -44,7 +44,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
 
   return (
     <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md border-slate-200 shadow-sm">
+      <Card className="w-full max-w-md glass-panel shadow-none">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
             <Sparkles className="h-6 w-6" />
