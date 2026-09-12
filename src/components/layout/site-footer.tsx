@@ -31,8 +31,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold text-slate-900 mb-3">{dict.footer.product}</p>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li><Link href="/#membership" className="hover:text-slate-900">{dict.nav.academyMembers}</Link></li>
-              <li><Link href="/courses" className="hover:text-slate-900">{dict.nav.academy}</Link></li>
+              <li><Link href="/courses" className="hover:text-slate-900">{dict.nav.academyMembers}</Link></li>
               <li><Link href="/inspiration" className="hover:text-slate-900">{dict.nav.inspiration}</Link></li>
               <li><Link href="/enterprise" className="hover:text-slate-900">{dict.nav.enterprise}</Link></li>
             </ul>

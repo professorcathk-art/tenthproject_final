@@ -16,7 +16,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
 
   const links = [
     { href: "/#about", label: dict.nav.about, icon: Users },
-    { href: "/#membership", label: dict.nav.academyMembers, icon: GraduationCap },
+    { href: "/courses", label: dict.nav.academyMembers, icon: GraduationCap },
     { href: "/inspiration", label: dict.nav.inspiration, icon: Lightbulb },
     { href: "/enterprise", label: dict.nav.enterprise, icon: Building2 },
   ];

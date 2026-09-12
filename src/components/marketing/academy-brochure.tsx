@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { FLAGSHIP_SLUG } from "@/lib/seed/platform-seed";
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl glass-panel p-6 sm:p-8 mb-6">
@@ -342,6 +345,25 @@ export function AcademyBrochure() {
           </div>
         </div>
       </Section>
+
+      <div className="rounded-2xl bg-slate-950 px-6 py-10 text-center text-white">
+        <p className="text-lg font-semibold">準備好加入 Lifetime 會員？</p>
+        <p className="mt-2 text-sm text-slate-300">課程大綱、工作坊與社群都在學院頁。登入後即可進入教室。</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link
+            href={`/courses/${FLAGSHIP_SLUG}`}
+            className="inline-flex h-11 items-center rounded-full bg-white px-5 text-sm font-semibold text-slate-950"
+          >
+            查看課程大綱
+          </Link>
+          <Link
+            href="/signup?redirect=/dashboard"
+            className="inline-flex h-11 items-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white"
+          >
+            加入 Lifetime 會員
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
