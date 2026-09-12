@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { requireAdmin } from "@/lib/auth/session";
 import { upsertCourse, upsertLesson, deleteCourse, deleteLesson } from "@/lib/db/platform-store";
-import type { Course, Lesson, QuizQuestion } from "@/types/platform";
+import { inferVideoType } from "@/lib/classroom/media";
+import type { Course, Lesson, LessonLink, LessonMaterial, QuizQuestion } from "@/types/platform";
 
 function toSlug(input: string) {
   const ascii = input
@@ -11,6 +12,33 @@ function toSlug(input: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return ascii.length >= 2 ? ascii : `c-${Date.now().toString(36)}`;
+}
+
+function parseLinks(raw: unknown): LessonLink[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => ({
+      title: String((item as LessonLink)?.title || "").trim(),
+      url: String((item as LessonLink)?.url || "").trim(),
+    }))
+    .filter((item) => item.url);
+}
+
+function parseMaterials(raw: unknown, lessonId: string): LessonMaterial[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      const row = item as Partial<LessonMaterial>;
+      return {
+        id: String(row.id || uuidv4()),
+        lesson_id: lessonId,
+        title: String(row.title || row.file_name || "File"),
+        file_url: String(row.file_url || ""),
+        file_name: row.file_name ?? null,
+        created_at: row.created_at || new Date().toISOString(),
+      };
+    })
+    .filter((item) => item.file_url);
 }
 
 function parseQuiz(raw: unknown): QuizQuestion[] {
@@ -55,13 +83,18 @@ export async function PATCH(request: NextRequest) {
     await requireAdmin();
     const body = await request.json();
     if (body.kind === "lesson") {
+      const id = body.id || uuidv4();
       const lesson: Lesson = {
-        id: body.id || uuidv4(),
+        id,
         course_id: body.course_id,
         title: String(body.title || "").trim(),
         order_index: Number(body.order_index) || 0,
         video_url: body.video_url || null,
+        video_type: inferVideoType(body.video_url, body.video_type),
         content_md: body.content_md || "",
+        html_content: body.html_content ?? body.content_md ?? "",
+        links: parseLinks(body.links),
+        materials: parseMaterials(body.materials, id),
         quiz_data: parseQuiz(body.quiz_data),
         created_at: body.created_at || new Date().toISOString(),
       };

@@ -3,6 +3,7 @@ import { LessonClient } from "@/components/courses/lesson-client";
 import { getLesson, getLessonProgress } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
+import { getMembershipAccess } from "@/lib/auth/membership";
 
 export default async function LessonPage({
   params,
@@ -25,6 +26,7 @@ export default async function LessonPage({
 
   const progress = user ? await getLessonProgress(user.id, course.id) : [];
   const isCompleted = progress.some((p) => p.lesson_id === lessonId && p.completed);
+  const access = user ? await getMembershipAccess(user.email, user.isAdmin) : { paid: false };
 
   return (
       <LessonClient
@@ -33,6 +35,7 @@ export default async function LessonPage({
         prevLesson={prevLesson}
         nextLesson={nextLesson}
         isCompleted={isCompleted}
+        paid={access.paid}
       />
   );
 }

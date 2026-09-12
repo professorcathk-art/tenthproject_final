@@ -36,6 +36,30 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    await requireAdmin();
+    const body = await request.json();
+    if (!body.id && !body.email) {
+      return NextResponse.json({ error: "Member id required" }, { status: 400 });
+    }
+    const member: Member = {
+      id: body.id || uuidv4(),
+      email: String(body.email).trim().toLowerCase(),
+      name: body.name || "Member",
+      plan: body.plan || "free",
+      status: body.status || "active",
+      notes: body.notes ?? null,
+      created_at: body.created_at || new Date().toISOString(),
+    };
+    await upsertMember(member);
+    return NextResponse.json({ member });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed";
+    return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     await requireAdmin();

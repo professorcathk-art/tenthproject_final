@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/i18n/provider";
-import type { CaseStudy, Course, EnterpriseEnquiry, Lesson, Member } from "@/types/platform";
+import { ClassroomEditor } from "@/components/admin/classroom-editor";
+import type { CaseStudy, Course, EnterpriseEnquiry, Member } from "@/types/platform";
 
 interface AdminDashboardProps {
   initialCaseStudies: CaseStudy[];
@@ -17,24 +18,6 @@ interface AdminDashboardProps {
   initialCourses: Course[];
   initialMembers: Member[];
 }
-
-const emptyCourse = {
-  title: "",
-  slug: "",
-  description: "",
-  level: "beginner",
-  duration_hours: "4",
-  cover_image: "",
-  published: true,
-};
-
-const emptyLesson = {
-  title: "",
-  order_index: "0",
-  video_url: "",
-  content_md: "",
-  quiz_data: "",
-};
 
 const emptyMember = {
   email: "",
@@ -56,9 +39,6 @@ export function AdminDashboard({
   const [enquiries, setEnquiries] = useState(initialEnquiries);
   const [courses, setCourses] = useState(initialCourses);
   const [members, setMembers] = useState(initialMembers);
-  const [selectedCourseId, setSelectedCourseId] = useState(initialCourses[0]?.id ?? "");
-  const [courseForm, setCourseForm] = useState(emptyCourse);
-  const [lessonForm, setLessonForm] = useState(emptyLesson);
   const [memberForm, setMemberForm] = useState(emptyMember);
   const [newStudy, setNewStudy] = useState({
     title: "",
@@ -68,95 +48,6 @@ export function AdminDashboard({
     tech_stack: "",
   });
   const [saving, setSaving] = useState(false);
-
-  const selected = courses.find((c) => c.id === selectedCourseId);
-
-  async function saveCourse() {
-    setSaving(true);
-    const res = await fetch("/api/admin/courses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: courseForm.title,
-        slug: courseForm.slug,
-        description: courseForm.description,
-        level: courseForm.level,
-        duration_hours: Number(courseForm.duration_hours) || 1,
-        cover_image: courseForm.cover_image || null,
-        published: courseForm.published,
-      }),
-    });
-    const data = await res.json();
-    if (data.course) {
-      setCourses((list) => [{ ...data.course, lessons: [] }, ...list]);
-      setSelectedCourseId(data.course.id);
-      setCourseForm(emptyCourse);
-    }
-    setSaving(false);
-  }
-
-  async function togglePublished(course: Course) {
-    const res = await fetch("/api/admin/courses", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "course", ...course, published: !course.published }),
-    });
-    const data = await res.json();
-    if (data.course) {
-      setCourses((list) => list.map((c) => (c.id === course.id ? { ...c, published: data.course.published } : c)));
-    }
-  }
-
-  async function removeCourse(id: string) {
-    if (!confirm(a.confirmDelete)) return;
-    await fetch("/api/admin/courses", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-    setCourses((list) => list.filter((c) => c.id !== id));
-    if (selectedCourseId === id) setSelectedCourseId("");
-  }
-
-  async function saveLesson() {
-    if (!selectedCourseId) return;
-    setSaving(true);
-    const res = await fetch("/api/admin/courses", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: "lesson",
-        course_id: selectedCourseId,
-        title: lessonForm.title,
-        order_index: Number(lessonForm.order_index) || 0,
-        video_url: lessonForm.video_url,
-        content_md: lessonForm.content_md,
-        quiz_data: lessonForm.quiz_data,
-      }),
-    });
-    const data = await res.json();
-    if (data.lesson) {
-      setCourses((list) =>
-        list.map((c) =>
-          c.id === selectedCourseId ? { ...c, lessons: [...(c.lessons ?? []), data.lesson as Lesson] } : c
-        )
-      );
-      setLessonForm(emptyLesson);
-    }
-    setSaving(false);
-  }
-
-  async function removeLesson(id: string) {
-    if (!confirm(a.confirmDelete)) return;
-    await fetch("/api/admin/courses", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "lesson", id }),
-    });
-    setCourses((list) =>
-      list.map((c) => ({ ...c, lessons: (c.lessons ?? []).filter((l) => l.id !== id) }))
-    );
-  }
 
   async function saveMember() {
     setSaving(true);
@@ -171,6 +62,19 @@ export function AdminDashboard({
       setMemberForm(emptyMember);
     }
     setSaving(false);
+  }
+
+  async function updateMember(member: Member, patch: Partial<Member>) {
+    const next = { ...member, ...patch };
+    const res = await fetch("/api/admin/members", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(next),
+    });
+    const data = await res.json();
+    if (data.member) {
+      setMembers((list) => list.map((item) => (item.id === member.id ? data.member : item)));
+    }
   }
 
   async function removeMember(id: string) {
@@ -207,6 +111,16 @@ export function AdminDashboard({
       body: JSON.stringify({ id, status }),
     });
     setEnquiries((e) => e.map((x) => (x.id === id ? { ...x, status: status as EnterpriseEnquiry["status"] } : x)));
+  }
+
+  async function removeEnquiry(id: string) {
+    if (!confirm(a.confirmDelete)) return;
+    await fetch("/api/admin/enquiries", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setEnquiries((list) => list.filter((item) => item.id !== id));
   }
 
   async function deleteStudy(id: string) {
@@ -272,110 +186,8 @@ export function AdminDashboard({
           <TabsTrigger value="enquiries">{a.leads}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="courses" className="mt-4 grid gap-4 lg:grid-cols-2">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{a.addCourse}</CardTitle>
-                <CardDescription>{a.coursesHint}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Input placeholder={a.titleField} value={courseForm.title} onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })} />
-                <Input placeholder={a.slug} value={courseForm.slug} onChange={(e) => setCourseForm({ ...courseForm, slug: e.target.value })} />
-                <Textarea placeholder={a.description} value={courseForm.description} onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })} rows={3} />
-                <div className="grid grid-cols-2 gap-2">
-                  <Select value={courseForm.level} onValueChange={(v) => v && setCourseForm({ ...courseForm, level: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">{a.beginner}</SelectItem>
-                      <SelectItem value="intermediate">{a.intermediate}</SelectItem>
-                      <SelectItem value="advanced">{a.advanced}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input type="number" min={1} placeholder={a.hours} value={courseForm.duration_hours} onChange={(e) => setCourseForm({ ...courseForm, duration_hours: e.target.value })} />
-                </div>
-                <Input placeholder={a.cover} value={courseForm.cover_image} onChange={(e) => setCourseForm({ ...courseForm, cover_image: e.target.value })} />
-                <Button onClick={saveCourse} disabled={!courseForm.title || saving}>{a.addCourse}</Button>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-2">
-              {courses.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setSelectedCourseId(c.id)}
-                  className={`w-full text-left rounded-xl border p-4 transition-colors ${
-                    selectedCourseId === c.id ? "border-slate-900 bg-white shadow-sm" : "border-slate-200 bg-white/60 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{c.title}</p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {c.slug} · {(c.lessons ?? []).length} {a.lessons}
-                      </p>
-                    </div>
-                    <Badge variant={c.published ? "default" : "secondary"}>{c.published ? a.published : a.draft}</Badge>
-                  </div>
-                  <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button size="sm" variant="outline" onClick={() => togglePublished(c)}>
-                      {c.published ? a.draft : a.published}
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => removeCourse(c.id)}>{a.delete}</Button>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{a.addLesson}</CardTitle>
-              <CardDescription>
-                {selected ? selected.title : a.emptyLessons}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {!selected ? (
-                <p className="text-sm text-slate-500">{a.emptyLessons}</p>
-              ) : (
-                <>
-                  <Input placeholder={a.titleField} value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input type="number" min={0} placeholder={a.order} value={lessonForm.order_index} onChange={(e) => setLessonForm({ ...lessonForm, order_index: e.target.value })} />
-                    <Input placeholder={a.video} value={lessonForm.video_url} onChange={(e) => setLessonForm({ ...lessonForm, video_url: e.target.value })} />
-                  </div>
-                  <Textarea placeholder={a.notes} value={lessonForm.content_md} onChange={(e) => setLessonForm({ ...lessonForm, content_md: e.target.value })} rows={8} />
-                  <Textarea placeholder={a.quizHint} value={lessonForm.quiz_data} onChange={(e) => setLessonForm({ ...lessonForm, quiz_data: e.target.value })} rows={5} className="font-mono text-xs" />
-                  <p className="text-xs text-slate-400">{a.quizJson}</p>
-                  <Button onClick={saveLesson} disabled={!lessonForm.title || saving}>{a.addLesson}</Button>
-                  <div className="pt-4 space-y-2 border-t">
-                    {(selected.lessons ?? []).length === 0 ? (
-                      <p className="text-sm text-slate-500">{a.emptyLessons}</p>
-                    ) : (
-                      (selected.lessons ?? [])
-                        .slice()
-                        .sort((x, y) => x.order_index - y.order_index)
-                        .map((l) => (
-                          <div key={l.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                            <div>
-                              <p className="font-medium">{l.order_index}. {l.title}</p>
-                              <p className="text-xs text-slate-500">
-                                {l.video_url ? "Video · " : ""}
-                                {l.quiz_data?.length ? `${a.quizJson.split(" ")[0]} · ` : ""}
-                                {(l.content_md || "").length} chars
-                              </p>
-                            </div>
-                            <Button size="sm" variant="ghost" onClick={() => removeLesson(l.id)}>{a.delete}</Button>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="courses">
+          <ClassroomEditor courses={courses} setCourses={setCourses} />
         </TabsContent>
 
         <TabsContent value="members" className="mt-4 space-y-4">
@@ -415,10 +227,26 @@ export function AdminDashboard({
                   <CardContent className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <p className="font-medium">{m.name} · {m.email}</p>
-                      <p className="text-sm text-slate-500">{m.plan} · {m.status}</p>
                       {m.notes ? <p className="text-xs text-slate-400 mt-1">{m.notes}</p> : null}
                     </div>
-                    <Button size="sm" variant="ghost" onClick={() => removeMember(m.id)}>{a.delete}</Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Select value={m.plan} onValueChange={(v) => v && updateMember(m, { plan: v as Member["plan"] })}>
+                        <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="free">{a.free}</SelectItem>
+                          <SelectItem value="academy">{a.academyPlan}</SelectItem>
+                          <SelectItem value="enterprise">{a.enterprisePlan}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={m.status} onValueChange={(v) => v && updateMember(m, { status: v as Member["status"] })}>
+                        <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">{a.active}</SelectItem>
+                          <SelectItem value="paused">{a.paused}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" onClick={() => removeMember(m.id)}>{a.delete}</Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -476,14 +304,17 @@ export function AdminDashboard({
                     <p className="text-sm text-slate-500">{e.email} · {e.service_type}</p>
                     <p className="text-xs text-slate-400 mt-1 line-clamp-2">{e.project_description}</p>
                   </div>
-                  <Select value={e.status} onValueChange={(v) => v && updateEnquiryStatus(e.id, v)}>
-                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">{a.pending}</SelectItem>
-                      <SelectItem value="contacted">{locale === "zh" ? "已聯絡" : "Contacted"}</SelectItem>
-                      <SelectItem value="closed">{locale === "zh" ? "已結束" : "Closed"}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Select value={e.status} onValueChange={(v) => v && updateEnquiryStatus(e.id, v)}>
+                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">{a.pending}</SelectItem>
+                        <SelectItem value="contacted">{locale === "zh" ? "已聯絡" : "Contacted"}</SelectItem>
+                        <SelectItem value="closed">{locale === "zh" ? "已結束" : "Closed"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" variant="ghost" onClick={() => removeEnquiry(e.id)}>{a.delete}</Button>
+                  </div>
                 </CardContent>
               </Card>
             ))

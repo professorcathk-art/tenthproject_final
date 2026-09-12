@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
+import { getMembershipAccess } from "@/lib/auth/membership";
 import { markLessonComplete, issueCertificate, getUserCertificate, getCourseBySlug } from "@/lib/db/platform-store";
 import { getLessonProgress } from "@/lib/db/platform-store";
 
@@ -20,6 +21,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    const access = await getMembershipAccess(user.email, user.isAdmin);
+    if (!access.paid) {
+      return NextResponse.json({ error: "Paid membership required" }, { status: 403 });
+    }
     const { lessonId, courseSlug, quizScore } = await request.json();
 
     await markLessonComplete(user.id, lessonId, quizScore);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AUTH_COOKIE, buildUser } from "@/lib/auth/session";
+import { ensureMemberRecord, getMembershipAccess } from "@/lib/auth/membership";
 
 export async function GET() {
   const { getSession } = await import("@/lib/auth/session");
@@ -7,11 +8,22 @@ export async function GET() {
   if (!session.isAuthenticated || !session.user) {
     return NextResponse.json({ user: null });
   }
+  let plan: "free" | "academy" | "enterprise" = session.user.isAdmin ? "enterprise" : "free";
+  let paid = session.user.isAdmin;
+  try {
+    const access = await getMembershipAccess(session.user.email, session.user.isAdmin);
+    plan = access.plan;
+    paid = access.paid;
+  } catch (error) {
+    console.error("getMembershipAccess:", error);
+  }
   return NextResponse.json({
     user: {
       email: session.user.email,
       name: session.user.name,
       isAdmin: session.user.isAdmin,
+      plan,
+      paid,
     },
   });
 }
@@ -28,7 +40,22 @@ export async function POST(request: NextRequest) {
   }
 
   const user = buildUser(email, name);
-  const response = NextResponse.json({ success: true, isAdmin: user.isAdmin });
+  let plan: "free" | "academy" | "enterprise" = user.isAdmin ? "enterprise" : "free";
+  let paid = user.isAdmin;
+  try {
+    const member = await ensureMemberRecord(user.email, user.name, user.isAdmin);
+    const access = await getMembershipAccess(user.email, user.isAdmin);
+    plan = member.plan;
+    paid = access.paid;
+  } catch (error) {
+    console.error("ensureMemberRecord:", error);
+  }
+  const response = NextResponse.json({
+    success: true,
+    isAdmin: user.isAdmin,
+    plan,
+    paid,
+  });
   response.cookies.set(
     AUTH_COOKIE,
     JSON.stringify({ email: user.email, name: user.name }),

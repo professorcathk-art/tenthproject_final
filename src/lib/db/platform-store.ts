@@ -9,10 +9,14 @@ import type {
   Course,
   EnterpriseEnquiry,
   Lesson,
+  LessonLink,
+  LessonMaterial,
   LessonProgress,
   McpApiKey,
   Member,
+  VideoType,
 } from "@/types/platform";
+import { inferVideoType } from "@/lib/classroom/media";
 import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -77,6 +81,77 @@ async function savePlatformStore(store: PlatformStore) {
   await persistPlatformFile(store);
 }
 
+function parseLinks(raw: unknown): LessonLink[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => ({
+      title: String((item as LessonLink)?.title || "").trim(),
+      url: String((item as LessonLink)?.url || "").trim(),
+    }))
+    .filter((item) => item.url);
+}
+
+function persistLesson(lesson: Lesson) {
+  const { materials: _materials, ...rest } = lesson;
+  return {
+    ...rest,
+    video_type: inferVideoType(lesson.video_url, lesson.video_type),
+    html_content: lesson.html_content ?? null,
+    links: parseLinks(lesson.links),
+    content_md: lesson.content_md ?? "",
+  };
+}
+
+function normalizeLesson(lesson: Lesson, materials: LessonMaterial[] = []): Lesson {
+  return {
+    ...lesson,
+    video_type: inferVideoType(lesson.video_url, lesson.video_type) as VideoType,
+    html_content: lesson.html_content ?? null,
+    links: parseLinks(lesson.links),
+    materials,
+  };
+}
+
+async function attachMaterials(lessons: Lesson[]): Promise<Lesson[]> {
+  if (!lessons.length) return [];
+  if (isSupabaseConfigured()) {
+    const ids = lessons.map((lesson) => lesson.id);
+    const { data } = await createServiceClient()
+      .from("lesson_materials")
+      .select("*")
+      .in("lesson_id", ids)
+      .order("created_at");
+    const grouped = new Map<string, LessonMaterial[]>();
+    for (const row of (data ?? []) as LessonMaterial[]) {
+      const list = grouped.get(row.lesson_id) ?? [];
+      list.push(row);
+      grouped.set(row.lesson_id, list);
+    }
+    return lessons.map((lesson) => normalizeLesson(lesson, grouped.get(lesson.id) ?? []));
+  }
+  return lessons.map((lesson) => normalizeLesson(lesson, lesson.materials ?? []));
+}
+
+async function replaceLessonMaterials(lessonId: string, materials: LessonMaterial[]) {
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    await supabase.from("lesson_materials").delete().eq("lesson_id", lessonId);
+    if (materials.length) {
+      await supabase.from("lesson_materials").insert(
+        materials.map((item) => ({
+          id: item.id,
+          lesson_id: lessonId,
+          title: item.title,
+          file_url: item.file_url,
+          file_name: item.file_name,
+          created_at: item.created_at,
+        })),
+      );
+    }
+    return;
+  }
+}
+
 // ─── Courses ───────────────────────────────────────────────
 
 export async function getCourses(publishedOnly = true): Promise<Course[]> {
@@ -100,14 +175,16 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
       .select("*")
       .eq("course_id", course.id)
       .order("order_index");
-    return { ...(course as Course), lessons: (lessons ?? []) as Lesson[] };
+    return { ...(course as Course), lessons: await attachMaterials((lessons ?? []) as Lesson[]) };
   }
   const store = await ensurePlatformStore();
   const course = store.courses.find((c) => c.slug === slug);
   if (!course) return null;
   return {
     ...course,
-    lessons: store.lessons.filter((l) => l.course_id === course.id).sort((a, b) => a.order_index - b.order_index),
+    lessons: await attachMaterials(
+      store.lessons.filter((l) => l.course_id === course.id).sort((a, b) => a.order_index - b.order_index),
+    ),
   };
 }
 
@@ -124,16 +201,17 @@ export async function getCoursesWithLessons(): Promise<Course[]> {
     const supabase = createServiceClient();
     const { data: courses } = await supabase.from("courses").select("*").order("created_at");
     const { data: lessons } = await supabase.from("lessons").select("*").order("order_index");
-    const lessonList = (lessons ?? []) as Lesson[];
+    const lessonList = await attachMaterials((lessons ?? []) as Lesson[]);
     return ((courses ?? []) as Course[]).map((c) => ({
       ...c,
       lessons: lessonList.filter((l) => l.course_id === c.id).sort((a, b) => a.order_index - b.order_index),
     }));
   }
   const store = await ensurePlatformStore();
+  const lessonList = await attachMaterials(store.lessons);
   return store.courses.map((c) => ({
     ...c,
-    lessons: store.lessons.filter((l) => l.course_id === c.id).sort((a, b) => a.order_index - b.order_index),
+    lessons: lessonList.filter((l) => l.course_id === c.id).sort((a, b) => a.order_index - b.order_index),
   }));
 }
 
@@ -585,14 +663,18 @@ export async function replaceCaseStudies(studies: CaseStudy[]) {
 }
 
 export async function upsertLesson(lesson: Lesson) {
+  const row = persistLesson(lesson);
   if (isSupabaseConfigured()) {
-    await createServiceClient().from("lessons").upsert(lesson);
+    const { error } = await createServiceClient().from("lessons").upsert(row);
+    if (error) throw new Error(error.message);
+    if (lesson.materials) await replaceLessonMaterials(lesson.id, lesson.materials);
     return;
   }
   const store = await ensurePlatformStore();
   const idx = store.lessons.findIndex((l) => l.id === lesson.id);
-  if (idx >= 0) store.lessons[idx] = lesson;
-  else store.lessons.push(lesson);
+  const next = normalizeLesson(lesson, lesson.materials ?? []);
+  if (idx >= 0) store.lessons[idx] = next;
+  else store.lessons.push(next);
   await savePlatformStore(store);
 }
 
@@ -619,6 +701,36 @@ export async function deleteLesson(id: string) {
   await savePlatformStore(store);
 }
 
+export async function getMemberByEmail(email: string): Promise<Member | null> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  if (isSupabaseConfigured()) {
+    const { data, error } = await createServiceClient()
+      .from("members")
+      .select("*")
+      .eq("email", normalized)
+      .maybeSingle();
+    if (error) {
+      console.error("getMemberByEmail:", error.message);
+      return null;
+    }
+    return (data as Member | null) ?? null;
+  }
+  const store = await ensurePlatformStore();
+  return store.members.find((member) => member.email === normalized) ?? null;
+}
+
+export async function deleteEnquiry(id: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("enterprise_enquiries").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensurePlatformStore();
+  store.enterpriseEnquiries = store.enterpriseEnquiries.filter((item) => item.id !== id);
+  await savePlatformStore(store);
+}
+
 export async function getMembers(): Promise<Member[]> {
   if (isSupabaseConfigured()) {
     const { data, error } = await createServiceClient().from("members").select("*").order("created_at", { ascending: false });
@@ -634,7 +746,7 @@ export async function getMembers(): Promise<Member[]> {
 
 export async function upsertMember(member: Member) {
   if (isSupabaseConfigured()) {
-    const { error } = await createServiceClient().from("members").upsert(member);
+    const { error } = await createServiceClient().from("members").upsert(member, { onConflict: "email" });
     if (error) throw new Error(error.message);
     return;
   }

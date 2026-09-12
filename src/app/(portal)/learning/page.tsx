@@ -5,6 +5,8 @@ import { ArrowRight, BookOpen } from "lucide-react";
 import { getCourseBySlug, getCourses, getLessonProgress, getUserCertificates } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
+import { getMembershipAccess } from "@/lib/auth/membership";
+import { classroomFileSrc } from "@/lib/classroom/media";
 import { getDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 
@@ -15,6 +17,7 @@ export default async function LearningHomePage() {
   await ensurePlatformSeeded();
   const courses = await getCourses();
   const dict = await getDict();
+  const access = await getMembershipAccess(user.email, user.isAdmin);
 
   const [rows, certificates] = await Promise.all([
     Promise.all(
@@ -37,12 +40,19 @@ export default async function LearningHomePage() {
         </div>
         <h1 className="text-2xl font-bold tracking-tight">{dict.portal.learning}</h1>
         <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">{dict.courses.subtitle}</p>
+        {!access.paid ? (
+          <p className="mt-3 text-sm text-amber-700">{dict.courses.upgradeToWatch}</p>
+        ) : null}
       </div>
       <div className="grid gap-4">
         {rows.map(({ course, lessons, done, pct }) => (
           <Link key={course.id} href={`/learning/${course.slug}`} className="rounded-2xl glass-panel glow-card p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
+                {classroomFileSrc(course.cover_image) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={classroomFileSrc(course.cover_image) ?? ""} alt="" className="mb-4 h-32 w-full rounded-xl object-cover" />
+                ) : null}
                 <h2 className="text-lg font-semibold">{course.title}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{course.description}</p>
                 <div className="mt-3 flex flex-wrap gap-2">

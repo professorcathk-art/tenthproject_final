@@ -2,11 +2,12 @@ import {
   countPublishedCaseStudies,
   deleteCourse,
   getCaseStudyBySlug,
+  getCourseBySlug,
   replaceCaseStudies,
   seedPlatformData,
 } from "@/lib/db/platform-store";
 import { CASE_SEED_MARKER, getSeedCaseStudies } from "@/lib/seed/case-studies";
-import { getSeedLessons, LEGACY_AGENT_COURSE_ID, SEED_COURSES } from "@/lib/seed/platform-seed";
+import { FLAGSHIP_SLUG, getSeedLessons, LEGACY_AGENT_COURSE_ID, SEED_COURSES } from "@/lib/seed/platform-seed";
 
 let coursesReady = false;
 let casesReady = false;
@@ -14,7 +15,10 @@ let casesReady = false;
 export async function ensureCoursesSeeded() {
   if (coursesReady) return;
   try {
-    await seedPlatformData(SEED_COURSES, getSeedLessons());
+    const existing = await getCourseBySlug(FLAGSHIP_SLUG);
+    if (!existing) {
+      await seedPlatformData(SEED_COURSES, getSeedLessons());
+    }
     await deleteCourse(LEGACY_AGENT_COURSE_ID).catch(() => undefined);
     coursesReady = true;
   } catch (e) {

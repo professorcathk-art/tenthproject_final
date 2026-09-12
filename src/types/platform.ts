@@ -8,6 +8,23 @@ export const CASE_CATEGORIES: { value: CaseStudyCategory }[] = [
   { value: "workflow_agent" },
 ];
 
+export type MemberPlan = "free" | "academy" | "enterprise";
+export type VideoType = "youtube" | "mp4";
+
+export interface LessonLink {
+  title: string;
+  url: string;
+}
+
+export interface LessonMaterial {
+  id: string;
+  lesson_id: string;
+  title: string;
+  file_url: string;
+  file_name: string | null;
+  created_at: string;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -27,7 +44,11 @@ export interface Lesson {
   title: string;
   order_index: number;
   video_url: string | null;
+  video_type?: VideoType;
   content_md: string | null;
+  html_content?: string | null;
+  links?: LessonLink[];
+  materials?: LessonMaterial[];
   quiz_data: QuizQuestion[];
   created_at: string;
 }
@@ -128,10 +149,14 @@ export interface Member {
   id: string;
   email: string;
   name: string;
-  plan: "free" | "academy" | "enterprise";
+  plan: MemberPlan;
   status: "active" | "paused";
   notes: string | null;
   created_at: string;
+}
+
+export function isPaidPlan(plan: string | null | undefined) {
+  return plan === "academy" || plan === "enterprise";
 }
 
 export const COMPANY_SIZES = [
