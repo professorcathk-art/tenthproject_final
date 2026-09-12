@@ -49,7 +49,7 @@ export function LandingView() {
     <>
       <Hero />
 
-      <section id="about" className="scroll-mt-20 py-20 border-t border-slate-200/70 dark:border-slate-800/50">
+      <section id="about" className="scroll-mt-20 py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
             <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.vision.title}</h2>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Building2, GraduationCap, Lightbulb, Menu, Sparkles, Users } from "lucide-react";
@@ -13,6 +14,19 @@ import { cn } from "@/lib/utils";
 export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
   const { dict } = useI18n();
   const pathname = usePathname();
+  const isHome = pathname === "/";
+  const [overHero, setOverHero] = useState(isHome);
+
+  useEffect(() => {
+    if (!isHome) {
+      setOverHero(false);
+      return;
+    }
+    const onScroll = () => setOverHero(window.scrollY < 56);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
 
   const links = [
     { href: "/#about", label: dict.nav.about, icon: Users },
@@ -27,11 +41,29 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/65 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/55">
+    <header
+      className={cn(
+        "sticky top-0 z-50 transition-colors duration-300",
+        overHero
+          ? "border-b border-white/10 bg-slate-950/25 backdrop-blur-md"
+          : "border-b border-slate-200/60 bg-white/65 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/55",
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5 font-semibold text-slate-900 dark:text-white">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-950">
+          <Link
+            href="/"
+            className={cn(
+              "flex shrink-0 items-center gap-2.5 font-semibold",
+              overHero ? "text-white" : "text-slate-900 dark:text-white",
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg",
+                overHero ? "bg-white text-slate-950" : "bg-slate-900 text-white dark:bg-white dark:text-slate-950",
+              )}
+            >
               <Sparkles className="h-4 w-4" />
             </div>
             <span className="hidden tracking-tight sm:inline">Tenth Project</span>
@@ -45,9 +77,13 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    active(item.href)
-                      ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
+                    overHero
+                      ? active(item.href)
+                        ? "bg-white/15 text-white"
+                        : "text-white/75 hover:bg-white/10 hover:text-white"
+                      : active(item.href)
+                        ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -59,29 +95,50 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <LanguageToggle />
+          <ThemeToggle
+            className={overHero ? "border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white" : undefined}
+          />
+          <LanguageToggle tone={overHero ? "inverse" : "default"} />
           {loggedIn ? (
-            <Link href="/dashboard" className={cn(buttonVariants({ size: "sm" }), "rounded-full font-semibold")}>
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "rounded-full font-semibold",
+                overHero && "bg-white text-slate-950 hover:bg-white/90",
+              )}
+            >
               {dict.nav.enterPortal}
             </Link>
           ) : (
             <>
               <Link
                 href="/login?redirect=/dashboard"
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden font-semibold sm:inline-flex")}
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "hidden font-semibold sm:inline-flex",
+                  overHero && "text-white hover:bg-white/10 hover:text-white",
+                )}
               >
                 {dict.nav.login}
               </Link>
               <Link
                 href="/enterprise#booking"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden rounded-full font-semibold md:inline-flex")}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "hidden rounded-full font-semibold md:inline-flex",
+                  overHero && "border-white/30 bg-white/10 text-white hover:bg-white/15 hover:text-white",
+                )}
               >
                 {dict.nav.bookConsult}
               </Link>
               <Link
                 href="/signup?redirect=/dashboard"
-                className={cn(buttonVariants({ size: "sm" }), "rounded-full font-semibold hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]")}
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "rounded-full font-semibold",
+                  overHero ? "bg-white text-slate-950 hover:bg-white/90" : "hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]",
+                )}
               >
                 {dict.nav.signup}
               </Link>
@@ -89,7 +146,12 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
           )}
 
           <Sheet>
-            <SheetTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800">
+            <SheetTrigger
+              className={cn(
+                "inline-flex h-9 w-9 items-center justify-center rounded-md lg:hidden",
+                overHero ? "text-white hover:bg-white/10" : "hover:bg-slate-100 dark:hover:bg-slate-800",
+              )}
+            >
               <Menu className="h-5 w-5" />
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
