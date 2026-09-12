@@ -15,14 +15,12 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
   const { dict } = useI18n();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const [overHero, setOverHero] = useState(isHome);
+  const [heroScroll, setHeroScroll] = useState(true);
+  const overHero = isHome && heroScroll;
 
   useEffect(() => {
-    if (!isHome) {
-      setOverHero(false);
-      return;
-    }
-    const onScroll = () => setOverHero(window.scrollY < 56);
+    if (!isHome) return;
+    const onScroll = () => setHeroScroll(window.scrollY < 56);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

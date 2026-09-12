@@ -1,4 +1,7 @@
 import type { AiSuggestion, ProjectWithRelations } from "@/types";
+import { extractSpecFromSuggestion, inferTargetFile, specBlock, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/executable-spec";
+
+export { SPRINT_PROMPT_SYSTEM };
 
 export function collectSprintBacklog(project: ProjectWithRelations, approved: AiSuggestion[] = []) {
   const openBugs = (project.bugs ?? []).filter((bug) => bug.status === "open" || bug.status === "in_progress");
@@ -10,43 +13,88 @@ export function collectSprintBacklog(project: ProjectWithRelations, approved: Ai
   return { openBugs, failedUat, todoTasks, approved };
 }
 
+function collectTargetFiles(project: ProjectWithRelations, approved: AiSuggestion[]) {
+  const files = new Set<string>();
+  for (const item of approved) files.add(extractSpecFromSuggestion(item).file);
+  for (const bug of project.bugs ?? []) {
+    if (bug.status === "open" || bug.status === "in_progress") {
+      files.add(inferTargetFile(`${bug.title}\n${bug.description ?? ""}`));
+    }
+  }
+  for (const uat of project.uat_items ?? []) {
+    if (uat.status === "failed" || uat.status === "reopened") {
+      files.add(uat.test_path?.trim() || inferTargetFile(`${uat.title}\n${uat.expected_result ?? ""}`));
+    }
+  }
+  for (const task of project.tasks ?? []) {
+    if (task.status === "todo" || task.status === "blocked") {
+      files.add(inferTargetFile(`${task.title}\n${task.description ?? ""}`));
+    }
+  }
+  return [...files];
+}
+
 export function synthesizeSprintPrompt(project: ProjectWithRelations, approved: AiSuggestion[] = []) {
   const { openBugs, failedUat, todoTasks } = collectSprintBacklog(project, approved);
   const url = project.website_url ?? "（尚未填寫）";
   const github = project.github_url ?? "（尚未填寫）";
   const tool = project.selected_tool || "cursor";
+  const targets = collectTargetFiles(project, approved);
 
   const suggestionLines = approved.length
     ? approved
-        .map(
-          (item, index) =>
-            `${index + 1}. **[${item.category} / ${item.severity}] ${item.title}**\n   ${item.description}`,
-        )
+        .map((item, index) => {
+          const spec = extractSpecFromSuggestion(item);
+          return `${index + 1}. **[${item.category} / ${item.severity}] ${item.title}**\n${specBlock(spec)}`;
+        })
         .join("\n")
     : "- （本輪沒有新的 AI 建議）";
 
   const bugLines = openBugs.length
     ? openBugs
-        .map((bug) => `- **${bug.title}** (${bug.severity}, ${bug.status})${bug.description ? ` — ${bug.description}` : ""}`)
+        .map((bug) => {
+          const file = inferTargetFile(`${bug.title}\n${bug.description ?? ""}`);
+          return specBlock({
+            file,
+            action: `Fix ${bug.title} (${bug.severity}, ${bug.status})`,
+            acceptance: bug.description || "Regression-free; npm run build passes",
+          });
+        })
         .join("\n")
     : "- 無未解錯誤";
 
   const uatLines = failedUat.length
     ? failedUat
-        .map(
-          (item) =>
-            `- **${item.title}** (${item.status})\n  預期：${item.expected_result ?? "未填"}${item.remark ? `\n  備註：${item.remark}` : ""}`,
-        )
+        .map((item) => {
+          const file = item.test_path?.trim() || inferTargetFile(`${item.title}\n${item.expected_result ?? ""}`);
+          return specBlock({
+            file,
+            action: `Re-test failed UAT 「${item.title}」 (${item.status}${item.priority ? `, ${item.priority}` : ""})`,
+            acceptance: `${item.expected_result ?? "未填步驟"}${item.remark ? `；備註：${item.remark}` : ""}`,
+          });
+        })
         .join("\n")
     : "- 沒有失敗或重開的 UAT";
 
   const taskLines = todoTasks.length
-    ? todoTasks.map((task) => `- [${task.priority}] ${task.title}${task.description ? ` — ${task.description}` : ""}`).join("\n")
+    ? todoTasks
+        .map((task) => {
+          const file = inferTargetFile(`${task.title}\n${task.description ?? ""}`);
+          return specBlock({
+            file,
+            action: `[${task.priority}] ${task.title}`,
+            acceptance: task.description || "Visible result + npm run build",
+          });
+        })
+        .join("\n")
     : "- 待辦任務已清空，請只處理上方建議／錯誤／UAT";
+
+  const fileList = targets.length ? targets.map((file) => `- \`${file}\``).join("\n") : "- `src/app/page.tsx`";
 
   return `# Cursor Master Prompt — ${project.name}
 
-> 由 Tenth Project 工作台合成。工具：${tool}。貼上後先讀現有程式，再依優先順序改，不要重寫整個專案。
+> Tenth Project executable spec. Tool: ${tool}.
+> ${SPRINT_PROMPT_SYSTEM.split("\n")[2]}
 
 ## 1. Product context
 - **產品：** ${project.name}
@@ -57,37 +105,51 @@ export function synthesizeSprintPrompt(project: ProjectWithRelations, approved: 
 - **Live URL：** ${url}
 - **GitHub：** ${github}
 
-## 2. This sprint objective
-只處理「已批准的 AI 建議 + 未解錯誤 + 失敗／重開 UAT」。做完一項就對應更新狀態，不要擴 scope。
+## 2. Exact target files
+只改下列檔案（及它們直接 import 的子元件）。禁止「improve UI」這種空話。
 
-## 3. Approved AI suggestions
+${fileList}
+
+## 3. This sprint objective
+只處理「已批准的 AI 建議 + 未解錯誤 + 失敗／重開 UAT」。每一項都必須寫成：檔案 → 具體 Tailwind/React 動作 → 驗收。
+
+## 4. Step-by-step code modifications
+
+### 4a. Approved AI suggestions
 ${suggestionLines}
 
-## 4. Open bugs
+### 4b. Open bugs
 ${bugLines}
 
-## 5. Failed / reopened UAT
+### 4c. Failed / reopened UAT
 ${uatLines}
 
-## 6. Existing todo / blocked tasks
+### 4d. Existing todo / blocked tasks
 ${taskLines}
 
-## 7. Execution rules (Cursor)
-1. 先掃現有檔案與元件，沿用既有 naming、shadcn、Tailwind 與路由。
-2. 優先修 critical / high，再做 medium，最後才做 feature polish。
-3. 每個修正都要有 loading / empty / error 其中缺的那一態。
-4. 改 UI 後用 375px 與桌面各走一次主流程。
-5. 不要新增未要求的套件、不要改無關頁面。
-6. 完成後跑 \`npm run build\`，並用條列回報：改了什麼、怎麼驗、還有什麼沒做。
+## 5. Execution rules (Cursor)
+1. 先 \`Glob\`/\`Grep\` 確認目標檔存在；沒有就在最近的 App Router 路徑新建，不要重寫整個 repo。
+2. 優先 critical / high。每個畫面補齊 loading / empty / error 缺的那一態。
+3. 版面問題用 \`w-full max-w-xl mx-auto\` 或 \`grid-cols-1 md:grid-cols-3\`，並在 375px 重測。
+4. 首屏 >3s：\`next/dynamic\` 拆 chart/map/editor，搭配 Skeleton。
+5. HTTP 4xx/5xx：修 \`src/app/error.tsx\` / \`src/app/not-found.tsx\` / 對應 \`src/app/api/*\`。
+6. 不要新增未要求的套件。
 
-## 8. Acceptance checklist
-- [ ] 每個批准建議都有對應的可見結果
-- [ ] 每個 open bug 已修或標明被什麼擋住
-- [ ] 失敗 UAT 可再測，並寫出實際結果
-- [ ] Live URL 若可達，相關畫面不再出現同樣的檢查器錯誤
-- [ ] 手機主流程可完成，沒有橫向溢出
+## 6. Build & verification command
+\`\`\`bash
+npm run build
+\`\`\`
+通過後用條列回報：改了哪個檔、怎麼驗（路徑 + 步驟 + 預期 DOM/API）、還有什麼沒做。
 
-## 9. Out of scope
+## 7. Acceptance checklist
+- [ ] 每個批准建議都對到一個具體檔案 diff
+- [ ] 每個 open bug 已修或寫明擋住它的檔案
+- [ ] 失敗 UAT 可依「路徑 + 步驟」再測
+- [ ] Live URL 不再出現同一則檢查器錯誤
+- [ ] 375px 主流程可完成，沒有橫向溢出
+- [ ] \`npm run build\` 通過
+
+## 8. Out of scope
 付款、多租戶、重做設計系統、與本輪無關的重構。
 `;
 }

@@ -13,7 +13,11 @@ interface MasterPromptContext {
 
 const MIN_MASTER_PROMPT_LENGTH = 800;
 
-const MASTER_PROMPT_SYSTEM = `You are an expert vibe-coding prompt architect. Your job is to transform a user's rough product idea into a COMPREHENSIVE MASTER PROMPT they can paste directly into AI coding tools (Cursor, Lovable, Gemini, Claude, ChatGPT).
+const MASTER_PROMPT_SYSTEM = `You are a Technical Lead writing a Cursor-ready master prompt.
+STRICT RULE: NEVER say "improve UI", "optimize UX", or "conduct UAT".
+Every task must name a file (src/app/page.tsx, src/components/...), a concrete React/Next.js/Tailwind action, and acceptance criteria including npm run build.
+
+You are also an expert vibe-coding prompt architect. Transform a user's rough product idea into a COMPREHENSIVE MASTER PROMPT they can paste directly into AI coding tools (Cursor, Lovable, Gemini, Claude, ChatGPT).
 
 The master prompt must be LONG, DETAILED, and STRUCTURED — not a one-liner or short paragraph.
 
@@ -29,10 +33,12 @@ Each tool-specific prompt MUST include ALL of these sections (use markdown heade
 8. **Pages & Routes** — list every page/screen with purpose
 9. **Data Model** — key entities and fields
 10. **UI/UX Guidelines** — design direction, responsive, states
-11. **Acceptance Criteria** — testable checklist
-12. **Implementation Instructions** — step-by-step for the AI tool
-13. **Out of Scope** — what NOT to build yet
-14. **Quality Bar** — loading/error/empty states, mobile, accessibility
+11. **Acceptance Criteria** — testable checklist with routes + expected DOM
+12. **Exact Target Files** — concrete paths only
+13. **Step-by-Step Code Modifications** — file → action → acceptance
+14. **Build & Verification Command** — always include \`npm run build\`
+15. **Out of Scope** — what NOT to build yet
+16. **Quality Bar** — loading/error/empty states, 375px, accessibility
 
 Tool-specific formatting:
 - **cursor**: Include file paths, "read codebase first", incremental build steps, TypeScript/Tailwind conventions, "do not over-engineer"
@@ -317,9 +323,12 @@ ${structure}
 
 ---
 
-## 5. This Sprint Scope
+## 5. Exact Target Files & This Sprint Scope
 
 **Phase focus:** ${sprintPhase}
+
+**Touch only these files unless a missing import requires a sibling:**
+${sprintTasks.map((t) => `- \`${(t.description ?? t.title).match(/(?:src\/|app\/|components\/)[\w./[\]-]+\.(?:tsx|ts)/)?.[0] ?? "src/app/page.tsx"}\` — ${t.title}`).join("\n")}
 
 **Build NOW (this sprint):**
 ${sprintTasks.map((t, i) => `${i + 1}. **${t.title}** — ${t.description ?? ""}`).join("\n")}
@@ -393,7 +402,13 @@ ${instructions}
 
 ---
 
-## 13. Quality Bar
+## 13. Build & verification command
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+## 14. Quality Bar
 
 Before marking this sprint complete:
 - [ ] \`npm run build\` passes with no errors

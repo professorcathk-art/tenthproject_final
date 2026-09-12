@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
       task_id: null,
       phase_id: u.phase ? phaseMap.get(u.phase) ?? null : null,
       title: u.title,
+      test_path: u.testPath?.trim() || null,
       expected_result: u.expectedResult,
       actual_result: null,
       status: "not_started",
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
       remark: null,
       evidence_url: null,
       owner: null,
-      priority: "medium",
+      priority: u.severity === "high" || u.severity === "critical" ? "high" : u.severity === "low" ? "low" : "medium",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }));

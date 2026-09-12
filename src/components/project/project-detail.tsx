@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UAT_STATUSES, AI_TOOLS, type AiSuggestion, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
+import { UAT_STATUSES, AI_TOOLS, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
 import { McpSettings } from "@/components/project/mcp-settings";
 import { AiSuggestionsModal } from "@/components/project/ai-suggestions-modal";
 import { formatDistanceToNow } from "date-fns";
@@ -42,6 +42,7 @@ import { zhTW, enUS } from "date-fns/locale";
 import { useI18n } from "@/components/i18n/provider";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABEL, SEVERITY_CLASS, isHealthyStatus, parseHttpStatus, pendingSuggestionCount } from "@/lib/project/audit";
+import { buildRetestPrompt } from "@/lib/ai/executable-spec";
 
 interface ProjectDetailProps {
   initialProject: ProjectWithRelations;
@@ -62,13 +63,19 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const [githubUrl, setGithubUrl] = useState(project.github_url ?? "");
   const [uatFilter, setUatFilter] = useState<string>("all");
   const [taskDraft, setTaskDraft] = useState({ title: "", description: "" });
-  const [uatDraft, setUatDraft] = useState({ title: "", expected_result: "", severity: "medium" });
+  const [uatDraft, setUatDraft] = useState({
+    title: "",
+    test_path: "",
+    expected_result: "",
+    priority: "medium" as "low" | "medium" | "high",
+  });
   const [bugDraft, setBugDraft] = useState({ title: "", description: "", severity: "medium" });
   const [enhDraft, setEnhDraft] = useState({ title: "", description: "" });
   const [phaseDraft, setPhaseDraft] = useState({ name: "", description: "" });
   const [editing, setEditing] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [editPath, setEditPath] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const tasks = project.tasks ?? [];
@@ -76,7 +83,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const bugs = project.bugs ?? [];
   const enhancements = project.enhancements ?? [];
   const phases = project.phases ?? [];
-  const suggestions = project.ai_suggestions ?? [];
+  const suggestions = useMemo(() => project.ai_suggestions ?? [], [project.ai_suggestions]);
   const latestRun = project.test_runs?.[0];
   const httpStatus = parseHttpStatus(latestRun);
   const pendingCount = pendingSuggestionCount(suggestions);
@@ -213,10 +220,11 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
     await projectAction(action, payload);
   }
 
-  function startEdit(key: string, title: string, body = "") {
+  function startEdit(key: string, title: string, body = "", path = "") {
     setEditing(key);
     setEditTitle(title);
     setEditBody(body);
+    setEditPath(path);
   }
 
   async function saveUrls() {
@@ -234,13 +242,16 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   }
 
   async function copyText(text: string) {
-    await navigator.clipboard.writeText(text);
-    toast.success(p.copied);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(p.copied);
+    } catch {
+      toast.error(p.copyFailed);
+    }
   }
 
-  function retestPrompt(title: string, expected: string | null) {
-    const text = `# Re-test UAT: ${title}\n\nExpected: ${expected ?? "(not set)"}\n\nVerify the fix on desktop and 375px mobile. Report pass/fail with the actual result. Do not change unrelated files.`;
-    void copyText(text);
+  function retestPrompt(item: (typeof uatItems)[number]) {
+    void copyText(buildRetestPrompt(item));
   }
 
   const filteredUAT = uatFilter === "all" ? uatItems : uatItems.filter((u) => u.status === uatFilter);
@@ -584,22 +595,54 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
 
           <TabsContent value="uat" className="mt-4 space-y-4">
             <Card>
-              <CardContent className="space-y-2 pt-4">
-                <Input placeholder={p.itemTitle} value={uatDraft.title} onChange={(e) => setUatDraft({ ...uatDraft, title: e.target.value })} />
-                <Textarea rows={2} placeholder={p.expectedResult} value={uatDraft.expected_result} onChange={(e) => setUatDraft({ ...uatDraft, expected_result: e.target.value })} />
-                <div className="flex flex-wrap gap-2">
-                  <Select value={uatDraft.severity} onValueChange={(v) => v && setUatDraft({ ...uatDraft, severity: v })}>
-                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">low</SelectItem>
-                      <SelectItem value="medium">medium</SelectItem>
-                      <SelectItem value="high">high</SelectItem>
-                      <SelectItem value="critical">critical</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <CardContent className="space-y-3 pt-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600" htmlFor="uat-name">{p.uatFeatureName}</label>
+                  <Input
+                    id="uat-name"
+                    placeholder={p.uatFeatureNamePh}
+                    value={uatDraft.title}
+                    onChange={(e) => setUatDraft({ ...uatDraft, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600" htmlFor="uat-path">{p.uatTestPath}</label>
+                  <Input
+                    id="uat-path"
+                    placeholder={p.uatTestPathPh}
+                    value={uatDraft.test_path}
+                    onChange={(e) => setUatDraft({ ...uatDraft, test_path: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600" htmlFor="uat-steps">{p.uatSteps}</label>
+                  <Textarea
+                    id="uat-steps"
+                    rows={3}
+                    placeholder={p.uatStepsPh}
+                    value={uatDraft.expected_result}
+                    onChange={(e) => setUatDraft({ ...uatDraft, expected_result: e.target.value })}
+                  />
+                </div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600">{p.uatPriority}</label>
+                    <Select
+                      value={uatDraft.priority}
+                      onValueChange={(v) => v && setUatDraft({ ...uatDraft, priority: v as "low" | "medium" | "high" })}
+                    >
+                      <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="high">{p.priorityHigh}</SelectItem>
+                        <SelectItem value="medium">{p.priorityMedium}</SelectItem>
+                        <SelectItem value="low">{p.priorityLow}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button size="sm" disabled={!uatDraft.title.trim()} onClick={async () => {
-                    await projectAction("create_uat", { data: uatDraft });
-                    setUatDraft({ title: "", expected_result: "", severity: "medium" });
+                    const severity = uatDraft.priority === "high" ? "high" : uatDraft.priority === "low" ? "low" : "medium";
+                    await projectAction("create_uat", { data: { ...uatDraft, severity } });
+                    setUatDraft({ title: "", test_path: "", expected_result: "", priority: "medium" });
                   }}>
                     <Plus className="mr-1 h-4 w-4" /> {p.addUat}
                   </Button>
@@ -624,10 +667,14 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                     <CardContent className="pt-4 space-y-3">
                       {editing === `uat:${item.id}` ? (
                         <div className="space-y-2">
-                          <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                          <Textarea rows={2} value={editBody} onChange={(e) => setEditBody(e.target.value)} />
+                          <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder={p.uatFeatureName} />
+                          <Input value={editPath} onChange={(e) => setEditPath(e.target.value)} placeholder={p.uatTestPath} />
+                          <Textarea rows={3} value={editBody} onChange={(e) => setEditBody(e.target.value)} placeholder={p.uatSteps} />
                           <Button size="sm" onClick={async () => {
-                            await projectAction("update_uat", { uatId: item.id, data: { title: editTitle, expected_result: editBody } });
+                            await projectAction("update_uat", {
+                              uatId: item.id,
+                              data: { title: editTitle, test_path: editPath || null, expected_result: editBody },
+                            });
                             setEditing(null);
                           }}>{p.save}</Button>
                         </div>
@@ -636,17 +683,24 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                           <div className="flex items-center gap-2 flex-wrap">
                             <Link href={`/projects/${project.id}/uat/${item.id}`} className="font-medium text-sm hover:underline">{item.title}</Link>
                             {statusBadge(item.status)}
-                            <Badge variant="outline" className="text-xs">{item.severity}</Badge>
+                            <Badge variant="outline" className="text-xs">{item.priority ?? item.severity}</Badge>
                           </div>
-                          <p className="text-xs text-slate-500 mt-1">{p.expected}: {item.expected_result}</p>
+                          {item.test_path ? (
+                            <p className="text-xs font-mono text-slate-500 mt-1">{p.uatTestPath}: {item.test_path}</p>
+                          ) : null}
+                          <p className="text-xs text-slate-500 mt-1">{p.uatSteps}: {item.expected_result}</p>
                         </div>
                       )}
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="outline" onClick={() => updateUATStatus(item.id, "passed")}>{p.pass}</Button>
                         <Button size="sm" variant="destructive" onClick={() => updateUATStatus(item.id, "failed")}>{p.fail}</Button>
                         <Button size="sm" variant="ghost" onClick={() => updateUATStatus(item.id, "reopened")}>{p.reopen}</Button>
-                        <Button size="sm" variant="outline" onClick={() => retestPrompt(item.title, item.expected_result)}>{p.retestPrompt}</Button>
-                        <Button size="icon-sm" variant="ghost" onClick={() => startEdit(`uat:${item.id}`, item.title, item.expected_result ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
+                        {(item.status === "failed" || item.status === "reopened") ? (
+                          <Button size="sm" variant="secondary" onClick={() => retestPrompt(item)}>{p.retestPrompt}</Button>
+                        ) : (
+                          <Button size="sm" variant="outline" onClick={() => retestPrompt(item)}>{p.retestPrompt}</Button>
+                        )}
+                        <Button size="icon-sm" variant="ghost" onClick={() => startEdit(`uat:${item.id}`, item.title, item.expected_result ?? "", item.test_path ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
                         <Button size="icon-sm" variant="ghost" onClick={() => removeItem("delete_uat", { uatId: item.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </CardContent>

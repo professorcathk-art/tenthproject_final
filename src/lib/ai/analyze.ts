@@ -6,9 +6,15 @@ import {
   type PromptType,
 } from "@/lib/ai/master-prompt";
 
-const SYSTEM_PROMPT = `You are an AI product development coach for non-technical founders using vibe coding tools like Cursor, Lovable, Gemini, Claude, and ChatGPT.
+const SYSTEM_PROMPT = `You are a Technical Lead writing executable specs for Cursor (Next.js App Router, TypeScript, Tailwind, shadcn/ui).
+STRICT RULE: NEVER output vague cards like "improve UI", "optimize UX", or "conduct UAT".
 
-Analyze the project context and return ONLY valid JSON matching this schema:
+Every task, bug, enhancement, and UAT item MUST include:
+1. Target file or route (e.g. src/app/page.tsx, src/components/stock-chart.tsx)
+2. Concrete code action (Skeleton, next/dynamic, grid-cols-1 md:grid-cols-3, error.tsx for HTTP 500)
+3. Testable acceptance criteria (375px + desktop, npm run build)
+
+Return ONLY valid JSON matching this schema:
 {
   "projectSummary": "string",
   "productGoal": "string",
@@ -18,7 +24,7 @@ Analyze the project context and return ONLY valid JSON matching this schema:
   "risks": ["string"],
   "blockers": ["string"],
   "bugs": [{"title": "string", "description": "string", "severity": "low|medium|high|critical"}],
-  "uatItems": [{"title": "string", "expectedResult": "string", "severity": "low|medium|high", "phase": "string"}],
+  "uatItems": [{"title": "string", "testPath": "src/app/page.tsx or /route", "expectedResult": "step -> expected DOM/API outcome", "severity": "low|medium|high", "phase": "string"}],
   "enhancements": [{"title": "string", "description": "string", "priority": "low|medium|high"}],
   "phases": [{"name": "string", "description": "string", "tasks": ["string"]}],
   "tasks": [{"title": "string", "description": "string", "priority": "low|medium|high", "phase": "string"}],
@@ -33,9 +39,9 @@ Analyze the project context and return ONLY valid JSON matching this schema:
   }
 }
 
-Focus analysis quality on phases, tasks, UAT items, and acceptance criteria. Prompts will be generated separately as comprehensive master prompts.
-
-Keep language simple for non-technical users.`;
+If live inspection shows a slow TTFB/load time, emit a performance task that uses next/dynamic for heavy client widgets — never "make it faster".
+If inspection shows HTTP 4xx/5xx, target src/app/error.tsx or the failing src/app/api/* route.
+Prefer Traditional Chinese when the project copy is Chinese.`;
 
 function buildContext(project: Partial<Project>, artifacts: ProjectArtifact[] = [], existingState?: Record<string, unknown>) {
   const artifactSummary = artifacts
@@ -84,39 +90,76 @@ function generateFallbackAnalysis(
     currentStageAssessment: `You're in the ${project.stage ?? "developing"} stage. Focus on core functionality first, then polish.`,
     completedItems: ["Project setup and planning"],
     missingItems: [
-      "Core feature implementation",
-      "User testing checklist",
-      "Mobile responsiveness check",
-      "Error handling and empty states",
+      "src/app/page.tsx primary CTA + loading/empty/error triad",
+      "src/app/error.tsx for API 500",
+      "375px layout: w-full max-w-xl mx-auto, no overflow-x",
     ],
-    risks: ["Scope creep", "Missing mobile testing"],
+    risks: ["Vague tickets that Cursor cannot execute", "Heavy client charts on first paint"],
     blockers: [],
     bugs: [],
     uatItems: [
-      { title: "Landing page loads correctly", expectedResult: "Page loads in under 3 seconds with no errors", severity: "high", phase: "Foundation" },
-      { title: "Main user flow works end-to-end", expectedResult: "User can complete primary action without confusion", severity: "high", phase: "Core Features" },
-      { title: "Mobile layout is usable", expectedResult: "All buttons tappable, text readable on phone", severity: "medium", phase: "Polish" },
-      { title: "Forms validate input", expectedResult: "Clear error messages for invalid input", severity: "medium", phase: "Core Features" },
-      { title: "Empty states are helpful", expectedResult: "User knows what to do when no data exists", severity: "low", phase: "Polish" },
+      {
+        title: "首頁可在 3 秒內渲染主 CTA",
+        testPath: "src/app/page.tsx",
+        expectedResult: "開啟 / → 3 秒內看到主 CTA；無 HTTP 500；375px 無橫向溢出",
+        severity: "high",
+        phase: "Foundation",
+      },
+      {
+        title: "主流程表單可提交並顯示結果",
+        testPath: "src/app/page.tsx",
+        expectedResult: "填入有效輸入並送出 → 結果區塊以 Markdown/圖表渲染；失敗時 error.tsx 或 inline Alert，不是白屏",
+        severity: "high",
+        phase: "Core Features",
+      },
+      {
+        title: "手機寬度可點擊主按鈕",
+        testPath: "src/app/page.tsx",
+        expectedResult: "375px 下主按鈕 ≥44px、grid-cols-1 md:grid-cols-3，無 overflow-x",
+        severity: "medium",
+        phase: "Polish",
+      },
     ],
     enhancements: [
-      { title: "Add loading states", description: "Show spinners or skeletons while data loads", priority: "medium" },
-      { title: "Improve onboarding", description: "Guide new users through first steps", priority: "high" },
+      {
+        title: "Skeleton for async panels",
+        description: "Target: src/app/page.tsx. Action: add <Skeleton className=\"h-64 w-full\" /> while data loads. Acceptance: no blank flash; npm run build passes.",
+        priority: "medium",
+      },
+      {
+        title: "Error boundary for fetch 500",
+        description: "Target: src/app/error.tsx + the failing src/app/api/* route. Action: typed error UI with retry. Acceptance: 500 shows CTA, not overlay.",
+        priority: "high",
+      },
     ],
     phases: [
-      { name: "Foundation", description: "Set up core structure and navigation", tasks: ["Project setup", "Basic layout", "Routing"] },
-      { name: "Core Features", description: "Build the main functionality", tasks: ["Primary user flow", "Data persistence", "Key interactions"] },
-      { name: "Polish & Launch", description: "Test, fix, and prepare for users", tasks: ["UAT testing", "Bug fixes", "Performance check"] },
+      { name: "Foundation", description: "App Router shell, layout.tsx, globals.css", tasks: ["src/app/layout.tsx", "src/app/page.tsx hero + CTA", "src/app/error.tsx"] },
+      { name: "Core Features", description: "Primary route + API", tasks: ["Form + server action", "Result renderer", "Typed fetch errors"] },
+      { name: "Polish & Launch", description: "375px + build", tasks: ["Tailwind responsive grid", "Skeleton/empty", "npm run build"] },
     ],
     tasks: [
-      { title: "Implement core user flow", description: "Build the main feature users will use", priority: "high", phase: "Core Features" },
-      { title: "Add responsive mobile layout", description: "Ensure app works well on phones", priority: "high", phase: "Polish & Launch" },
-      { title: "Create empty and error states", description: "Handle edge cases gracefully", priority: "medium", phase: "Polish & Launch" },
-      { title: "Run UAT checklist", description: "Test all critical paths manually", priority: "high", phase: "Polish & Launch" },
+      {
+        title: "Wire primary flow in src/app/page.tsx",
+        description: "Target: src/app/page.tsx. Action: form → server action/API → result panel. Acceptance: happy path + empty + error; npm run build.",
+        priority: "high",
+        phase: "Core Features",
+      },
+      {
+        title: "Responsive grid on first paint",
+        description: "Target: src/app/page.tsx. Action: grid grid-cols-1 md:grid-cols-3 gap-4; w-full min-w-0. Acceptance: 375px no overflow.",
+        priority: "high",
+        phase: "Polish & Launch",
+      },
+      {
+        title: "Dynamic-import heavy widgets",
+        description: "Target: src/app/page.tsx. Action: next/dynamic for charts/maps with Skeleton. Acceptance: first paint not blocked; npm run build.",
+        priority: "medium",
+        phase: "Polish & Launch",
+      },
     ],
     nextAction: promptType === "next-step"
-      ? "Complete the highest priority task, then re-run UAT on failed items"
-      : "Start with the Foundation phase — set up core structure and main navigation",
+      ? "Open the highest-priority target file, apply the listed Tailwind/React change, then re-run the failed UAT step and npm run build"
+      : "Create src/app/page.tsx + src/app/error.tsx with a working primary CTA, then npm run build",
     acceptanceCriteria: [
       "Primary user flow works without errors",
       "Mobile-friendly layout",
@@ -238,7 +281,7 @@ export function formatBugFixPrompt(bugTitle: string, bugDescription: string, too
 
   switch (tool) {
     case "cursor":
-      return `# Bug Fix: ${bugTitle}\n\n${base}\n\n## Steps\n1. Locate the relevant code\n2. Identify root cause\n3. Apply minimal fix\n4. Verify no regressions`;
+      return `# Bug Fix: ${bugTitle}\n\nTarget file: infer from the stack, usually \`src/app/page.tsx\` or the API route that threw.\n\n${base}\n\n## Steps\n1. Open the failing file\n2. Apply a minimal typed fix (error boundary / Tailwind overflow / fetch guard)\n3. Re-test the original UAT step at 375px and desktop\n4. Run \`npm run build\``;
     case "lovable":
       return `# Fix: ${bugTitle}\n\n${base}\n\nEnsure UI fix works on all screen sizes.`;
     default:

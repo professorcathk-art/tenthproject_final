@@ -5,6 +5,7 @@ import {
   getCourseBySlug,
   replaceCaseStudies,
   seedPlatformData,
+  upsertCaseStudy,
 } from "@/lib/db/platform-store";
 import { CASE_SEED_MARKER, getSeedCaseStudies } from "@/lib/seed/case-studies";
 import { FLAGSHIP_SLUG, getSeedLessons, LEGACY_AGENT_COURSE_ID, SEED_COURSES } from "@/lib/seed/platform-seed";
@@ -26,12 +27,21 @@ export async function ensureCoursesSeeded() {
   }
 }
 
+async function upsertMissingSeedCases() {
+  for (const seed of getSeedCaseStudies()) {
+    const existing = await getCaseStudyBySlug(seed.slug);
+    if (!existing) await upsertCaseStudy(seed);
+  }
+}
+
 export async function ensureCasesSeeded() {
   if (casesReady) return;
   try {
     const count = await countPublishedCaseStudies();
     if (count < 4) {
       await replaceCaseStudies(getSeedCaseStudies());
+    } else {
+      await upsertMissingSeedCases();
     }
     casesReady = true;
   } catch (e) {

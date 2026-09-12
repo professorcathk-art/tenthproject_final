@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "@/lib/auth/session";
-import { collectSprintBacklog, synthesizeSprintPrompt } from "@/lib/ai/sprint-prompt";
+import { collectSprintBacklog, synthesizeSprintPrompt, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/sprint-prompt";
 import { addPromptRun, getProject, logActivity } from "@/lib/db/store";
 import type { AITool, AiSuggestion } from "@/types";
+
+export const SYSTEM_PROMPT = SPRINT_PROMPT_SYSTEM;
 
 export async function POST(request: NextRequest) {
   try {

@@ -11,6 +11,7 @@ import { UAT_STATUSES, type UATItem, type UATRemark } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW, enUS } from "date-fns/locale";
 import { useI18n } from "@/components/i18n/provider";
+import { buildRetestPrompt } from "@/lib/ai/executable-spec";
 
 interface UATDetailProps {
   projectId: string;
@@ -90,12 +91,19 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig?.color}`}>
             {p.uatStatuses[item.status] ?? statusConfig?.label}
           </span>
-          <Badge variant="outline">{item.severity}</Badge>
+          <Badge variant="outline">{item.priority ?? item.severity}</Badge>
         </div>
       </div>
 
+      {item.test_path ? (
+        <Card>
+          <CardHeader><CardTitle className="text-base">{p.uatTestPath}</CardTitle></CardHeader>
+          <CardContent><p className="text-sm font-mono text-slate-600">{item.test_path}</p></CardContent>
+        </Card>
+      ) : null}
+
       <Card>
-        <CardHeader><CardTitle className="text-base">{p.expected}</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{p.uatSteps}</CardTitle></CardHeader>
         <CardContent><p className="text-sm text-slate-600">{item.expected_result}</p></CardContent>
       </Card>
 
@@ -128,10 +136,21 @@ export function UATDetailView({ projectId, projectName, item: initialItem, remar
               </Button>
             ))}
           </div>
-          <Button variant="outline" onClick={retest} disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-            {p.retest}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                void navigator.clipboard.writeText(buildRetestPrompt(item));
+                alert(p.retestCopied);
+              }}
+            >
+              {p.retestPrompt}
+            </Button>
+            <Button variant="outline" onClick={retest} disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              {p.retest}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

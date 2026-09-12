@@ -1,21 +1,8 @@
-import type { CaseHighlight, CaseStudy, CaseStudyCategory } from "@/types/platform";
+import type { CaseStudy } from "@/types/platform";
 import { CASE_SEED_MARKER, CASE_LOCALE_SPLIT } from "@/lib/inspiration/constants";
+import { BATCH2_CASES, type SeedCase } from "@/lib/seed/case-studies-batch2";
 
 export { CASE_SEED_MARKER, CASE_LOCALE_SPLIT };
-
-type SeedCase = {
-  id: string;
-  title: string;
-  slug: string;
-  category: CaseStudyCategory;
-  categories: CaseStudyCategory[];
-  website: string;
-  highlights: CaseHighlight[];
-  summaryZh: string;
-  summaryEn: string;
-  bodyZh: string;
-  bodyEn: string;
-};
 
 const CASES: SeedCase[] = [
   {
@@ -591,6 +578,7 @@ a16z’s 2025+ story is *agentic*: budgets move from Copilot seats to “an empl
 The warning is equal: demos lie, production slaps. Too many tools and the model picks wrong; too many MCP servers and the context window fills with junk schema. A solo founder’s edge is **vertical** — ten tools in one industry, not a general employee. HumanAI’s “embedded architect + Hope” admits the same thing: software alone is not enough; a human stays in the loop. That is not a retreat. That is a billable shape.
 `,
   },
+  ...BATCH2_CASES,
 ];
 
 export function getSeedCaseStudies(): CaseStudy[] {

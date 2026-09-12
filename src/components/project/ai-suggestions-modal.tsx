@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,10 +37,12 @@ export function AiSuggestionsModal({
   const p = dict.project;
   const [drafts, setDrafts] = useState<AiSuggestion[]>(suggestions);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
+  const snapshotKey = `${open}:${suggestions.map((item) => item.id).join(",")}`;
+  const [seenKey, setSeenKey] = useState(snapshotKey);
+  if (snapshotKey !== seenKey) {
+    setSeenKey(snapshotKey);
     if (open) setDrafts(suggestions);
-  }, [open, suggestions]);
+  }
 
   const visible = useMemo(
     () => drafts.filter((item) => item.status !== "applied"),

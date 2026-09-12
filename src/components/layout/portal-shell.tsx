@@ -37,6 +37,68 @@ import { cn } from "@/lib/utils";
 
 type PortalUser = { email: string; name?: string; isAdmin: boolean };
 
+function PortalNavLinks({
+  items,
+  pathname,
+  community,
+  skool,
+  whatsapp,
+  onNavigate,
+}: {
+  items: { href: string; label: string; icon: typeof FolderKanban }[];
+  pathname: string;
+  community: string;
+  skool: string;
+  whatsapp: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <nav className="space-y-1">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              current
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
+                : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {item.label}
+          </Link>
+        );
+      })}
+      <p className="px-3 pt-4 pb-1 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+        {community}
+      </p>
+      <a
+        href={SKOOL_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        <Users className="h-4 w-4" />
+        {skool}
+      </a>
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        <MessageCircle className="h-4 w-4" />
+        {whatsapp}
+      </a>
+    </nav>
+  );
+}
+
 export function PortalShell({ user, children }: { user: PortalUser; children: React.ReactNode }) {
   const { dict } = useI18n();
   const pathname = usePathname();
@@ -44,14 +106,17 @@ export function PortalShell({ user, children }: { user: PortalUser; children: Re
   const [commandOpen, setCommandOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const nav = [
-    { href: "/dashboard", label: dict.portal.hub, icon: FolderKanban },
-    { href: "/learning", label: dict.portal.learning, icon: BookOpen },
-    { href: "/mcp", label: dict.portal.mcp, icon: KeyRound },
-    { href: "/vault", label: dict.portal.vault, icon: Lightbulb },
-    { href: "/settings", label: dict.portal.settings, icon: Settings },
-    ...(user.isAdmin ? [{ href: "/admin", label: dict.nav.admin, icon: Shield }] : []),
-  ];
+  const nav = useMemo(
+    () => [
+      { href: "/dashboard", label: dict.portal.hub, icon: FolderKanban },
+      { href: "/learning", label: dict.portal.learning, icon: BookOpen },
+      { href: "/mcp", label: dict.portal.mcp, icon: KeyRound },
+      { href: "/vault", label: dict.portal.vault, icon: Lightbulb },
+      { href: "/settings", label: dict.portal.settings, icon: Settings },
+      ...(user.isAdmin ? [{ href: "/admin", label: dict.nav.admin, icon: Shield }] : []),
+    ],
+    [dict.nav.admin, dict.portal.hub, dict.portal.learning, dict.portal.mcp, dict.portal.settings, dict.portal.vault, user.isAdmin],
+  );
 
   const commands = useMemo(
     () => [
@@ -90,54 +155,6 @@ export function PortalShell({ user, children }: { user: PortalUser; children: Re
     .slice(0, 2)
     .toUpperCase();
 
-  function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
-    return (
-      <nav className="space-y-1">
-        {nav.map((item) => {
-          const Icon = item.icon;
-          const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                current
-                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
-        <p className="px-3 pt-4 pb-1 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
-          {dict.portal.community}
-        </p>
-        <a
-          href={SKOOL_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          <Users className="h-4 w-4" />
-          {dict.portal.skool}
-        </a>
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          <MessageCircle className="h-4 w-4" />
-          {dict.portal.whatsapp}
-        </a>
-      </nav>
-    );
-  }
-
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white/80 px-4 py-5 backdrop-blur-xl lg:flex dark:border-slate-800 dark:bg-slate-950/70">
@@ -147,7 +164,13 @@ export function PortalShell({ user, children }: { user: PortalUser; children: Re
           </div>
           <span className="tracking-tight">{dict.portal.brand}</span>
         </Link>
-        <NavLinks />
+        <PortalNavLinks
+          items={nav}
+          pathname={pathname}
+          community={dict.portal.community}
+          skool={dict.portal.skool}
+          whatsapp={dict.portal.whatsapp}
+        />
         <div className="mt-auto rounded-2xl border border-slate-200/80 px-3 py-3 text-xs text-slate-500 dark:border-slate-800">
           <p className="font-semibold text-slate-900 dark:text-white">{dict.portal.lifetime}</p>
           <p className="mt-1 truncate">{user.email}</p>
@@ -163,7 +186,13 @@ export function PortalShell({ user, children }: { user: PortalUser; children: Re
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
                 <div className="mt-10">
-                  <NavLinks />
+                  <PortalNavLinks
+                    items={nav}
+                    pathname={pathname}
+                    community={dict.portal.community}
+                    skool={dict.portal.skool}
+                    whatsapp={dict.portal.whatsapp}
+                  />
                 </div>
               </SheetContent>
             </Sheet>

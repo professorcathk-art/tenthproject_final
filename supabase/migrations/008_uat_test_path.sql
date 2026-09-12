@@ -1,0 +1,1 @@
+ALTER TABLE uat_items ADD COLUMN IF NOT EXISTS test_path TEXT;

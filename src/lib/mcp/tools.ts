@@ -111,6 +111,8 @@ export async function executeMcpTool(
           title: u.title,
           status: u.status,
           expected_result: u.expected_result,
+          test_path: u.test_path,
+          priority: u.priority,
           severity: u.severity,
           remark: u.remark,
         })),

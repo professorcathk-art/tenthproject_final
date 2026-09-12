@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import type { AiSuggestion, ProjectWithRelations, SuggestionCategory } from "@/types";
 import type { WebsiteCheckResult } from "@/lib/playwright/check-http";
+import { a11yWarningToTask, httpErrorToTask, metricToPerformanceTask } from "@/lib/ai/executable-spec";
 
 const CATEGORIES: SuggestionCategory[] = ["bug", "ui_ux", "performance", "feature"];
 const SEVERITIES = ["low", "medium", "high", "critical"] as const;
@@ -56,11 +57,12 @@ export function heuristicSiteSuggestions(
   const status = result.httpStatus;
 
   if (status !== null && status >= 400) {
+    const task = httpErrorToTask(status, result.durationMs);
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "bug",
-        title: `網站回傳 HTTP ${status}`,
-        description: `即時檢查 ${result.durationMs}ms 內收到 ${status}。請先確認路由、部署與環境變數，再測一次首頁。`,
+        title: task.title,
+        description: task.description,
         severity: status >= 500 ? "critical" : "high",
       }),
     );
@@ -68,19 +70,20 @@ export function heuristicSiteSuggestions(
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "bug",
-        title: "網站無法完成健康檢查",
-        description: result.consoleErrors[0] || result.resultSummary,
+        title: "[Bug] Live check never completed",
+        description: `Target: \`src/app/page.tsx\` and the deploy/env for ${project.website_url ?? "the live URL"}. Action: fix the failing request (${result.consoleErrors[0] || result.resultSummary}) and add src/app/error.tsx. Acceptance: health check returns 2xx; npm run build passes.`,
         severity: "critical",
       }),
     );
   }
 
   if (result.durationMs >= 3000) {
+    const task = metricToPerformanceTask(result.durationMs);
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "performance",
-        title: "首屏回應偏慢",
-        description: `檢查耗時 ${result.durationMs}ms。建議壓縮圖片、減少阻塞腳本，並確認伺服器冷啟動。`,
+        title: task.title,
+        description: task.description,
         severity: result.durationMs >= 8000 ? "high" : "medium",
       }),
     );
@@ -91,19 +94,20 @@ export function heuristicSiteSuggestions(
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "bug",
-        title: clip(error, 72),
-        description: `主控台／檢查器回報：${error}`,
+        title: clip(`[Bug] ${error}`, 72),
+        description: `Target: \`src/app/page.tsx\` (or the client component that threw). Action: catch this console error — ${error} — with an error boundary / typed fetch. Acceptance: console clean on reload; npm run build passes.`,
         severity: /failed|uncaught|timeout/i.test(error) ? "high" : "medium",
       }),
     );
   }
 
   for (const warning of result.accessibilityWarnings.slice(0, 3)) {
+    const task = a11yWarningToTask(warning);
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "ui_ux",
-        title: clip(warning, 72),
-        description: `${warning}。這會影響手機可用性與無障礙，建議本輪一併修正。`,
+        title: clip(task.title, 72),
+        description: task.description,
         severity: /viewport|horizontal scroll/i.test(warning) ? "high" : "medium",
       }),
     );
@@ -113,8 +117,8 @@ export function heuristicSiteSuggestions(
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: /button|interactive/i.test(missing) ? "feature" : "ui_ux",
-        title: clip(missing, 72),
-        description: `${missing}。請對照產品目標「${project.goal ?? project.description ?? project.name}」補上清楚的下一步。`,
+        title: clip(`[Feature] ${missing}`, 72),
+        description: `Target: \`src/app/page.tsx\`. Action: add the missing control (${missing}) as a shadcn Button/Link with a clear href or onClick. Acceptance: element is in the a11y tree; matches goal「${project.goal ?? project.description ?? project.name}」; npm run build passes.`,
         severity: "medium",
       }),
     );
@@ -124,8 +128,8 @@ export function heuristicSiteSuggestions(
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "feature",
-        title: "補強空狀態與下一步引導",
-        description: `網站目前可連上${result.pageTitle ? `（${result.pageTitle}）` : ""}。建議檢查新使用者是否看得出主行動，並補 loading / empty / error 三態。`,
+        title: "[Feature] Empty / error / loading triad on src/app/page.tsx",
+        description: `Target: \`src/app/page.tsx\`. Action: add Skeleton, empty Alert, and error Alert around the primary data fetch${result.pageTitle ? ` (page: ${result.pageTitle})` : ""}. Acceptance: new users see a next step in all three states; npm run build passes.`,
         severity: "medium",
         approved: true,
       }),
@@ -133,8 +137,8 @@ export function heuristicSiteSuggestions(
     items.push(
       makeSuggestion(project.id, testRunId, {
         category: "ui_ux",
-        title: "用手機寬度走一次主流程",
-        description: "即使桌面正常，375px 下按鈕、表單與橫向溢出仍常出問題。請把主流程當成本輪驗收。",
+        title: "[UI] 375px pass on the primary form",
+        description: "Target: `src/app/page.tsx`. Action: `w-full max-w-xl mx-auto px-4` + `grid-cols-1 md:grid-cols-3`. Acceptance: no horizontal scroll at 375px; tap targets ≥44px; npm run build passes.",
         severity: "low",
         approved: false,
       }),
@@ -181,14 +185,18 @@ export async function analyzeLiveSite(
       messages: [
         {
           role: "system",
-          content: `You are a product QA architect. Turn a live website inspection into 3-8 actionable sprint cards for a non-technical founder.
+          content: `You are a Technical Lead. Convert a live website inspection into 3-8 Cursor-executable sprint cards.
 Return ONLY JSON: {"suggestions":[{"category":"bug|ui_ux|performance|feature","title":"string","description":"string","severity":"low|medium|high|critical","approved":true}]}
-Rules:
-- Ground every card in the inspection evidence. Do not invent stack traces.
-- Titles under 40 Chinese characters or 12 English words.
-- Descriptions must say what to change and why it matters.
-- Prefer Traditional Chinese if the project name/description is Chinese; otherwise match the project language.
-- Mark must-fix items approved=true; optional polish approved=false.`,
+STRICT RULE: NEVER write "improve UI", "optimize UX", or "conduct UAT".
+Each description MUST name:
+1. Target file (src/app/page.tsx, src/app/error.tsx, src/components/...)
+2. Concrete React/Next.js/Tailwind action (next/dynamic, Skeleton, grid-cols-1 md:grid-cols-3, error boundary)
+3. Acceptance criteria including npm run build
+If durationMs >= 3000, emit a [Performance] card that dynamic-imports heavy charts — do not say "make it faster".
+If httpStatus >= 400, target error.tsx / the failing API route.
+Ground every card in the inspection evidence. Do not invent stack traces.
+Prefer Traditional Chinese when the project copy is Chinese.
+Mark must-fix items approved=true; optional polish approved=false.`,
         },
         {
           role: "user",

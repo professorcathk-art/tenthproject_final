@@ -107,6 +107,7 @@ export interface UATItem {
   task_id: string | null;
   phase_id: string | null;
   title: string;
+  test_path: string | null;
   expected_result: string | null;
   actual_result: string | null;
   status: UATStatus;
@@ -223,6 +224,7 @@ export interface AIAnalysis {
   uatItems: Array<{
     title: string;
     expectedResult: string;
+    testPath?: string;
     severity: string;
     phase?: string;
   }>;

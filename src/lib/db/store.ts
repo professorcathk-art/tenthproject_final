@@ -18,6 +18,7 @@ import type {
   UATRemark,
 } from "@/types";
 import { DEMO_USER } from "@/lib/auth/session";
+import { inferTargetFile } from "@/lib/ai/executable-spec";
 import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -486,23 +487,31 @@ export async function deleteTask(taskId: string, projectId: string) {
 
 export async function createUATItem(
   projectId: string,
-  data: { title: string; expected_result?: string | null; severity?: UATItem["severity"] },
+  data: {
+    title: string;
+    expected_result?: string | null;
+    test_path?: string | null;
+    severity?: UATItem["severity"];
+    priority?: UATItem["priority"];
+  },
 ) {
   const now = new Date().toISOString();
+  const priority = data.priority ?? (data.severity === "high" || data.severity === "critical" ? "high" : data.severity === "low" ? "low" : "medium");
   const item: UATItem = {
     id: uuidv4(),
     project_id: projectId,
     task_id: null,
     phase_id: null,
     title: data.title.trim(),
+    test_path: data.test_path?.trim() || null,
     expected_result: data.expected_result?.trim() || null,
     actual_result: null,
     status: "not_started",
-    severity: data.severity ?? "medium",
+    severity: data.severity ?? (priority === "high" ? "high" : priority === "low" ? "low" : "medium"),
     remark: null,
     evidence_url: null,
     owner: null,
-    priority: "medium",
+    priority,
     created_at: now,
     updated_at: now,
   };
@@ -851,8 +860,10 @@ export async function applyApprovedSuggestions(projectId: string, drafts: AiSugg
     if ((item.severity === "high" || item.severity === "critical") && !uatTitles.has(uatTitle.toLowerCase())) {
       await createUATItem(projectId, {
         title: uatTitle,
+        test_path: inferTargetFile(`${item.title}\n${item.description}`),
         expected_result: item.description,
         severity: item.severity,
+        priority,
       });
       created.uat += 1;
       uatTitles.add(uatTitle.toLowerCase());
