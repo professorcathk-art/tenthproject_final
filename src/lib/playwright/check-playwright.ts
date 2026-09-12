@@ -15,6 +15,7 @@ export async function runPlaywrightWebsiteCheck(url: string, projectId: string):
   const consoleErrors: string[] = [];
   const accessibilityWarnings: string[] = [];
   const missingElements: string[] = [];
+  const started = Date.now();
 
   let browser;
   try {
@@ -31,7 +32,8 @@ export async function runPlaywrightWebsiteCheck(url: string, projectId: string):
       consoleErrors.push(err.message);
     });
 
-    await page.goto(target, { waitUntil: "networkidle", timeout: 30000 });
+    const navigation = await page.goto(target, { waitUntil: "networkidle", timeout: 30000 });
+    const httpStatus = navigation?.status() ?? null;
     await page.screenshot({ path: screenshotPath, fullPage: false });
 
     const pageTitle = await page.title();
@@ -69,11 +71,13 @@ export async function runPlaywrightWebsiteCheck(url: string, projectId: string):
 
     await mobilePage.close();
 
+    const durationMs = Date.now() - started;
     const issues = [...consoleErrors, ...accessibilityWarnings, ...missingElements];
+    const statusLabel = httpStatus ?? "unknown";
     const resultSummary =
       issues.length === 0
-        ? `Page "${pageTitle}" loaded successfully with no obvious issues detected.`
-        : `Found ${issues.length} issue(s): ${issues.slice(0, 3).join("; ")}${issues.length > 3 ? "..." : ""}`;
+        ? `HTTP ${statusLabel}: "${pageTitle}" loaded in ${durationMs}ms with no obvious issues detected.`
+        : `HTTP ${statusLabel} found ${issues.length} issue(s) in ${durationMs}ms: ${issues.slice(0, 3).join("; ")}${issues.length > 3 ? "..." : ""}`;
 
     const buffer = await fs.readFile(screenshotPath);
 
@@ -86,6 +90,8 @@ export async function runPlaywrightWebsiteCheck(url: string, projectId: string):
       resultSummary,
       pageTitle,
       hasViewport,
+      httpStatus,
+      durationMs,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -98,6 +104,8 @@ export async function runPlaywrightWebsiteCheck(url: string, projectId: string):
       resultSummary: `Failed to check website: ${message}`,
       pageTitle: "",
       hasViewport: false,
+      httpStatus: null,
+      durationMs: Date.now() - started,
     };
   } finally {
     if (browser) await browser.close();

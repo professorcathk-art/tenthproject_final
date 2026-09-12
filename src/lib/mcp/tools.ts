@@ -31,6 +31,11 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "get_sprint_prompt",
+    description: "Fetch the latest Cursor master prompt and approved AI audit suggestions for this sprint",
+    inputSchema: { type: "object", properties: {}, required: [] },
+  },
+  {
     name: "log_bug",
     description: "Log a bug when a build or test fails in Cursor",
     inputSchema: {
@@ -56,6 +61,7 @@ export async function executeMcpTool(
 
   switch (toolName) {
     case "get_active_roadmap": {
+      const latestPrompt = project.prompt_runs?.[0] ?? null;
       return {
         project: project.name,
         stage: project.stage,
@@ -69,6 +75,29 @@ export async function executeMcpTool(
         })),
         nextAction: project.context_versions?.[0]?.analysis_json?.nextAction ?? "Complete highest priority task",
         openBugs: (project.bugs ?? []).filter((b) => b.status === "open").length,
+        approvedSuggestions: (project.ai_suggestions ?? [])
+          .filter((item) => item.approved && item.status !== "dismissed")
+          .map((item) => ({ id: item.id, title: item.title, category: item.category, severity: item.severity })),
+        latestPromptType: latestPrompt?.prompt_type ?? null,
+        latestPromptAt: latestPrompt?.created_at ?? null,
+      };
+    }
+
+    case "get_sprint_prompt": {
+      const latestPrompt = project.prompt_runs?.[0] ?? null;
+      return {
+        project: project.name,
+        website_url: project.website_url,
+        prompt: latestPrompt?.prompt_text ?? null,
+        prompt_type: latestPrompt?.prompt_type ?? null,
+        created_at: latestPrompt?.created_at ?? null,
+        suggestions: project.ai_suggestions ?? [],
+        failedUat: (project.uat_items ?? [])
+          .filter((item) => item.status === "failed" || item.status === "reopened")
+          .map((item) => ({ id: item.id, title: item.title, status: item.status })),
+        openBugs: (project.bugs ?? [])
+          .filter((bug) => bug.status === "open" || bug.status === "in_progress")
+          .map((bug) => ({ id: bug.id, title: bug.title, severity: bug.severity })),
       };
     }
 

@@ -28,6 +28,7 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
   const [newKey, setNewKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [endpointOk, setEndpointOk] = useState<boolean | null>(null);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://tenthproject-final.vercel.app";
   const mcpConfig = JSON.stringify(
@@ -47,6 +48,9 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
     fetch(`/api/mcp-keys?projectId=${projectId}`)
       .then((r) => r.json())
       .then((d) => setKeys(d.keys ?? []));
+    fetch("/api/mcp")
+      .then((r) => setEndpointOk(r.ok))
+      .catch(() => setEndpointOk(false));
   }, [projectId]);
 
   async function generateKey() {
@@ -88,8 +92,18 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
   ];
   const examples = [dict.mcp.example1, dict.mcp.example2, dict.mcp.example3];
 
+  const recentlyUsed = keys.some((key) => key.last_used_at);
   const keyPanel = (
     <>
+      <div className="rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-3">
+        <div>
+          <div className="font-medium">{endpointOk ? dict.project.mcpReady : dict.mcp.title}</div>
+          <p className="text-xs text-slate-500">
+            {recentlyUsed ? dict.project.mcpLive : dict.project.mcpIdle}
+          </p>
+        </div>
+        <Badge variant={endpointOk ? "secondary" : "outline"}>{endpointOk ? "live" : "…"}</Badge>
+      </div>
       <div className="flex flex-wrap gap-2">
         <Button onClick={generateKey} disabled={loading}>
           <Key className="h-4 w-4 mr-1" /> {dict.mcp.generate}

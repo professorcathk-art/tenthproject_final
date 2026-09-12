@@ -22,6 +22,8 @@ import {
   updatePhase,
   deletePhase,
   ensureProfile,
+  applyApprovedSuggestions,
+  saveAiSuggestions,
 } from "@/lib/db/store";
 
 export async function GET(request: NextRequest) {
@@ -146,6 +148,14 @@ export async function PATCH(request: NextRequest) {
     if (action === "delete_phase") {
       await deletePhase(updates.phaseId, projectId);
       return NextResponse.json({ success: true });
+    }
+    if (action === "apply_suggestions") {
+      const result = await applyApprovedSuggestions(projectId, updates.suggestions ?? []);
+      return NextResponse.json(result);
+    }
+    if (action === "save_suggestions") {
+      const suggestions = await saveAiSuggestions(projectId, updates.suggestions ?? []);
+      return NextResponse.json({ suggestions });
     }
 
     const project = await updateProject(projectId, user.id, updates);

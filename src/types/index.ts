@@ -180,7 +180,26 @@ export interface TestRun {
   console_errors: string[];
   accessibility_warnings: string[];
   result_summary: string | null;
+  http_status?: number | null;
+  duration_ms?: number | null;
   created_at: string;
+}
+
+export type SuggestionCategory = "bug" | "ui_ux" | "performance" | "feature";
+export type SuggestionStatus = "pending" | "approved" | "dismissed" | "applied";
+
+export interface AiSuggestion {
+  id: string;
+  project_id: string;
+  test_run_id: string | null;
+  category: SuggestionCategory;
+  title: string;
+  description: string;
+  severity: "low" | "medium" | "high" | "critical";
+  approved: boolean;
+  status: SuggestionStatus;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ActivityLog {
@@ -237,6 +256,7 @@ export interface ProjectWithRelations extends Project {
   context_versions?: ContextVersion[];
   test_runs?: TestRun[];
   activity_logs?: ActivityLog[];
+  ai_suggestions?: AiSuggestion[];
 }
 
 export const PRODUCT_TYPES: { value: ProductType; label: string }[] = [

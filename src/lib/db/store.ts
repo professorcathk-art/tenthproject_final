@@ -3,6 +3,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import type {
   ActivityLog,
+  AiSuggestion,
   Bug,
   ContextVersion,
   Enhancement,
@@ -37,6 +38,7 @@ interface LocalStore {
   contextVersions: ContextVersion[];
   testRuns: TestRun[];
   activityLogs: ActivityLog[];
+  aiSuggestions: AiSuggestion[];
 }
 
 const emptyStore = (): LocalStore => ({
@@ -53,7 +55,17 @@ const emptyStore = (): LocalStore => ({
   contextVersions: [],
   testRuns: [],
   activityLogs: [],
+  aiSuggestions: [],
 });
+
+const SITE_AUDIT_MARKER = "site_audit_suggestions";
+
+function asSuggestionBundle(value: unknown): AiSuggestion[] {
+  if (!value || typeof value !== "object") return [];
+  const record = value as { kind?: string; suggestions?: AiSuggestion[] };
+  if (record.kind !== "site_audit" || !Array.isArray(record.suggestions)) return [];
+  return record.suggestions;
+}
 
 async function persistStoreFile(store: LocalStore) {
   if (!CAN_PERSIST_LOCAL) return;
@@ -69,7 +81,9 @@ async function ensureStore(): Promise<LocalStore> {
   if (CAN_PERSIST_LOCAL) {
     try {
       const raw = await fs.readFile(STORE_FILE, "utf-8");
-      return JSON.parse(raw) as LocalStore;
+      const parsed = JSON.parse(raw) as LocalStore;
+      parsed.aiSuggestions = parsed.aiSuggestions ?? [];
+      return parsed;
     } catch {
       /* seed an empty local file below */
     }
@@ -154,6 +168,8 @@ export async function getProject(projectId: string, userId: string) {
         supabase.from("activity_logs").select("*").eq("project_id", projectId).order("created_at", { ascending: false }).limit(50),
       ]);
 
+    const suggestions = await loadAiSuggestions(projectId);
+
     return {
       ...(project as Project),
       phases: phases.data ?? [],
@@ -166,6 +182,7 @@ export async function getProject(projectId: string, userId: string) {
       context_versions: contextVersions.data ?? [],
       test_runs: testRuns.data ?? [],
       activity_logs: activityLogs.data ?? [],
+      ai_suggestions: suggestions,
     };
   }
 
@@ -185,6 +202,7 @@ export async function getProject(projectId: string, userId: string) {
     context_versions: store.contextVersions.filter((c) => c.project_id === projectId),
     test_runs: store.testRuns.filter((t) => t.project_id === projectId),
     activity_logs: store.activityLogs.filter((a) => a.project_id === projectId).slice(0, 50),
+    ai_suggestions: store.aiSuggestions.filter((item) => item.project_id === projectId),
   };
 }
 
@@ -427,7 +445,7 @@ export async function updateBug(bugId: string, projectId: string, updates: Parti
 
 export async function createTask(
   projectId: string,
-  data: { title: string; description?: string | null; priority?: Task["priority"] },
+  data: { title: string; description?: string | null; priority?: Task["priority"]; source?: Task["source"] },
 ) {
   const now = new Date().toISOString();
   const task: Task = {
@@ -438,7 +456,7 @@ export async function createTask(
     description: data.description?.trim() || null,
     status: "todo",
     priority: data.priority ?? "medium",
-    source: "manual",
+    source: data.source ?? "manual",
     created_at: now,
     updated_at: now,
   };
@@ -702,13 +720,162 @@ export async function addPromptRun(promptRun: PromptRun) {
 export async function addTestRun(testRun: TestRun) {
   if (isSupabaseConfigured()) {
     const supabase = createServiceClient();
-    await supabase.from("test_runs").insert(testRun);
+    const { error } = await supabase.from("test_runs").insert(testRun);
+    if (error && (testRun.http_status != null || testRun.duration_ms != null)) {
+      const { http_status: _http, duration_ms: _duration, ...legacy } = testRun;
+      await supabase.from("test_runs").insert(legacy);
+    }
     return testRun;
   }
   const store = await ensureStore();
   store.testRuns.unshift(testRun);
   await saveStore(store);
   return testRun;
+}
+
+async function loadAiSuggestions(projectId: string): Promise<AiSuggestion[]> {
+  if (!isSupabaseConfigured()) {
+    const store = await ensureStore();
+    return store.aiSuggestions.filter((item) => item.project_id === projectId);
+  }
+
+  const supabase = createServiceClient();
+  const table = await supabase
+    .from("ai_suggestions")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false });
+
+  if (!table.error) return (table.data ?? []) as AiSuggestion[];
+
+  const { data } = await supabase
+    .from("context_versions")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("summary_text", SITE_AUDIT_MARKER)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return asSuggestionBundle(data?.analysis_json);
+}
+
+export async function saveAiSuggestions(projectId: string, suggestions: AiSuggestion[]) {
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const tableRead = await supabase.from("ai_suggestions").select("id").eq("project_id", projectId).limit(1);
+    if (!tableRead.error) {
+      const incomingIds = new Set(suggestions.map((item) => item.id));
+      const { data: existing } = await supabase.from("ai_suggestions").select("id").eq("project_id", projectId);
+      const stale = (existing ?? []).map((row) => row.id).filter((id) => !incomingIds.has(id));
+      if (stale.length) await supabase.from("ai_suggestions").delete().in("id", stale);
+      if (suggestions.length) {
+        const { error } = await supabase.from("ai_suggestions").upsert(suggestions);
+        if (error) throw new Error(error.message);
+      }
+      return suggestions;
+    }
+
+    const bundle = {
+      id: uuidv4(),
+      project_id: projectId,
+      summary_text: SITE_AUDIT_MARKER,
+      analysis_json: { kind: "site_audit", suggestions },
+      created_at: new Date().toISOString(),
+    };
+    await supabase.from("context_versions").delete().eq("project_id", projectId).eq("summary_text", SITE_AUDIT_MARKER);
+    await supabase.from("context_versions").insert(bundle);
+    return suggestions;
+  }
+
+  const store = await ensureStore();
+  store.aiSuggestions = [
+    ...store.aiSuggestions.filter((item) => item.project_id !== projectId),
+    ...suggestions,
+  ];
+  await saveStore(store);
+  return suggestions;
+}
+
+export async function applyApprovedSuggestions(projectId: string, drafts: AiSuggestion[]) {
+  const existing = await loadAiSuggestions(projectId);
+  const selected = drafts.filter((item) => item.approved && item.status === "pending");
+  const now = new Date().toISOString();
+  const created = { tasks: 0, bugs: 0, uat: 0 };
+  const taskTitles = new Set<string>();
+  const bugTitles = new Set<string>();
+  const uatTitles = new Set<string>();
+
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const [{ data: tasks }, { data: bugs }, { data: uat }] = await Promise.all([
+      supabase.from("tasks").select("title").eq("project_id", projectId),
+      supabase.from("bugs").select("title").eq("project_id", projectId),
+      supabase.from("uat_items").select("title").eq("project_id", projectId),
+    ]);
+    for (const row of tasks ?? []) if (row.title) taskTitles.add(row.title.toLowerCase());
+    for (const row of bugs ?? []) if (row.title) bugTitles.add(row.title.toLowerCase());
+    for (const row of uat ?? []) if (row.title) uatTitles.add(row.title.toLowerCase());
+  } else {
+    const store = await ensureStore();
+    for (const row of store.tasks.filter((item) => item.project_id === projectId)) taskTitles.add(row.title.toLowerCase());
+    for (const row of store.bugs.filter((item) => item.project_id === projectId)) bugTitles.add(row.title.toLowerCase());
+    for (const row of store.uatItems.filter((item) => item.project_id === projectId)) uatTitles.add(row.title.toLowerCase());
+  }
+
+  for (const item of selected) {
+    const priority = item.severity === "critical" || item.severity === "high" ? "high" : item.severity === "low" ? "low" : "medium";
+    const key = item.title.toLowerCase();
+    if (!taskTitles.has(key)) {
+      await createTask(projectId, {
+        title: item.title,
+        description: item.description,
+        priority,
+        source: "ai",
+      });
+      created.tasks += 1;
+      taskTitles.add(key);
+    }
+
+    if (item.category === "bug" && !bugTitles.has(key)) {
+      await createBug(projectId, {
+        title: item.title,
+        description: item.description,
+        severity: item.severity,
+      });
+      created.bugs += 1;
+      bugTitles.add(key);
+    }
+
+    const uatTitle = `驗收：${item.title}`;
+    if ((item.severity === "high" || item.severity === "critical") && !uatTitles.has(uatTitle.toLowerCase())) {
+      await createUATItem(projectId, {
+        title: uatTitle,
+        expected_result: item.description,
+        severity: item.severity,
+      });
+      created.uat += 1;
+      uatTitles.add(uatTitle.toLowerCase());
+    }
+  }
+
+  const selectedIds = new Set(selected.map((item) => item.id));
+  const draftMap = new Map(drafts.map((item) => [item.id, item]));
+  const next = existing.map((item) => {
+    const edited = draftMap.get(item.id);
+    const merged = edited ? { ...item, ...edited, updated_at: now } : item;
+    if (selectedIds.has(item.id)) {
+      return { ...merged, approved: true, status: "applied" as const, updated_at: now };
+    }
+    if (edited && !edited.approved) {
+      return { ...merged, approved: false, status: "dismissed" as const, updated_at: now };
+    }
+    return merged;
+  });
+
+  const extras = drafts.filter((item) => !existing.some((current) => current.id === item.id));
+  await saveAiSuggestions(projectId, [...next, ...extras]);
+  return { created, suggestions: await loadAiSuggestions(projectId) };
 }
 
 const OPEN_UAT = new Set(["not_started", "in_progress", "failed", "blocked", "needs_review", "reopened"]);

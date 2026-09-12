@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
         ...result.missingElements,
       ],
       result_summary: result.resultSummary,
+      http_status: result.httpStatus,
+      duration_ms: result.durationMs,
       created_at: new Date().toISOString(),
     };
 

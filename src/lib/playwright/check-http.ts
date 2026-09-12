@@ -7,6 +7,8 @@ export interface WebsiteCheckResult {
   pageTitle: string;
   hasViewport: boolean;
   missingElements: string[];
+  httpStatus: number | null;
+  durationMs: number;
 }
 
 function decodeHtml(value: string) {
@@ -32,6 +34,7 @@ export async function runHttpWebsiteCheck(url: string): Promise<WebsiteCheckResu
   const target = normalizeCheckUrl(url);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
+  const started = Date.now();
 
   try {
     const response = await fetch(target, {
@@ -42,6 +45,7 @@ export async function runHttpWebsiteCheck(url: string): Promise<WebsiteCheckResu
         Accept: "text/html,application/xhtml+xml",
       },
     });
+    const durationMs = Date.now() - started;
     const html = await response.text();
     const pageTitle = decodeHtml(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "");
     const hasViewport = /<meta[^>]+name=["']viewport["']/i.test(html);
@@ -74,8 +78,8 @@ export async function runHttpWebsiteCheck(url: string): Promise<WebsiteCheckResu
     const label = pageTitle || target;
     const resultSummary =
       issues.length === 0
-        ? `HTTP check: "${label}" responded ${response.status} with no obvious markup issues. Full browser/screenshot checks run locally.`
-        : `HTTP check found ${issues.length} issue(s): ${issues.slice(0, 3).join("; ")}${issues.length > 3 ? "..." : ""}`;
+        ? `HTTP ${response.status}: "${label}" responded in ${durationMs}ms with no obvious markup issues. Full browser/screenshot checks run locally.`
+        : `HTTP ${response.status} check found ${issues.length} issue(s) in ${durationMs}ms: ${issues.slice(0, 3).join("; ")}${issues.length > 3 ? "..." : ""}`;
 
     return {
       screenshotPath: "",
@@ -86,8 +90,11 @@ export async function runHttpWebsiteCheck(url: string): Promise<WebsiteCheckResu
       resultSummary,
       pageTitle,
       hasViewport,
+      httpStatus: response.status,
+      durationMs,
     };
   } catch (error) {
+    const durationMs = Date.now() - started;
     const message =
       error instanceof Error && error.name === "AbortError"
         ? "Timed out after 15s"
@@ -103,6 +110,8 @@ export async function runHttpWebsiteCheck(url: string): Promise<WebsiteCheckResu
       resultSummary: `Failed to check website: ${message}`,
       pageTitle: "",
       hasViewport: false,
+      httpStatus: null,
+      durationMs,
     };
   } finally {
     clearTimeout(timer);

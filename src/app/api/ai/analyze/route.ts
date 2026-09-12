@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       await clearProjectAIResults(projectId);
     }
 
+    const latestRun = project.test_runs?.[0];
     const existingState = {
       completedTasks: project.tasks?.filter((t) => t.status === "done").map((t) => t.title) ?? [],
       openBugs: project.bugs?.filter((b) => b.status === "open").map((b) => b.title) ?? [],
@@ -51,6 +52,18 @@ export async function POST(request: NextRequest) {
         },
         {} as Record<string, number>
       ),
+      liveInspection: latestRun
+        ? {
+            url: latestRun.url,
+            httpStatus: latestRun.http_status ?? latestRun.result_summary,
+            summary: latestRun.result_summary,
+            consoleErrors: latestRun.console_errors?.slice(0, 6) ?? [],
+            accessibilityWarnings: latestRun.accessibility_warnings?.slice(0, 6) ?? [],
+          }
+        : null,
+      approvedSuggestions: (project.ai_suggestions ?? [])
+        .filter((item) => item.approved && item.status !== "dismissed")
+        .map((item) => `${item.category}: ${item.title}`),
     };
 
     const analysis = await analyzeProject(
