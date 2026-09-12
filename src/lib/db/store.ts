@@ -21,6 +21,7 @@ import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const STORE_FILE = path.join(DATA_DIR, "store.json");
+const CAN_PERSIST_LOCAL = !process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 interface LocalStore {
   profiles: Profile[];
@@ -54,21 +55,32 @@ const emptyStore = (): LocalStore => ({
   activityLogs: [],
 });
 
-async function ensureStore(): Promise<LocalStore> {
+async function persistStoreFile(store: LocalStore) {
+  if (!CAN_PERSIST_LOCAL) return;
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
-    const raw = await fs.readFile(STORE_FILE, "utf-8");
-    return JSON.parse(raw) as LocalStore;
-  } catch {
-    const store = emptyStore();
     await fs.writeFile(STORE_FILE, JSON.stringify(store, null, 2));
-    return store;
+  } catch (error) {
+    console.warn("Local project store is memory-only:", error);
   }
 }
 
+async function ensureStore(): Promise<LocalStore> {
+  if (CAN_PERSIST_LOCAL) {
+    try {
+      const raw = await fs.readFile(STORE_FILE, "utf-8");
+      return JSON.parse(raw) as LocalStore;
+    } catch {
+      /* seed an empty local file below */
+    }
+  }
+  const store = emptyStore();
+  await persistStoreFile(store);
+  return store;
+}
+
 async function saveStore(store: LocalStore) {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(STORE_FILE, JSON.stringify(store, null, 2));
+  await persistStoreFile(store);
 }
 
 export async function logActivity(

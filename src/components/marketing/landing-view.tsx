@@ -52,7 +52,7 @@ export function LandingView() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
             <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.vision.title}</h2>
-            <p className="text-center text-slate-500 mt-3 mb-12 max-w-2xl mx-auto">{dict.vision.subtitle}</p>
+            <p className="mx-auto mb-12 mt-3 max-w-2xl text-center leading-relaxed text-slate-600 dark:text-slate-300">{dict.vision.subtitle}</p>
           </FadeIn>
           <div className="grid gap-5 md:grid-cols-3">
             {vision.map((item, i) => {
@@ -64,7 +64,7 @@ export function LandingView() {
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="text-lg font-semibold">{item.title}</h3>
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{item.desc}</p>
                   </article>
                 </FadeIn>
               );

@@ -6,9 +6,9 @@ export const LOCALE_COOKIE = "tp_locale";
 export const dictionaries = {
   zh: {
     meta: {
-      title: "Tenth Project｜Vibe Coding 會員社群與企業 AI 平台",
+      title: "Tenth Project｜客製化 AI 系統與企業數位轉型",
       description:
-        "用 AI 重新定義生產力：企業流程自動化、創作者 Vibe Coding，以及 Lifetime 會員社群。",
+        "用 AI 重新定義企業與產品開發流程：企業流程優化與超自動化、創作者 AI 實戰培訓，以及 Lifetime 會員社群。",
     },
     brand: "Tenth Project",
     nav: {
@@ -53,11 +53,12 @@ export const dictionaries = {
     },
     lang: { zh: "繁", en: "EN" },
     hero: {
-      badge: "AI Agent 落地 · Vibe Coding",
-      title: "用 AI 重新定義生產力",
-      titleAccent: "從企業自動化，到創作者的 Vibe Coding",
+      badge: "✨ 客製化 AI 系統 · 企業數位轉型 · 敏捷產品落地",
+      title: "用 AI 重新定義企業與產品開發流程",
+      titleAccent: "從企業流程優化與超自動化，到個人創作者的 AI 實戰培訓一站式服務",
       subtitle:
-        "我們熱愛科技，專注於解決問題、極致提升效率與創造實質價值。協助企業實現數位轉型，幫助個人將願景轉化為可盈利產品。",
+        "我們熱愛科技，專注於以前沿 AI 技術解決真實商業痛點。協助企業實現數位轉型降本增效，幫助創作者將願景快速落地為可盈利產品。",
+      tools: "Custom AI Agents · Enterprise Automation · Data Intelligence · Full-Stack Systems",
       ctaPrimary: "預約企業免費諮詢",
       ctaSecondary: "瀏覽會員福利與課程",
     },
@@ -83,19 +84,19 @@ export const dictionaries = {
     },
     vision: {
       title: "關於我們與理念",
-      subtitle: "不講空洞理論。我們用可上線的系統，幫企業與創作者把問題做成結果。",
+      subtitle: "不講空洞理論。我們用可上線的系統，幫企業與創作者把問題做成果。",
       items: {
         tech: {
           title: "熱愛科技與解決問題",
-          desc: "專注用 AI 技術（Cursor、Claude、MCP、Autonomous Agents）解決商業與個人真實痛點。",
+          desc: "專注運用前沿 AI 技術（AI Agents、LLM 大語言模型、RAG 私有知識庫、Multi-Modal AI）精準解決商業與個人真實痛點。",
         },
         enterprise: {
           title: "企業數位轉型賦能",
-          desc: "結合大廠技術架構與投行轉型經驗，替企業量身打造可上線的自動化 Agent 工作流。",
+          desc: "結合大廠架構設計與投行轉型經驗，替企業量身打造可上線的自動化 Agent 工作流與數據系統。",
         },
         creator: {
           title: "創作者願景落地",
-          desc: "讓沒有傳統程式背景的創作者，能在 21 天內獨立打造並上線海外營收級工具產品。",
+          desc: "賦能無傳統程式背景的創作者與企業團隊，獨立打造並上線具備商業變現能力的海外級工具產品。",
         },
       },
     },
@@ -192,7 +193,7 @@ export const dictionaries = {
       createAccount: "建立帳號",
       sendReset: "傳送重設連結",
       signingIn: "正在登入…",
-      demoNote: "目前為示範登入：填入電郵即可進入。管理員請使用指定電郵。",
+      demoNote: "目前為示範登入：請輸入你的電郵。後台只開放給 professor.cat.hk@gmail.com；若已用其他電郵登入，請先登出再試。",
       noAccount: "還沒有帳號？",
       hasAccount: "已經有帳號？",
       forgot: "忘記密碼？",
@@ -364,6 +365,9 @@ export const dictionaries = {
     admin: {
       title: "管理後台",
       subtitle: "課程、會員、案例／網誌與企業線索。僅限指定管理員電郵。",
+      deniedTitle: "沒有後台權限",
+      deniedBody: "後台只開放給指定管理員電郵。你目前登入的是",
+      deniedCta: "改用管理員電郵登入",
       courses: "課程",
       members: "會員",
       cases: "案例／網誌",
@@ -571,9 +575,9 @@ export const dictionaries = {
   },
   en: {
     meta: {
-      title: "Tenth Project | Vibe Coding Membership & Enterprise AI",
+      title: "Tenth Project | Custom AI Systems & Enterprise Transformation",
       description:
-        "Redefine productivity with AI: enterprise automation, creator vibe coding, and a Lifetime membership community.",
+        "Redefine how enterprises and products get built with AI: process optimization, hyperautomation, creator training, and a Lifetime membership.",
     },
     brand: "Tenth Project",
     nav: {
@@ -618,11 +622,12 @@ export const dictionaries = {
     },
     lang: { zh: "繁", en: "EN" },
     hero: {
-      badge: "AI agents · Vibe coding",
-      title: "Redefine productivity with AI",
-      titleAccent: "From enterprise automation to creator vibe coding",
+      badge: "✨ Custom AI systems · Enterprise transformation · Agile product delivery",
+      title: "Redefine how enterprises and products get built with AI",
+      titleAccent: "From process optimization and hyperautomation to hands-on AI training for creators — one practice",
       subtitle:
-        "We love technology, and we stay obsessed with solving real problems, compounding efficiency, and creating measurable value. We help companies transform digitally — and help individuals turn a vision into a product that can earn.",
+        "We love technology and use frontier AI to solve real commercial pain. We help enterprises transform digitally, cut cost, and raise output — and help creators turn a vision into a product that can earn.",
+      tools: "Custom AI Agents · Enterprise Automation · Data Intelligence · Full-Stack Systems",
       ctaPrimary: "Book a free enterprise consult",
       ctaSecondary: "Browse member benefits & courses",
     },
@@ -647,20 +652,20 @@ export const dictionaries = {
         "Former investment-banking Associate Director and MSc Quantitative Finance, Imperial College London. Led digital transformation and RPA programmes with Goldman Sachs, J.P. Morgan, Morgan Stanley, UBS, and Alibaba.",
     },
     vision: {
-      title: "Who we are & what we believe",
-      subtitle: "No empty theory. We ship systems that turn problems into operating results — for companies and creators.",
+      title: "About us and our philosophy",
+      subtitle: "No empty theory. We use production-ready systems to turn problems into results for enterprises and creators.",
       items: {
         tech: {
-          title: "Technology, used to solve problems",
-          desc: "We apply Cursor, Claude, MCP, and autonomous agents to commercial and personal pain — not slide-deck AI.",
+          title: "We love technology — and solving problems",
+          desc: "We apply frontier AI — agents, large language models, private RAG knowledge bases, and multimodal systems — to real commercial and personal pain points.",
         },
         enterprise: {
-          title: "Enterprise digital transformation",
-          desc: "Big-tech architecture plus investment-banking transformation practice, packaged as production-ready agent workflows.",
+          title: "Enabling enterprise digital transformation",
+          desc: "Combining large-tech architecture with investment-banking transformation experience, we design production-ready agent workflows and data systems around each enterprise.",
         },
         creator: {
-          title: "Creators who ship",
-          desc: "Non-traditional builders can independently launch a revenue-grade overseas tool in 21 days.",
+          title: "Turning creator vision into products",
+          desc: "We enable creators and enterprise teams without a traditional coding background to independently build and launch commercially viable, globally competitive tools.",
         },
       },
     },
@@ -757,7 +762,7 @@ export const dictionaries = {
       createAccount: "Create account",
       sendReset: "Send reset link",
       signingIn: "Signing in…",
-      demoNote: "Demo sign-in: enter an email to continue. Admin access is limited to the designated address.",
+      demoNote: "Demo sign-in: enter your email. Admin is only open to professor.cat.hk@gmail.com. If you are already signed in with another address, sign out first.",
       noAccount: "No account?",
       hasAccount: "Already have an account?",
       forgot: "Forgot password?",
@@ -929,6 +934,9 @@ export const dictionaries = {
     admin: {
       title: "Admin",
       subtitle: "Courses, members, case studies / blog, and enterprise leads. Restricted to the owner email.",
+      deniedTitle: "No admin access",
+      deniedBody: "Admin is limited to the owner email. You are signed in as",
+      deniedCta: "Sign in with the admin email",
       courses: "Courses",
       members: "Members",
       cases: "Cases / blog",

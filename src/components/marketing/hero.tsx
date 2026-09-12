@@ -9,7 +9,6 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 export function Hero() {
   const { dict } = useI18n();
-  const tools = ["Cursor", "Claude", "ChatGPT", "Gemini", "MCP"];
 
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden bg-slate-950 text-white">
@@ -40,7 +39,7 @@ export function Hero() {
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.45, ease }}
-            className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[13px] font-medium text-white/80 backdrop-blur-sm"
+            className="inline-flex max-w-full flex-wrap items-center rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium leading-relaxed text-white/80 backdrop-blur-sm sm:text-[13px]"
           >
             {dict.hero.badge}
           </motion.p>
@@ -49,10 +48,10 @@ export function Hero() {
             initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.05, ease }}
-            className="mt-6 text-[2.35rem] font-semibold tracking-[-0.045em] leading-[1.08] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.35)] sm:text-6xl lg:text-[4.15rem]"
+            className="mt-6 text-[1.85rem] font-semibold tracking-[-0.045em] leading-[1.12] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-[3.55rem]"
           >
             {dict.hero.title}
-            <span className="mt-3 block text-[1.2rem] font-medium tracking-[-0.03em] leading-snug text-white/65 sm:text-[1.7rem] lg:text-[1.85rem]">
+            <span className="mt-3 block text-[1.05rem] font-medium tracking-[-0.03em] leading-relaxed text-white/65 sm:text-[1.45rem] lg:text-[1.7rem]">
               {dict.hero.titleAccent}
             </span>
           </motion.h1>
@@ -87,8 +86,8 @@ export function Hero() {
             </Link>
           </motion.div>
 
-          <p className="mt-10 text-[13px] tracking-tight text-white/50">
-            {tools.join("  ·  ")}
+          <p className="mt-10 max-w-xl font-mono text-xs uppercase leading-relaxed tracking-wider text-slate-400">
+            {dict.hero.tools}
           </p>
           </div>
         </div>

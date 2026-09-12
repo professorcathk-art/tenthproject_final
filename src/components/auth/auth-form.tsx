@@ -29,15 +29,19 @@ function AuthFormInner({ mode }: AuthFormProps) {
   };
   const { title, desc } = titles[mode];
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/auth/demo", {
+    const form = new FormData(e.currentTarget);
+    const submittedEmail = String(form.get("email") ?? email).trim();
+    const submittedName = String(form.get("name") ?? name).trim();
+    const res = await fetch("/api/auth/demo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, name }),
+      body: JSON.stringify({ email: submittedEmail, name: submittedName }),
     });
-    const next = searchParams.get("redirect") || "/dashboard";
+    const data = (await res.json().catch(() => ({}))) as { isAdmin?: boolean };
+    const next = searchParams.get("redirect") || (data.isAdmin ? "/admin" : "/dashboard");
     router.push(next);
     router.refresh();
   }
@@ -57,15 +61,24 @@ function AuthFormInner({ mode }: AuthFormProps) {
             {mode !== "reset" && (
               <div className="space-y-2">
                 <Label htmlFor="name">{dict.auth.name}</Label>
-                <Input id="name" placeholder={dict.auth.name} value={name} onChange={(e) => setName(e.target.value)} />
+                <Input
+                  id="name"
+                  name="name"
+                  autoComplete="name"
+                  placeholder={dict.auth.name}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">{dict.auth.email}</Label>
-              <Input
+                <Input
                 id="email"
+                name="email"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"

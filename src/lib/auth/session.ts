@@ -38,11 +38,17 @@ export const DEMO_USER = buildUser("demo@tenthproject.app", "Demo User");
 
 function parsePayload(raw: string | undefined): SessionPayload | null {
   if (!raw) return null;
-  if (raw === "authenticated") {
+  let value = raw;
+  try {
+    value = decodeURIComponent(raw);
+  } catch {
+    value = raw;
+  }
+  if (value === "authenticated") {
     return { email: DEMO_USER.email, name: DEMO_USER.name };
   }
   try {
-    const parsed = JSON.parse(raw) as SessionPayload;
+    const parsed = JSON.parse(value) as SessionPayload;
     if (parsed?.email) return parsed;
   } catch {
     return null;

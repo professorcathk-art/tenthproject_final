@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, GraduationCap, Lightbulb, Menu, Sparkles, Users } from "lucide-react";
+import { Building2, GraduationCap, Lightbulb, Menu, Users } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
@@ -55,19 +55,11 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
           <Link
             href="/"
             className={cn(
-              "flex shrink-0 items-center gap-2.5 font-semibold",
+              "shrink-0 font-semibold tracking-tight",
               overHero ? "text-white" : "text-slate-900 dark:text-white",
             )}
           >
-            <div
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg",
-                overHero ? "bg-white text-slate-950" : "bg-slate-900 text-white dark:bg-white dark:text-slate-950",
-              )}
-            >
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <span className="hidden tracking-tight sm:inline">Tenth Project</span>
+            Tenth Project
           </Link>
           <nav className="hidden items-center gap-0.5 lg:flex">
             {links.map((item) => {

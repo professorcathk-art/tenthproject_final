@@ -17,6 +17,7 @@ import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const PLATFORM_FILE = path.join(DATA_DIR, "platform.json");
+const CAN_PERSIST_LOCAL = !process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 interface PlatformStore {
   courses: Course[];
@@ -29,37 +30,51 @@ interface PlatformStore {
   members: Member[];
 }
 
+function emptyPlatformStore(): PlatformStore {
+  return {
+    courses: [],
+    lessons: [],
+    lessonProgress: [],
+    certificates: [],
+    caseStudies: [],
+    enterpriseEnquiries: [],
+    mcpApiKeys: [],
+    members: [],
+  };
+}
+
 let memoryStore: PlatformStore | null = null;
+
+async function persistPlatformFile(store: PlatformStore) {
+  if (!CAN_PERSIST_LOCAL) return;
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.writeFile(PLATFORM_FILE, JSON.stringify(store, null, 2));
+  } catch (error) {
+    console.warn("Local platform store is memory-only:", error);
+  }
+}
 
 async function ensurePlatformStore(): Promise<PlatformStore> {
   if (memoryStore) return memoryStore;
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    const raw = await fs.readFile(PLATFORM_FILE, "utf-8");
-    const parsed = JSON.parse(raw) as PlatformStore;
-    memoryStore = { ...parsed, members: parsed.members ?? [] };
-    return memoryStore;
-  } catch {
-    const store: PlatformStore = {
-      courses: [],
-      lessons: [],
-      lessonProgress: [],
-      certificates: [],
-      caseStudies: [],
-      enterpriseEnquiries: [],
-      mcpApiKeys: [],
-      members: [],
-    };
-    await fs.writeFile(PLATFORM_FILE, JSON.stringify(store, null, 2));
-    memoryStore = store;
-    return store;
+  if (CAN_PERSIST_LOCAL) {
+    try {
+      const raw = await fs.readFile(PLATFORM_FILE, "utf-8");
+      const parsed = JSON.parse(raw) as PlatformStore;
+      memoryStore = { ...parsed, members: parsed.members ?? [] };
+      return memoryStore;
+    } catch {
+      /* seed an empty local file below */
+    }
   }
+  memoryStore = emptyPlatformStore();
+  await persistPlatformFile(memoryStore);
+  return memoryStore;
 }
 
 async function savePlatformStore(store: PlatformStore) {
   memoryStore = store;
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(PLATFORM_FILE, JSON.stringify(store, null, 2));
+  await persistPlatformFile(store);
 }
 
 // ─── Courses ───────────────────────────────────────────────
@@ -608,8 +623,8 @@ export async function getMembers(): Promise<Member[]> {
   if (isSupabaseConfigured()) {
     const { data, error } = await createServiceClient().from("members").select("*").order("created_at", { ascending: false });
     if (error) {
-      const store = await ensurePlatformStore();
-      return store.members;
+      console.error("getMembers:", error.message);
+      return [];
     }
     return (data ?? []) as Member[];
   }
@@ -620,7 +635,8 @@ export async function getMembers(): Promise<Member[]> {
 export async function upsertMember(member: Member) {
   if (isSupabaseConfigured()) {
     const { error } = await createServiceClient().from("members").upsert(member);
-    if (!error) return;
+    if (error) throw new Error(error.message);
+    return;
   }
   const store = await ensurePlatformStore();
   const idx = store.members.findIndex((m) => m.id === member.id || m.email === member.email);
@@ -631,7 +647,9 @@ export async function upsertMember(member: Member) {
 
 export async function deleteMember(id: string) {
   if (isSupabaseConfigured()) {
-    await createServiceClient().from("members").delete().eq("id", id);
+    const { error } = await createServiceClient().from("members").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
   }
   const store = await ensurePlatformStore();
   store.members = store.members.filter((m) => m.id !== id);

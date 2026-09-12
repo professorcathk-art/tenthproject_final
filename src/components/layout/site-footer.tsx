@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import { useI18n } from "@/components/i18n/provider";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -16,10 +15,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-3">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-slate-900">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
-                <Sparkles className="h-4 w-4" />
-              </div>
+            <Link href="/" className="font-semibold tracking-tight text-slate-900 dark:text-white">
               Tenth Project
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed max-w-xs">{dict.footer.tagline}</p>
