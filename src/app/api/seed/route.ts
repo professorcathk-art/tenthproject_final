@@ -4,7 +4,7 @@ import { getCaseStudies, getCourses } from "@/lib/db/platform-store";
 
 export async function POST() {
   try {
-    await ensurePlatformSeeded();
+    await ensurePlatformSeeded({ force: true });
     const [courses, cases] = await Promise.all([getCourses(false), getCaseStudies(undefined, false)]);
     return NextResponse.json({
       message: "Seeded successfully",

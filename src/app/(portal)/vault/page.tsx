@@ -1,13 +1,12 @@
 import { CaseStudyGrid } from "@/components/inspiration/case-study-grid";
-import { getCaseStudies } from "@/lib/db/platform-store";
-import { ensurePlatformSeeded } from "@/lib/seed/init";
+import { getCaseStudyCards } from "@/lib/db/platform-store";
+import { ensureCasesSeeded } from "@/lib/seed/init";
 import { Lightbulb } from "lucide-react";
 import { getDict } from "@/lib/i18n/server";
 
 export default async function VaultPage() {
-  await ensurePlatformSeeded();
-  const studies = await getCaseStudies();
-  const dict = await getDict();
+  await ensureCasesSeeded();
+  const [studies, dict] = await Promise.all([getCaseStudyCards(), getDict()]);
 
   return (
     <div className="space-y-8">
@@ -18,18 +17,7 @@ export default async function VaultPage() {
         <h1 className="text-2xl font-bold tracking-tight">{dict.portal.vault}</h1>
         <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">{dict.inspiration.subtitle}</p>
       </div>
-      <CaseStudyGrid
-        basePath="/vault"
-        studies={studies.map((study) => ({
-          id: study.id,
-          title: study.title,
-          slug: study.slug,
-          category: study.category,
-          categories: study.categories,
-          summary: study.summary,
-          website_url: study.website_url,
-        }))}
-      />
+      <CaseStudyGrid basePath="/vault" studies={studies} />
     </div>
   );
 }

@@ -2,19 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { getCaseStudies, getCaseStudyBySlug } from "@/lib/db/platform-store";
-import { ensurePlatformSeeded } from "@/lib/seed/init";
+import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
+import { ensureCasesSeeded } from "@/lib/seed/init";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { CaseArticle } from "@/components/inspiration/case-article";
 
+export const revalidate = 300;
+
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
-  await ensurePlatformSeeded();
+  await ensureCasesSeeded();
   const { slug } = await params;
   const [study, studies, dict, locale] = await Promise.all([
     getCaseStudyBySlug(slug),
-    getCaseStudies(),
+    getCaseStudyCards(),
     getDict(),
     getLocale(),
   ]);

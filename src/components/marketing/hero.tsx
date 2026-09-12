@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useI18n } from "@/components/i18n/provider";
+import { BrowserMockup } from "@/components/ui/browser-mockup";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -81,7 +83,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.12, ease }}
             className="relative"
           >
-            <HeroPreview locale={locale} />
+            <HeroStudio locale={locale} />
           </motion.div>
         </div>
       </div>
@@ -89,56 +91,27 @@ export function Hero() {
   );
 }
 
-function HeroPreview({ locale }: { locale: "zh" | "en" }) {
-  const zh = locale === "zh";
-  const steps = zh
-    ? [
-        { n: "01", t: "描述產品意圖", d: "目標使用者與完成樣貌" },
-        { n: "02", t: "生成路線圖與 UAT", d: "可驗收的衝刺範圍" },
-        { n: "03", t: "匯出 Master Prompt", d: "可貼到 Cursor 的執行稿" },
-      ]
-    : [
-        { n: "01", t: "Describe the intent", d: "Users and the done state" },
-        { n: "02", t: "Roadmap and UAT", d: "A sprint you can accept" },
-        { n: "03", t: "Export the master prompt", d: "A Cursor-ready brief" },
-      ];
-
+function HeroStudio({ locale }: { locale: "zh" | "en" }) {
   return (
     <div className="relative">
-      <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-slate-200/50 via-transparent to-slate-300/20 blur-2xl dark:from-slate-800/40 dark:to-slate-900/10" />
-      <div className="relative overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70">
-        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-          <span className="h-2.5 w-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-          <span className="h-2.5 w-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-          <span className="h-2.5 w-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-          <span className="ml-2 text-[12px] font-medium text-slate-400">
-            {zh ? "專案規劃 · Tenth Project" : "Project planner · Tenth Project"}
-          </span>
+      <div className="absolute -inset-5 rounded-[2rem] bg-slate-400/15 blur-3xl dark:bg-slate-800/40" />
+      <BrowserMockup url="studio.tenthproject.com">
+        <div className="relative aspect-[4/3] bg-slate-950">
+          <Image
+            src="/images/vibe-coding-creator.jpg"
+            alt={
+              locale === "zh"
+                ? "創作者在 Tenth Project 工作區以 Cursor 開發產品"
+                : "A creator building a product in the Tenth Project studio"
+            }
+            fill
+            priority
+            sizes="(min-width: 1024px) 42vw, 92vw"
+            className="object-cover object-[center_35%] brightness-[0.78] contrast-[1.02] saturate-[0.8]"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-slate-950/15" />
         </div>
-        <div className="grid gap-3 p-4 sm:p-5">
-          {steps.map((step) => (
-            <div
-              key={step.n}
-              className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-900/50"
-            >
-              <span className="mt-0.5 font-mono text-[11px] text-slate-400">{step.n}</span>
-              <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{step.t}</p>
-                <p className="mt-0.5 text-[13px] text-slate-500">{step.d}</p>
-              </div>
-            </div>
-          ))}
-          <div className="rounded-2xl bg-slate-950 p-4 font-mono text-[12px] leading-relaxed text-slate-400">
-            <p className="text-slate-500">master-prompt.md</p>
-            <p className="mt-2 text-slate-200"># Product vision</p>
-            <p className="mt-1">
-              {zh
-                ? "MVP：Next.js · Supabase · Cursor。驗收：使用者可走完主路徑。"
-                : "MVP: Next.js · Supabase · Cursor. Acceptance: user completes the happy path."}
-            </p>
-          </div>
-        </div>
-      </div>
+      </BrowserMockup>
     </div>
   );
 }

@@ -240,6 +240,66 @@ export async function getUserCertificate(userId: string, courseId: string): Prom
 
 // ─── Case Studies ──────────────────────────────────────────
 
+const CASE_CARD_COLUMNS = "id, title, slug, category, summary, tech_stack, is_published, created_at";
+const CASE_CARD_TTL_MS = 5 * 60 * 1000;
+
+export type CaseStudyCard = Pick<
+  CaseStudy,
+  "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url"
+>;
+
+let caseCardCache: { at: number; data: CaseStudyCard[] } | null = null;
+const caseBySlugCache = new Map<string, { at: number; data: CaseStudy | null }>();
+
+function invalidateCaseCaches() {
+  caseCardCache = null;
+  caseBySlugCache.clear();
+}
+
+export async function getCaseStudyCards(publishedOnly = true): Promise<CaseStudyCard[]> {
+  if (caseCardCache && Date.now() - caseCardCache.at < CASE_CARD_TTL_MS) {
+    return caseCardCache.data;
+  }
+
+  let rows: CaseStudy[] = [];
+  if (isSupabaseConfigured()) {
+    let q = createServiceClient()
+      .from("case_studies")
+      .select(CASE_CARD_COLUMNS)
+      .order("created_at", { ascending: false });
+    if (publishedOnly) q = q.eq("is_published", true);
+    const { data } = await q;
+    rows = ((data ?? []) as CaseStudy[]).map(normalizeCaseStudy);
+  } else {
+    const store = await ensurePlatformStore();
+    rows = store.caseStudies.filter((c) => !publishedOnly || c.is_published).map(normalizeCaseStudy);
+  }
+
+  const cards = rows.map((study) => ({
+    id: study.id,
+    title: study.title,
+    slug: study.slug,
+    category: study.category,
+    categories: study.categories,
+    summary: study.summary,
+    website_url: study.website_url,
+  }));
+  caseCardCache = { at: Date.now(), data: cards };
+  return cards;
+}
+
+export async function countPublishedCaseStudies(): Promise<number> {
+  if (isSupabaseConfigured()) {
+    const { count } = await createServiceClient()
+      .from("case_studies")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true);
+    return count ?? 0;
+  }
+  const store = await ensurePlatformStore();
+  return store.caseStudies.filter((c) => c.is_published).length;
+}
+
 export async function getCaseStudies(category?: string, publishedOnly = true): Promise<CaseStudy[]> {
   let rows: CaseStudy[] = [];
   if (isSupabaseConfigured()) {
@@ -258,13 +318,20 @@ export async function getCaseStudies(category?: string, publishedOnly = true): P
 }
 
 export async function getCaseStudyBySlug(slug: string): Promise<CaseStudy | null> {
+  const cached = caseBySlugCache.get(slug);
+  if (cached && Date.now() - cached.at < CASE_CARD_TTL_MS) return cached.data;
+
+  let study: CaseStudy | null = null;
   if (isSupabaseConfigured()) {
-    const { data } = await createServiceClient().from("case_studies").select("*").eq("slug", slug).single();
-    return data ? normalizeCaseStudy(data as CaseStudy) : null;
+    const { data } = await createServiceClient().from("case_studies").select("*").eq("slug", slug).maybeSingle();
+    study = data ? normalizeCaseStudy(data as CaseStudy) : null;
+  } else {
+    const store = await ensurePlatformStore();
+    const cs = store.caseStudies.find((c) => c.slug === slug);
+    study = cs ? normalizeCaseStudy(cs) : null;
   }
-  const store = await ensurePlatformStore();
-  const cs = store.caseStudies.find((c) => c.slug === slug);
-  return cs ? normalizeCaseStudy(cs) : null;
+  caseBySlugCache.set(slug, { at: Date.now(), data: study });
+  return study;
 }
 
 function parseStack(raw: unknown): string[] {
@@ -326,6 +393,7 @@ function normalizeCaseStudy(cs: CaseStudy): CaseStudy {
 }
 
 export async function upsertCaseStudy(cs: CaseStudy) {
+  invalidateCaseCaches();
   const row = persistCaseStudy(cs);
   if (isSupabaseConfigured()) {
     const { error } = await createServiceClient().from("case_studies").upsert(row);
@@ -340,6 +408,7 @@ export async function upsertCaseStudy(cs: CaseStudy) {
 }
 
 export async function deleteCaseStudy(id: string) {
+  invalidateCaseCaches();
   if (isSupabaseConfigured()) {
     await createServiceClient().from("case_studies").delete().eq("id", id);
     return;
@@ -484,6 +553,7 @@ export async function seedPlatformData(courses: Course[], lessons: Lesson[]) {
 }
 
 export async function replaceCaseStudies(studies: CaseStudy[]) {
+  invalidateCaseCaches();
   if (isSupabaseConfigured()) {
     const supabase = createServiceClient();
     const { error: delError } = await supabase.from("case_studies").delete().neq("id", "00000000-0000-0000-0000-000000000000");
