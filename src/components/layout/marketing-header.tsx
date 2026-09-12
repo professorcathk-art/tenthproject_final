@@ -43,9 +43,10 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 transition-colors duration-300",
+        "z-50 transition-colors duration-300",
+        isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
         overHero
-          ? "border-b border-white/10 bg-slate-950/25 backdrop-blur-md"
+          ? "border-b border-white/10 bg-slate-950/80 text-white backdrop-blur-md"
           : "border-b border-slate-200/60 bg-white/65 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/55",
       )}
     >
@@ -104,7 +105,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
               href="/dashboard"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "rounded-full font-semibold",
+                "hidden rounded-full font-semibold min-[400px]:inline-flex",
                 overHero && "bg-white text-slate-950 hover:bg-white/90",
               )}
             >

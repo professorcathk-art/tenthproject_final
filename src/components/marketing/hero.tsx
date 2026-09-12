@@ -13,9 +13,9 @@ export function Hero() {
 
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         <video
-          className="hero-video absolute inset-0 h-full w-full object-cover"
+          className="hero-video absolute inset-x-0 top-0 h-[124%] w-full object-cover object-[center_12%]"
           autoPlay
           muted
           loop
@@ -32,7 +32,7 @@ export function Hero() {
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#fafafa] to-transparent dark:from-slate-950" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[100svh] max-w-7xl items-end px-4 pb-20 pt-28 sm:items-center sm:px-6 sm:pb-24 sm:pt-32 lg:px-8">
+      <div className="relative mx-auto flex min-h-[100svh] max-w-7xl items-end px-4 pb-16 pt-24 sm:items-center sm:px-6 sm:pb-24 sm:pt-32 lg:px-8">
         <div className="relative max-w-3xl">
           <div className="pointer-events-none absolute -inset-x-8 -inset-y-10 rounded-[2rem] bg-slate-950/50 blur-2xl" />
           <div className="relative">

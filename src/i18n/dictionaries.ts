@@ -636,11 +636,11 @@ export const dictionaries = {
     },
     founders: {
       title: "Founding leadership",
-      subtitle: "Technical delivery and commercial transformation at the same table — that is why operators trust us with critical workflows.",
+      subtitle: "Technical delivery and commercial transformation at the same table — that is why clients trust us with critical workflows.",
       felixRole: "Head of Technology",
       felixName: "Felix Zhu",
       felix:
-        "Felix Zhu is a former Alibaba technical specialist, a Tencent training-camp mentor, and a trainer for well-known enterprises. He has helped countless students master AI, pivot their careers, and build sustainable side businesses.",
+        "Felix Zhu is a former Alibaba technical specialist, a Tencent training mentor, and a trainer for well-known companies. He has helped countless students master AI, change careers, and build sustainable side businesses.",
       chrisRole: "Head of Business Requirements & Transformation",
       chrisName: "Chris Lau",
       chris:
@@ -666,24 +666,24 @@ export const dictionaries = {
     },
     membership: {
       title: "Tenth Project Club member benefits",
-      subtitle: "Tenth Project Club is built for modern professionals, founders, and ambitious operators. Master AI and vibe coding to ship your own SaaS — and to change how you compete at work.",
+      subtitle: "Tenth Project Club is a learning community for modern professionals, founders, and ambitious operators. Master AI and vibe coding to launch your own SaaS — and to compete differently at work.",
       cta: "See member benefits",
       items: {
         course: {
-          title: "Structured learning that ships",
-          desc: "Every session has executable steps and live cases. A monthly Q&A lets you work through real challenges with mentors and peers.",
+          title: "Structured learning and practice",
+          desc: "Every session has clear steps and real cases. A monthly live Q&A lets you work through actual problems with mentors and peers.",
         },
         cases: {
           title: "AI tools for the workplace",
-          desc: "More than vibe coding. Learn how AI speeds operations, improves decisions, and creates value in enterprise-grade scenes — not theory alone.",
+          desc: "More than vibe coding. Learn how AI speeds up work, improves decisions, and creates value in real workplace settings — not theory alone.",
         },
         tools: {
           title: "A serious professional community",
-          desc: "A closed room of people who show up. Ask openly, share wins and mistakes, and build a network worth keeping. Cantonese-first support.",
+          desc: "A private community of people who take the work seriously. Ask questions, share wins and mistakes, and build a network that lasts. Support in Cantonese.",
         },
         vip: {
-          title: "The full member stack",
-          desc: "On-demand courses and replays, a vibe-coding library, a project planner, and a 45-minute consult with both Felix and Chris. For founders and professionals who want expert guidance.",
+          title: "The complete membership",
+          desc: "On-demand courses and replays, a vibe-coding library, a project planner, and a 45-minute consult with both Felix and Chris. Built for founders and professionals who want expert guidance.",
         },
       },
     },
@@ -732,7 +732,7 @@ export const dictionaries = {
     ctaBand: {
       title: "Put critical workflows on production AI — not another demo.",
       subtitle: "Enterprises can book a free 1-on-1 consult — technology and commercial leads in the same room.",
-      items: ["Dual-domain leads", "Finance-grade security", "Live in 3–4 weeks", "Measurable ROI"],
+      items: ["Tech and commercial leads", "Finance-grade security", "Live in 3–4 weeks", "Measurable ROI"],
       button: "Book an enterprise consult",
     },
     footer: {
