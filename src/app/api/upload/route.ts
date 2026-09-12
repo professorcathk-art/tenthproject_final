@@ -19,6 +19,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing projectId or file" }, { status: 400 });
     }
 
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        { error: "File uploads are not available on the hosted app yet. Add a website URL instead." },
+        { status: 501 },
+      );
+    }
+
     const uploadsDir = path.join(process.cwd(), "public", "uploads", user.id, projectId);
     await fs.mkdir(uploadsDir, { recursive: true });
 

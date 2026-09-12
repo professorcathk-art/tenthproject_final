@@ -18,11 +18,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   let email = "demo@tenthproject.app";
-  let name = "Demo User";
+  let name: string | undefined;
   try {
     const body = await request.json();
     if (typeof body.email === "string" && body.email.includes("@")) email = body.email;
-    if (typeof body.name === "string" && body.name.trim()) name = body.name;
+    if (typeof body.name === "string" && body.name.trim()) name = body.name.trim();
   } catch {
     /* demo defaults */
   }

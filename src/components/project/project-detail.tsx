@@ -82,8 +82,19 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: project.id, url: websiteUrl }),
       });
-      const data = await res.json();
+      const raw = await res.text();
+      let data: { error?: string } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as { error?: string }) : {};
+      } catch {
+        throw new Error(
+          res.ok
+            ? "Check returned an unexpected response."
+            : `Check failed (${res.status}). Try again in a moment.`,
+        );
+      }
       if (data.error) throw new Error(data.error);
+      if (!res.ok) throw new Error(`Check failed (${res.status}).`);
       await refreshProject();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Check failed");

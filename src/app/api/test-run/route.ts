@@ -4,6 +4,8 @@ import { requireAuth } from "@/lib/auth/session";
 import { runWebsiteCheck } from "@/lib/playwright/check";
 import { getProject, addTestRun, logActivity } from "@/lib/db/store";
 
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
