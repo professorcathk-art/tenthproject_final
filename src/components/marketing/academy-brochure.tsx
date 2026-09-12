@@ -55,10 +55,13 @@ export function AcademyBrochure() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-[2rem] sm:text-4xl font-semibold tracking-[-0.035em] leading-[1.15] text-slate-950 dark:text-white">
-          Tenth Project Vibe Coding 課程+社群限時Lifetime Plan
+        <p className="text-sm font-medium tracking-[0.16em] uppercase text-slate-400">Tenth Project Club</p>
+        <h1 className="mt-3 text-[2rem] sm:text-4xl font-semibold tracking-[-0.035em] leading-[1.15] text-slate-950 dark:text-white">
+          Tenth Project 社群會員福利
         </h1>
-        <p className="mt-4 text-lg text-slate-500">項目導向學習 × AI技術，從零打造可盈利海外工具站</p>
+        <p className="mt-4 text-lg leading-relaxed text-slate-500">
+          一個專為現代職場人、創業者與有遠見的專業人士設計的學習社群。掌握 AI 與 Vibe Coding，既能創立自己的 SaaS，也能徹底改寫你在職場中的競爭力。
+        </p>
       </header>
 
       <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-[15px] font-semibold text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
@@ -66,6 +69,64 @@ export function AcademyBrochure() {
         <br />
         只需付一次，永久享有所有未來更新及新增內容
       </div>
+
+      <Section title="你將獲得什麼">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <h3 className="font-semibold mb-2">系統化學習與實踐</h3>
+            <ul className="space-y-2 text-[15px] text-slate-600 leading-relaxed">
+              <li>每月 1 場線上 Q&A 交流會（含回放）——與導師和同儕直接互動，解決真實挑戰。</li>
+              <li>從零開始到實際應用，每堂課都有具體可行的步驟與案例。</li>
+            </ul>
+          </Card>
+          <Card>
+            <h3 className="font-semibold mb-2">AI 工具與職場應用</h3>
+            <ul className="space-y-2 text-[15px] text-slate-600 leading-relaxed">
+              <li>不只 Vibe Coding，更涵蓋各類 AI 工具如何提升工作效率。</li>
+              <li>用 AI 加速業務流程、優化決策、創造價值。</li>
+              <li>實戰導向：對照企業級應用場景，而非僅限理論。</li>
+            </ul>
+          </Card>
+          <Card>
+            <h3 className="font-semibold mb-2">專業社群的力量</h3>
+            <ul className="space-y-2 text-[15px] text-slate-600 leading-relaxed">
+              <li>加入由認真專業人士組成的封閉社群。</li>
+              <li>開放式提問與互動，導師及同儕隨時可協助。</li>
+              <li>分享成功案例與踩坑故事，建立有意義的職業網絡。</li>
+            </ul>
+          </Card>
+        </div>
+      </Section>
+
+      <Section title="為什麼選擇 Tenth Project">
+        <ul className="space-y-3 text-[15px] text-slate-600">
+          <li>高品質內容 — 由業界專家親自設計與教授</li>
+          <li>實用導向 — 每堂課都聚焦於立即可應用的知識</li>
+          <li>支持式廣東話社群 — 不只是學習，更是一個有人陪伴的成長環境</li>
+          <li>持續更新 — 緊跟 AI 與職場趨勢，內容定期優化</li>
+        </ul>
+      </Section>
+
+      <Section title="會員方案">
+        <p className="text-[15px] text-slate-600 leading-relaxed mb-5">
+          Tenth Project Club 是一個實踐社群，為有野心的專業人士打造。我們幫助你用 AI 複製海外月入 6 位數工具站、建立個人品牌，並用同一套方法提升職場競爭力。
+        </p>
+        <ul className="space-y-2.5 text-[15px] text-slate-600">
+          <li>線上教學課程 + 回放</li>
+          <li>每月 1 場線上 Q&A 交流會 + 回放</li>
+          <li>會員社群：提問與互動</li>
+          <li>完整 Vibe Coding 資料庫與工具推薦</li>
+          <li>每月直播活動</li>
+          <li>一人公司到 AI 經營 IG 萬字攻略</li>
+          <li>10 小時 Vibe Coding 完整課程 — 用 Cursor 一步步複製月入 6 位數 StealthWriter 工具站</li>
+          <li>10 小時以上 AI Agent 從 0 到 1 課程</li>
+          <li>45 分鐘私人咨詢（朱 Sir 與 Chris 同時咨詢）</li>
+          <li>專案規劃工具，幫你把網站從想法做到上線</li>
+        </ul>
+        <Note>
+          適合想學習變現、需要專家指導的創業者與求職者。現在就加入，開始你的 AI 時代之旅。
+        </Note>
+      </Section>
 
       <Section title="課程概述">
         <Card>
@@ -177,10 +238,10 @@ export function AcademyBrochure() {
         <Card>
           <h4 className="font-semibold mb-2">👨💼 導師背景：為什麼是朱Sir</h4>
           <p className="text-[15px] text-slate-600 leading-relaxed">
-            <strong className="text-slate-900">知名學府計算機科學學士 + 阿里巴巴集團技術專家 + 10年程序員經驗</strong>
+            <strong className="text-slate-900">前阿里技術專家、騰訊訓練營導師、多家知名企業培訓導師</strong>
             。朱Sir 不是純講師，而是
             <strong className="text-slate-900">真正在企業規模系統開發中實踐過的工程師</strong>
-            。他將自己在大型互聯網平台的架構設計經驗，轉化為適合初學者的教學方法。
+            。多年來幫助無數學生掌握 AI、實現職業轉型，並把大廠經驗轉成可上手的教學。
           </p>
         </Card>
         <Card>
@@ -295,7 +356,7 @@ export function AcademyBrochure() {
           <h3 className="text-lg font-semibold text-white">導師：朱Sir</h3>
           <h4 className="mt-5 mb-2 font-semibold text-slate-300">🎓 核心背景</h4>
           <p className="text-[15px] text-slate-300 leading-relaxed">
-            華南理工大學計算機科學學士 + 阿里巴巴集團技術專家 + 10年一線程序員經驗，2018年全面轉入編程教育領域，將企業級開發經驗轉化為突破性教學方法。
+            前阿里技術專家、騰訊訓練營導師、多家知名企業培訓導師。多年來幫助無數學生掌握 AI 技術、實現職業生涯轉型，並開拓可持續的副業。
           </p>
           <h4 className="mt-5 mb-2 font-semibold text-slate-300">💼 專業實力</h4>
           <ul className="space-y-2 text-[15px] text-slate-300">
@@ -347,8 +408,8 @@ export function AcademyBrochure() {
       </Section>
 
       <div className="rounded-2xl bg-slate-950 px-6 py-10 text-center text-white">
-        <p className="text-lg font-semibold">準備好加入 Lifetime 會員？</p>
-        <p className="mt-2 text-sm text-slate-300">課程大綱、工作坊與社群都在學院頁。登入後即可進入教室。</p>
+        <p className="text-lg font-semibold">現在就加入 Tenth Project Club</p>
+        <p className="mt-2 text-sm text-slate-300">課程、社群、Q&A 與專案工具同一套系統。登入後即可進入教室。</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
             href={`/courses/${FLAGSHIP_SLUG}`}

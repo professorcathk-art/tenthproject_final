@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -86,40 +85,26 @@ export function LandingView() {
                 name: dict.founders.felixName,
                 role: dict.founders.felixRole,
                 body: dict.founders.felix,
-                image: "/images/felix-portrait.jpg",
-                badges: ["Alibaba", "Tencent", "AI Agents"],
+                badges: ["Alibaba", "Tencent", "Mentor"],
               },
               {
                 name: dict.founders.chrisName,
                 role: dict.founders.chrisRole,
                 body: dict.founders.chris,
-                image: "/images/chris-portrait.jpg",
                 badges: ["Imperial", "Goldman", "J.P. Morgan", "UBS"],
               },
             ].map((p, i) => (
               <FadeIn key={p.name} delay={i * 0.08}>
-                <article className="h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-[0_18px_50px_-36px_rgba(15,23,42,0.45)] dark:border-slate-800/70 dark:bg-slate-950/50">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-900">
-                    <Image
-                      src={p.image}
-                      alt={p.name}
-                      fill
-                      sizes="(min-width: 1024px) 28vw, 90vw"
-                      className="object-cover object-top brightness-[0.82] contrast-[1.02] saturate-[0.78]"
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-slate-950/10" />
-                  </div>
-                  <div className="px-2 pb-3 pt-5">
-                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">{p.role}</p>
-                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950 dark:text-white">{p.name}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{p.body}</p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {p.badges.map((b) => (
-                        <span key={b} className="rounded-full border border-slate-200/80 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-800/60 dark:bg-slate-900/70">
-                          {b}
-                        </span>
-                      ))}
-                    </div>
+                <article className="h-full rounded-2xl glass-panel glow-card p-8">
+                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">{p.role}</p>
+                  <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950 dark:text-white">{p.name}</h3>
+                  <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{p.body}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {p.badges.map((b) => (
+                      <span key={b} className="rounded-full border border-slate-200/80 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-800/60 dark:bg-slate-900/70">
+                        {b}
+                      </span>
+                    ))}
                   </div>
                 </article>
               </FadeIn>
@@ -157,7 +142,7 @@ export function LandingView() {
               href="/courses"
               className="inline-flex h-11 items-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
             >
-              {dict.nav.academy}
+              {dict.membership.cta}
               <ArrowRight className="ml-1.5 h-4 w-4" />
             </Link>
           </div>

@@ -75,7 +75,7 @@ export const dictionaries = {
       felixRole: "技術負責人",
       felixName: "Felix Zhu",
       felix:
-        "華南理工 CS 學士、前阿里巴巴集團技術專家（2011–2015）、十年一線架構師經驗、騰訊訓練營導師。專注 AI Agent 架構、LLM 應用落地，以及語言無關的編程思維培養。",
+        "Felix Zhu 為前阿里技術專家、騰訊訓練營導師，以及多家知名企業的培訓導師。多年來幫助無數學生掌握 AI 技術、實現職業生涯轉型，並開拓可持續的副業。",
       chrisRole: "商業需求與轉型負責人",
       chrisName: "Chris Lau",
       chris:
@@ -100,24 +100,25 @@ export const dictionaries = {
       },
     },
     membership: {
-      title: "加入 Tenth Project 會員：獲得從學習、案例到工具的全方位賦能",
-      subtitle: "Lifetime 會員不是一次課程，而是學習、案例、工具與社群的同一套系統。",
+      title: "Tenth Project 社群會員福利",
+      subtitle: "Tenth Project Club——專為現代職場人、創業者與有遠見的專業人士設計。掌握 AI 與 Vibe Coding，既能做出自己的 SaaS，也能改寫職場競爭力。",
+      cta: "了解更多會員福利",
       items: {
         course: {
-          title: "Vibe Coding 與 AI Agent 旗艦課程",
-          desc: "10 小時必修 + 六大專題實戰 Workshop（Coze、OpenClaw 龍蝦 Agent、Mobile App 等）。",
+          title: "系統化學習與實踐",
+          desc: "從零到實際應用，每堂課都有可執行步驟與案例。每月 1 場線上 Q&A，與導師和同儕直接解決真實挑戰。",
         },
         cases: {
-          title: "50+ 實戰創業靈感庫",
-          desc: "深度拆解 CalAI、StealthWriter 等海外爆款產品的架構與 Master Prompt。",
+          title: "AI 工具與職場應用",
+          desc: "不止 Vibe Coding。學會用 AI 加速業務流程、優化決策、創造價值，對照企業級場景而非空談理論。",
         },
         tools: {
-          title: "專案規劃工具與 Cursor MCP",
-          desc: "專屬 AI Build Coach，支援 UAT 自動化測試與 Cursor 本地雙向同步。",
+          title: "專業社群的力量",
+          desc: "加入認真專業人士組成的封閉社群。開放提問、分享成功與踩坑，建立有意義的職業網絡。支持式廣東話社群。",
         },
         vip: {
-          title: "終身 VIP 社群支援",
-          desc: "Skool + WhatsApp 私密群導師及時答疑、每月 Live Workshop，以及 Lifetime 終身更新。",
+          title: "完整會員方案",
+          desc: "線上課程與回放、Vibe Coding 資料庫、專案規劃工具，以及朱 Sir 與 Chris 45 分鐘共同咨詢。適合想變現、需要專家指導的創業者與職場人。",
         },
       },
     },
@@ -165,8 +166,8 @@ export const dictionaries = {
     stats: { courses: "課程", cases: "案例拆解", mcp: "Cursor 整合" },
     ctaBand: {
       title: "把關鍵流程交給可上線的 AI，而不是另一場示範。",
-      subtitle: "企業可預約免費諮詢；創作者可從學院第一課開始。",
-      items: ["雙導師親授", "可驗證證書", "企業級自動化", "Cursor MCP"],
+      subtitle: "企業可預約免費 1-on-1 諮詢——由技術與商業雙導師直接對接核心流程。",
+      items: ["雙領域專家帶隊", "金融級資安隔離", "3–4 週可上線", "可量化 ROI"],
       button: "預約企業諮詢",
     },
     footer: {
@@ -639,7 +640,7 @@ export const dictionaries = {
       felixRole: "Head of Technology",
       felixName: "Felix Zhu",
       felix:
-        "BSc Computer Science, South China University of Technology. Former Alibaba Group technical specialist (2011–2015), a decade as a front-line architect, and a Tencent training-camp mentor. Focused on AI agent architecture, production LLM systems, and language-agnostic engineering thinking.",
+        "Felix Zhu is a former Alibaba technical specialist, a Tencent training-camp mentor, and a trainer for well-known enterprises. He has helped countless students master AI, pivot their careers, and build sustainable side businesses.",
       chrisRole: "Head of Business Requirements & Transformation",
       chrisName: "Chris Lau",
       chris:
@@ -664,24 +665,25 @@ export const dictionaries = {
       },
     },
     membership: {
-      title: "Join Tenth Project membership: learn, study cases, and ship with the same stack",
-      subtitle: "Lifetime membership is not a single course — it is curriculum, cases, tooling, and community in one system.",
+      title: "Tenth Project Club member benefits",
+      subtitle: "Tenth Project Club is built for modern professionals, founders, and ambitious operators. Master AI and vibe coding to ship your own SaaS — and to change how you compete at work.",
+      cta: "See member benefits",
       items: {
         course: {
-          title: "Flagship vibe coding & AI agent course",
-          desc: "10-hour core plus six hands-on workshops (Coze, OpenClaw lobster agent, mobile apps, and more).",
+          title: "Structured learning that ships",
+          desc: "Every session has executable steps and live cases. A monthly Q&A lets you work through real challenges with mentors and peers.",
         },
         cases: {
-          title: "50+ live startup inspiration cases",
-          desc: "Architecture and master prompts from breakout products such as CalAI and StealthWriter.",
+          title: "AI tools for the workplace",
+          desc: "More than vibe coding. Learn how AI speeds operations, improves decisions, and creates value in enterprise-grade scenes — not theory alone.",
         },
         tools: {
-          title: "Project planner & Cursor MCP",
-          desc: "An AI build coach with automated UAT and two-way sync to local Cursor.",
+          title: "A serious professional community",
+          desc: "A closed room of people who show up. Ask openly, share wins and mistakes, and build a network worth keeping. Cantonese-first support.",
         },
         vip: {
-          title: "Lifetime VIP community",
-          desc: "Private Skool + WhatsApp mentoring, monthly live workshops, and lifetime curriculum updates.",
+          title: "The full member stack",
+          desc: "On-demand courses and replays, a vibe-coding library, a project planner, and a 45-minute consult with both Felix and Chris. For founders and professionals who want expert guidance.",
         },
       },
     },
@@ -729,8 +731,8 @@ export const dictionaries = {
     stats: { courses: "Courses", cases: "Case studies", mcp: "Cursor integration" },
     ctaBand: {
       title: "Put critical workflows on production AI — not another demo.",
-      subtitle: "Enterprises can book a free consult. Creators can start with lesson one.",
-      items: ["Two instructors", "Verifiable certificate", "Enterprise automation", "Cursor MCP"],
+      subtitle: "Enterprises can book a free 1-on-1 consult — technology and commercial leads in the same room.",
+      items: ["Dual-domain leads", "Finance-grade security", "Live in 3–4 weeks", "Measurable ROI"],
       button: "Book an enterprise consult",
     },
     footer: {
