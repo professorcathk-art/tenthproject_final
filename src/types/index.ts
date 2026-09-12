@@ -162,6 +162,8 @@ export interface PromptRun {
   prompt_type: PromptType;
   generated_from_context_version: string | null;
   created_at: string;
+  is_executed: boolean;
+  executed_at: string | null;
 }
 
 export interface ContextVersion {
@@ -186,7 +188,8 @@ export interface TestRun {
   created_at: string;
 }
 
-export type SuggestionCategory = "bug" | "ui_ux" | "performance" | "feature";
+export type SuggestionCategory = "bug" | "ui_ux" | "performance" | "feature" | "copywriting";
+export type AuditDimension = "ui_ux" | "feature" | "copywriting" | "performance";
 export type SuggestionStatus = "pending" | "approved" | "dismissed" | "applied";
 
 export interface AiSuggestion {

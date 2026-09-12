@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
-import { ensureCasesSeeded } from "@/lib/seed/init";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
@@ -17,7 +16,6 @@ function memberPrompt(title: string, locale: string) {
 }
 
 export default async function VaultCasePage({ params }: { params: Promise<{ slug: string }> }) {
-  await ensureCasesSeeded();
   const { slug } = await params;
   const [study, studies, dict, locale] = await Promise.all([
     getCaseStudyBySlug(slug),

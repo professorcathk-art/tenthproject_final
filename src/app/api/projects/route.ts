@@ -6,6 +6,8 @@ import {
   createProject,
   updateProject,
   archiveProject,
+  deleteProject,
+  setPromptExecution,
   updateUATItem,
   updateBug,
   updateTask,
@@ -86,6 +88,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === "delete_project") {
+      await deleteProject(projectId, user.id);
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "mark_prompt_executed") {
+      const run = await setPromptExecution(updates.promptRunId, projectId, Boolean(updates.is_executed));
+      return NextResponse.json({ promptRun: run });
+    }
+
     if (action === "update_uat") {
       const uat = await updateUATItem(updates.uatId, projectId, updates.data, updates.remark);
       return NextResponse.json({ uat });
@@ -160,6 +172,19 @@ export async function PATCH(request: NextRequest) {
 
     const project = await updateProject(projectId, user.id, updates);
     return NextResponse.json({ project });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed";
+    return NextResponse.json({ error: message }, { status: message === "Unauthorized" ? 401 : 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { user } = await requireAuth();
+    const projectId = request.nextUrl.searchParams.get("id");
+    if (!projectId) return NextResponse.json({ error: "Missing project id" }, { status: 400 });
+    await deleteProject(projectId, user.id);
+    return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed";
     return NextResponse.json({ error: message }, { status: message === "Unauthorized" ? 401 : 500 });

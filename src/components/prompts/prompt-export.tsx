@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AI_TOOLS, type AITool, type PromptRun } from "@/types";
-import { formatDistanceToNow } from "date-fns";
-import { zhTW, enUS } from "date-fns/locale";
+import { PromptVersionPanel } from "@/components/project/prompt-version-panel";
+import { toast } from "sonner";
 import { useI18n } from "@/components/i18n/provider";
 
 interface PromptExportProps {
@@ -25,13 +25,14 @@ interface PromptExportProps {
 }
 
 export function PromptExportView({ projectId, projectName, selectedTool: initialTool, promptRuns }: PromptExportProps) {
-  const { dict, locale } = useI18n();
+  const { dict } = useI18n();
   const p = dict.project;
-  const dateLocale = locale === "zh" ? zhTW : enUS;
   const [tool, setTool] = useState<AITool>(initialTool);
   const [promptText, setPromptText] = useState(promptRuns[0]?.prompt_text ?? "");
+  const [previewRunId, setPreviewRunId] = useState(promptRuns[0]?.id ?? null);
+  const [history, setHistory] = useState(promptRuns);
   const [loading, setLoading] = useState(false);
-  const [history] = useState(promptRuns);
+  const [toggling, setToggling] = useState(false);
 
   async function regenerate() {
     setLoading(true);
@@ -41,7 +42,11 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
       body: JSON.stringify({ projectId, tool, promptType: "next-step" }),
     });
     const data = await res.json();
-    if (data.promptRun) setPromptText(data.promptRun.prompt_text);
+    if (data.promptRun) {
+      setPromptText(data.promptRun.prompt_text);
+      setPreviewRunId(data.promptRun.id);
+      setHistory((current) => [data.promptRun, ...current]);
+    }
     setLoading(false);
   }
 
@@ -54,7 +59,11 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
       body: JSON.stringify({ projectId, tool: newTool, promptType: "next-step" }),
     });
     const data = await res.json();
-    if (data.promptRun) setPromptText(data.promptRun.prompt_text);
+    if (data.promptRun) {
+      setPromptText(data.promptRun.prompt_text);
+      setPreviewRunId(data.promptRun.id);
+      setHistory((current) => [data.promptRun, ...current]);
+    }
     setLoading(false);
   }
 
@@ -89,40 +98,49 @@ export function PromptExportView({ projectId, projectName, selectedTool: initial
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{AI_TOOLS.find((t) => t.value === tool)?.label} prompt</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-[500px]">
-            {loading ? dict.common.loading : promptText || p.noPrompt}
-          </pre>
-        </CardContent>
-      </Card>
-
-      {history.length > 0 && (
+      <PromptVersionPanel
+        runs={history}
+        previewRunId={previewRunId}
+        toggling={toggling}
+        onView={(run) => {
+          setPreviewRunId(run.id);
+          setPromptText(run.prompt_text);
+        }}
+        onToggleExecuted={async (run) => {
+          setToggling(true);
+          try {
+            const res = await fetch("/api/projects", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                projectId,
+                action: "mark_prompt_executed",
+                promptRunId: run.id,
+                is_executed: !run.is_executed,
+              }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || "Failed");
+            const updated = data.promptRun as PromptRun;
+            setHistory((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed");
+          } finally {
+            setToggling(false);
+          }
+        }}
+      >
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{p.history}</CardTitle>
+            <CardTitle className="text-base">{AI_TOOLS.find((t) => t.value === tool)?.label} prompt</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {history.map((run) => (
-              <button
-                key={run.id}
-                type="button"
-                className="w-full text-left rounded-lg border p-3 hover:bg-slate-50 transition-colors"
-                onClick={() => setPromptText(run.prompt_text)}
-              >
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{run.prompt_type} · {run.tool}</span>
-                  <span className="text-slate-400">{formatDistanceToNow(new Date(run.created_at), { addSuffix: true, locale: dateLocale })}</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 truncate">{run.prompt_text.slice(0, 100)}...</p>
-              </button>
-            ))}
+          <CardContent>
+            <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-[500px]">
+              {loading ? dict.common.loading : promptText || p.noPrompt}
+            </pre>
           </CardContent>
         </Card>
-      )}
+      </PromptVersionPanel>
     </div>
   );
 }

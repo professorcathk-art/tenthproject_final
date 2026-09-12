@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, FolderOpen, ClipboardCheck, FileOutput } from "lucide-react";
+import { Plus, FolderOpen, ClipboardCheck, FileOutput } from "lucide-react";
+import { ProjectHubGrid } from "@/components/project/project-hub-grid";
 import { getSession } from "@/lib/auth/session";
 import { getMemberHubSnapshot, getRecentActivity } from "@/lib/db/store";
 import { redirect } from "next/navigation";
@@ -81,30 +82,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Link key={project.id} href={`/projects/${project.id}`}>
-              <Card className="h-full transition-all hover:border-slate-300 hover:shadow-sm">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{project.name}</CardTitle>
-                    <ArrowRight className="h-4 w-4 text-slate-400" />
-                  </div>
-                  <CardDescription className="line-clamp-2">{project.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-3 flex flex-wrap gap-1.5">
-                    <Badge variant="secondary" className="text-xs">{project.product_type.replace("_", " ")}</Badge>
-                    <Badge variant="outline" className="text-xs">{project.stage.replace("_", " ")}</Badge>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    {dict.dashboard.updated} {formatDistanceToNow(new Date(project.updated_at), { addSuffix: true, locale: dateLocale })}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <ProjectHubGrid projects={projects} />
       )}
 
       {projects.length > 0 ? (

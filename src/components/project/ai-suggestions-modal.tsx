@@ -15,8 +15,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useI18n } from "@/components/i18n/provider";
-import { CATEGORY_LABEL, SEVERITY_CLASS } from "@/lib/project/audit";
-import type { AiSuggestion } from "@/types";
+import { AUDIT_DIMENSIONS, CATEGORY_BADGE_CLASS, CATEGORY_LABEL, SEVERITY_CLASS, suggestionDimension } from "@/lib/project/audit";
+import type { AiSuggestion, AuditDimension } from "@/types";
 
 interface AiSuggestionsModalProps {
   open: boolean;
@@ -37,6 +37,7 @@ export function AiSuggestionsModal({
   const p = dict.project;
   const [drafts, setDrafts] = useState<AiSuggestion[]>(suggestions);
   const [saving, setSaving] = useState(false);
+  const [dimension, setDimension] = useState<"all" | AuditDimension>("all");
   const snapshotKey = `${open}:${suggestions.map((item) => item.id).join(",")}`;
   const [seenKey, setSeenKey] = useState(snapshotKey);
   if (snapshotKey !== seenKey) {
@@ -45,8 +46,13 @@ export function AiSuggestionsModal({
   }
 
   const visible = useMemo(
-    () => drafts.filter((item) => item.status !== "applied"),
-    [drafts],
+    () =>
+      drafts.filter((item) => {
+        if (item.status === "applied") return false;
+        if (dimension === "all") return true;
+        return suggestionDimension(item.category) === dimension;
+      }),
+    [drafts, dimension],
   );
 
   function update(id: string, patch: Partial<AiSuggestion>) {
@@ -67,6 +73,32 @@ export function AiSuggestionsModal({
         </SheetHeader>
 
         <div className="space-y-3 px-4">
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setDimension("all")}
+              className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
+                dimension === "all" ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-600"
+              }`}
+            >
+              {p.filterAll}
+            </button>
+            {AUDIT_DIMENSIONS.map((dim) => {
+              const label = CATEGORY_LABEL[dim][locale === "zh" ? "zh" : "en"];
+              return (
+                <button
+                  key={dim}
+                  type="button"
+                  onClick={() => setDimension(dim)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                    dimension === dim ? CATEGORY_BADGE_CLASS[dim] + " ring-1 ring-current" : CATEGORY_BADGE_CLASS[dim] + " opacity-70"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
           {visible.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">{p.noSuggestions}</p>
           ) : (
@@ -76,7 +108,7 @@ export function AiSuggestionsModal({
                 <div key={item.id} className="rounded-xl border bg-card p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-wrap gap-1">
-                      <Badge variant="secondary">{label}</Badge>
+                      <Badge className={CATEGORY_BADGE_CLASS[item.category] ?? ""}>{label}</Badge>
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${SEVERITY_CLASS[item.severity] ?? SEVERITY_CLASS.medium}`}>
                         {item.severity}
                       </span>

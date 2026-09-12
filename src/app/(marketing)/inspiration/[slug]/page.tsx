@@ -5,13 +5,17 @@ import { pageMetadata } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
-import { ensureCasesSeeded } from "@/lib/seed/init";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { CaseArticle } from "@/components/inspiration/case-article";
 
 export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const studies = await getCaseStudyCards();
+  return studies.map((study) => ({ slug: study.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -25,7 +29,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
-  await ensureCasesSeeded();
   const { slug } = await params;
   const [study, studies, dict, locale] = await Promise.all([
     getCaseStudyBySlug(slug),

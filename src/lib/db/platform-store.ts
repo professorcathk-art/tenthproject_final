@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { promises as fs } from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -334,26 +336,34 @@ export async function getUserCertificate(userId: string, courseId: string): Prom
 // ─── Case Studies ──────────────────────────────────────────
 
 const CASE_CARD_COLUMNS = "id, title, slug, category, summary, tech_stack, is_published, created_at";
-const CASE_CARD_TTL_MS = 5 * 60 * 1000;
+const CASE_STUDIES_TAG = "case-studies";
 
 export type CaseStudyCard = Pick<
   CaseStudy,
   "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url"
 >;
 
-let caseCardCache: { at: number; data: CaseStudyCard[] } | null = null;
-const caseBySlugCache = new Map<string, { at: number; data: CaseStudy | null }>();
-
 function invalidateCaseCaches() {
-  caseCardCache = null;
-  caseBySlugCache.clear();
+  try {
+    revalidateTag(CASE_STUDIES_TAG, "max");
+  } catch {
+    /* script / seed context has no request cache */
+  }
 }
 
-export async function getCaseStudyCards(publishedOnly = true): Promise<CaseStudyCard[]> {
-  if (caseCardCache && Date.now() - caseCardCache.at < CASE_CARD_TTL_MS) {
-    return caseCardCache.data;
-  }
+function cardsFromRows(rows: CaseStudy[]): CaseStudyCard[] {
+  return rows.map((study) => ({
+    id: study.id,
+    title: study.title,
+    slug: study.slug,
+    category: study.category,
+    categories: study.categories,
+    summary: study.summary,
+    website_url: study.website_url,
+  }));
+}
 
+async function fetchCaseStudyCards(publishedOnly: boolean): Promise<CaseStudyCard[]> {
   let rows: CaseStudy[] = [];
   if (isSupabaseConfigured()) {
     let q = createServiceClient()
@@ -367,18 +377,30 @@ export async function getCaseStudyCards(publishedOnly = true): Promise<CaseStudy
     const store = await ensurePlatformStore();
     rows = store.caseStudies.filter((c) => !publishedOnly || c.is_published).map(normalizeCaseStudy);
   }
+  return cardsFromRows(rows);
+}
 
-  const cards = rows.map((study) => ({
-    id: study.id,
-    title: study.title,
-    slug: study.slug,
-    category: study.category,
-    categories: study.categories,
-    summary: study.summary,
-    website_url: study.website_url,
-  }));
-  caseCardCache = { at: Date.now(), data: cards };
-  return cards;
+const cachedCaseStudyCards = unstable_cache(
+  async (publishedOnly: boolean) => fetchCaseStudyCards(publishedOnly),
+  ["case-study-cards"],
+  { revalidate: 300, tags: [CASE_STUDIES_TAG] },
+);
+
+export const getCaseStudyCards = cache(async (publishedOnly = true): Promise<CaseStudyCard[]> => {
+  if (process.env.NODE_ENV !== "production") return fetchCaseStudyCards(publishedOnly);
+  return cachedCaseStudyCards(publishedOnly);
+});
+
+export async function listPublishedCaseSlugs(): Promise<string[]> {
+  if (isSupabaseConfigured()) {
+    const { data } = await createServiceClient()
+      .from("case_studies")
+      .select("slug")
+      .eq("is_published", true);
+    return ((data ?? []) as { slug: string }[]).map((row) => row.slug);
+  }
+  const store = await ensurePlatformStore();
+  return store.caseStudies.filter((c) => c.is_published).map((c) => c.slug);
 }
 
 export async function countPublishedCaseStudies(): Promise<number> {
@@ -410,22 +432,26 @@ export async function getCaseStudies(category?: string, publishedOnly = true): P
   return rows;
 }
 
-export async function getCaseStudyBySlug(slug: string): Promise<CaseStudy | null> {
-  const cached = caseBySlugCache.get(slug);
-  if (cached && Date.now() - cached.at < CASE_CARD_TTL_MS) return cached.data;
-
-  let study: CaseStudy | null = null;
+async function fetchCaseStudyBySlug(slug: string): Promise<CaseStudy | null> {
   if (isSupabaseConfigured()) {
     const { data } = await createServiceClient().from("case_studies").select("*").eq("slug", slug).maybeSingle();
-    study = data ? normalizeCaseStudy(data as CaseStudy) : null;
-  } else {
-    const store = await ensurePlatformStore();
-    const cs = store.caseStudies.find((c) => c.slug === slug);
-    study = cs ? normalizeCaseStudy(cs) : null;
+    return data ? normalizeCaseStudy(data as CaseStudy) : null;
   }
-  caseBySlugCache.set(slug, { at: Date.now(), data: study });
-  return study;
+  const store = await ensurePlatformStore();
+  const cs = store.caseStudies.find((c) => c.slug === slug);
+  return cs ? normalizeCaseStudy(cs) : null;
 }
+
+const cachedCaseStudyBySlug = unstable_cache(
+  async (slug: string) => fetchCaseStudyBySlug(slug),
+  ["case-study-by-slug"],
+  { revalidate: 300, tags: [CASE_STUDIES_TAG] },
+);
+
+export const getCaseStudyBySlug = cache(async (slug: string): Promise<CaseStudy | null> => {
+  if (process.env.NODE_ENV !== "production") return fetchCaseStudyBySlug(slug);
+  return cachedCaseStudyBySlug(slug);
+});
 
 function parseStack(raw: unknown): string[] {
   if (Array.isArray(raw)) return raw as string[];

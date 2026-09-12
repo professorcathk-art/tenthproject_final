@@ -1,4 +1,4 @@
-import type { AiSuggestion, SuggestionCategory, TestRun } from "@/types";
+import type { AiSuggestion, AuditDimension, SuggestionCategory, TestRun } from "@/types";
 
 export function parseHttpStatus(testRun?: TestRun | null): number | null {
   if (!testRun) return null;
@@ -20,11 +20,26 @@ export function isActionableSuggestion(item: AiSuggestion) {
 }
 
 export const CATEGORY_LABEL: Record<SuggestionCategory, { zh: string; en: string }> = {
-  bug: { zh: "錯誤", en: "Bug" },
-  ui_ux: { zh: "介面體驗", en: "UI / UX" },
-  performance: { zh: "效能", en: "Performance" },
-  feature: { zh: "功能", en: "Feature" },
+  bug: { zh: "⚡ 效能與錯誤", en: "⚡ Performance & errors" },
+  ui_ux: { zh: "🎨 UI/UX", en: "🎨 UI/UX" },
+  performance: { zh: "⚡ 效能與錯誤", en: "⚡ Performance & errors" },
+  feature: { zh: "🧩 功能與邏輯", en: "🧩 Feature & logic" },
+  copywriting: { zh: "✍️ 文案與引導", en: "✍️ Copy & guidance" },
 };
+
+export const CATEGORY_BADGE_CLASS: Record<SuggestionCategory, string> = {
+  bug: "bg-emerald-100 text-emerald-800",
+  performance: "bg-emerald-100 text-emerald-800",
+  ui_ux: "bg-blue-100 text-blue-800",
+  feature: "bg-violet-100 text-violet-800",
+  copywriting: "bg-amber-100 text-amber-800",
+};
+
+export const AUDIT_DIMENSIONS: AuditDimension[] = ["ui_ux", "feature", "copywriting", "performance"];
+
+export function suggestionDimension(category: SuggestionCategory): AuditDimension {
+  return category === "bug" ? "performance" : (category as AuditDimension);
+}
 
 export const SEVERITY_CLASS: Record<string, string> = {
   low: "bg-slate-100 text-slate-700",

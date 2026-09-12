@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
       prompt_type: "next-step" as const,
       generated_from_context_version: project.context_versions?.[0]?.id ?? null,
       created_at: new Date().toISOString(),
+      is_executed: false,
+      executed_at: null,
     };
 
     await addPromptRun(promptRun);

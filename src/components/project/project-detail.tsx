@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -43,6 +44,8 @@ import { useI18n } from "@/components/i18n/provider";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABEL, SEVERITY_CLASS, isHealthyStatus, parseHttpStatus, pendingSuggestionCount } from "@/lib/project/audit";
 import { buildRetestPrompt } from "@/lib/ai/executable-spec";
+import { PromptVersionPanel } from "@/components/project/prompt-version-panel";
+import type { PromptRun } from "@/types";
 
 interface ProjectDetailProps {
   initialProject: ProjectWithRelations;
@@ -51,6 +54,7 @@ interface ProjectDetailProps {
 const TASK_COLUMNS = ["todo", "in_progress", "done", "blocked"] as const;
 
 export function ProjectDetail({ initialProject }: ProjectDetailProps) {
+  const router = useRouter();
   const { dict, locale } = useI18n();
   const p = dict.project;
   const dateLocale = locale === "zh" ? zhTW : enUS;
@@ -59,6 +63,8 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const [tab, setTab] = useState("overview");
   const [selectedTool, setSelectedTool] = useState<AITool>(project.selected_tool as AITool);
   const [promptText, setPromptText] = useState(project.prompt_runs?.[0]?.prompt_text ?? "");
+  const [previewRunId, setPreviewRunId] = useState(project.prompt_runs?.[0]?.id ?? null);
+  const [togglingPrompt, setTogglingPrompt] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState(project.website_url ?? "");
   const [githubUrl, setGithubUrl] = useState(project.github_url ?? "");
   const [uatFilter, setUatFilter] = useState<string>("all");
@@ -99,11 +105,14 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
     const data = await res.json();
     if (data.project) {
       setProject(data.project);
-      if (data.project.prompt_runs?.[0]?.prompt_text) {
-        setPromptText(data.project.prompt_runs[0].prompt_text);
+      const runs = (data.project.prompt_runs ?? []) as PromptRun[];
+      const preview = previewRunId ? runs.find((run) => run.id === previewRunId) : runs[0];
+      if (preview) {
+        setPreviewRunId(preview.id);
+        setPromptText(preview.prompt_text);
       }
     }
-  }, [project.id]);
+  }, [previewRunId, project.id]);
 
   async function projectAction(action: string, payload: Record<string, unknown> = {}) {
     const res = await fetch("/api/projects", {
@@ -172,6 +181,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setPromptText(data.promptRun.prompt_text);
+      setPreviewRunId(data.promptRun.id);
       setTab("prompt");
       await refreshProject();
       toast.success(locale === "zh" ? "提示詞已更新" : "Prompt updated");
@@ -193,6 +203,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setPromptText(data.promptRun?.prompt_text ?? "");
+      setPreviewRunId(data.promptRun?.id ?? null);
       setTab("prompt");
       await refreshProject();
       toast.success(locale === "zh" ? "下一衝刺提示詞已寫入 Cursor 分頁" : "Next-sprint prompt is ready");
@@ -293,10 +304,30 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
             <Badge variant="outline">{project.selected_tool}</Badge>
           </div>
         </div>
-        <Button onClick={nextSprint} disabled={loading === "sprint"}>
-          {loading === "sprint" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
-          {loading === "sprint" ? p.synthesizing : `🚀 ${p.nextSprint}`}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={nextSprint} disabled={loading === "sprint"}>
+            {loading === "sprint" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
+            {loading === "sprint" ? p.synthesizing : `🚀 ${p.nextSprint}`}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              if (!window.confirm(p.deleteProjectConfirm)) return;
+              const res = await fetch(`/api/projects?id=${project.id}`, { method: "DELETE" });
+              if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || p.deleteProject);
+                return;
+              }
+              toast.success(p.deleteProjectDone);
+              router.push("/dashboard");
+              router.refresh();
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+            {p.deleteProject}
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-card px-4 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -788,31 +819,32 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                 {p.copyPrompt}
               </Button>
             </div>
-            <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-96">
-              {promptText || p.noPrompt}
-            </pre>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{p.versionHistory}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {(project.prompt_runs ?? []).length === 0 ? (
-                  <p className="text-sm text-slate-500">{p.noPrompt}</p>
-                ) : (
-                  (project.prompt_runs ?? []).slice(0, 8).map((run) => (
-                    <div key={run.id} className="flex items-center justify-between gap-2 rounded-lg border p-2 text-sm">
-                      <div>
-                        <div className="font-medium">{run.prompt_type} · {run.tool}</div>
-                        <div className="text-xs text-slate-500">
-                          {formatDistanceToNow(new Date(run.created_at), { addSuffix: true, locale: dateLocale })}
-                        </div>
-                      </div>
-                      <Button size="sm" variant="ghost" onClick={() => setPromptText(run.prompt_text)}>{p.useLatestPrompt}</Button>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+            <PromptVersionPanel
+              runs={project.prompt_runs ?? []}
+              previewRunId={previewRunId}
+              toggling={togglingPrompt}
+              onView={(run) => {
+                setPreviewRunId(run.id);
+                setPromptText(run.prompt_text);
+              }}
+              onToggleExecuted={async (run) => {
+                setTogglingPrompt(true);
+                try {
+                  await projectAction("mark_prompt_executed", {
+                    promptRunId: run.id,
+                    is_executed: !run.is_executed,
+                  });
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Failed");
+                } finally {
+                  setTogglingPrompt(false);
+                }
+              }}
+            >
+              <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-sm overflow-x-auto whitespace-pre-wrap max-h-96">
+                {promptText || p.noPrompt}
+              </pre>
+            </PromptVersionPanel>
           </TabsContent>
 
           <TabsContent value="mcp" className="mt-4">

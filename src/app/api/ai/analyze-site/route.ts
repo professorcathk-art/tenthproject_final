@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
-import { analyzeLiveSite, mergeAuditSuggestions } from "@/lib/ai/site-audit";
+import { AUDIT_SYSTEM_PROMPT, analyzeLiveSite, mergeAuditSuggestions } from "@/lib/ai/site-audit";
 import { getProject, logActivity, saveAiSuggestions } from "@/lib/db/store";
 import type { WebsiteCheckResult } from "@/lib/playwright/check-http";
+
+export { AUDIT_SYSTEM_PROMPT };
 
 export const maxDuration = 45;
 

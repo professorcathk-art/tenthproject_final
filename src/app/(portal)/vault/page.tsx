@@ -1,11 +1,9 @@
 import { CaseStudyGrid } from "@/components/inspiration/case-study-grid";
 import { getCaseStudyCards } from "@/lib/db/platform-store";
-import { ensureCasesSeeded } from "@/lib/seed/init";
 import { Lightbulb } from "lucide-react";
 import { getDict } from "@/lib/i18n/server";
 
 export default async function VaultPage() {
-  await ensureCasesSeeded();
   const [studies, dict] = await Promise.all([getCaseStudyCards(), getDict()]);
 
   return (

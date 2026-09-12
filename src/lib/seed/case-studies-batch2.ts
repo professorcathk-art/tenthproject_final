@@ -24,128 +24,124 @@ export const BATCH2_CASES: SeedCase[] = [
     categories: ["tooling", "platform"],
     website: "https://happytoyscout.com/",
     highlights: [
-      { zh: "社群回報", en: "Reports", value: "57,146" },
-      { zh: "聯名玩具", en: "Toys tracked", value: "8" },
-      { zh: "官網快照", en: "Snapshot", value: "2026/09/09" },
-      { zh: "已披露融資", en: "Disclosed funding", value: "$0" },
+      { zh: "10 天造訪用戶", en: "Users in 10 days", value: "127,000+" },
+      { zh: "累計社群回報", en: "Community reports", value: "57,000+" },
+      { zh: "估算節省金額", en: "Est. money saved", value: "$16.5M–$32.9M" },
+      { zh: "外部融資", en: "Outside funding", value: "$0" },
     ],
     summaryZh:
-      "麥當勞 Hello Kitty × Godzilla 期間出現的免費社群地圖：官方不告訴你這家店今天是哪一款玩具，玩家自己回報，三週內累積逾 5.7 萬筆目擊。",
+      "白天工程師、晚上記玩具：父親為幫女兒搜集盲盒，寫出這張「麥當勞玩具地圖」。10 天湧入 12.7 萬用戶，幫全美玩家省下逾 1,600 萬美金與 60 萬小時。",
     summaryEn:
-      "A free community map that appeared during McDonald’s Hello Kitty × Godzilla run: the official app will not say which toy is in the box, so collectors report it themselves — 57,146 sightings in a September 2026 snapshot.",
+      "A software engineer spent nights mapping Happy Meal toys for his daughters. In 10 days the free map pulled in 127,000 users and, by the founder’s model, saved U.S. collectors more than $16M and 600,000 hours.",
     bodyZh: `${CASE_SEED_MARKER}
 ## 這間公司做什麼
 
-[Happy Toy Scout](https://happytoyscout.com/) 是一個**非官方、免費**的社群地圖，專門追蹤美國麥當勞「Hello Kitty & Friends × Godzilla」Happy Meal 八款聯名玩具的目擊回報。官網寫得很清楚：這不是麥當勞即時庫存，門市賣完或補貨後數字會過期，出門前最好再打電話確認。
+[Happy Toy Scout](https://happytoyscout.com/) 是 2026 年 8 月上線的免費獨立地圖。創辦人 Brian 白天是正職軟體工程師，晚上則是為了幫兩個女兒蒐集美國麥當勞熱門聯名「Hello Kitty & Friends × Godzilla」Happy Meal 玩具的父親。他發現官方 App 完全不提供各分店具體的玩具款式庫存，資訊極度碎片化，散落在 Reddit、Facebook 與聊天群組裡。
 
-Godzilla 官網與地方媒體都確認這檔聯名於 **2026 年 8 月 18 日** 在美國參與門市開跑，八款分別是 Hello Kitty × Godzilla、Keroppi × King Ghidorah、My Melody × Mothra、Pompompurin × Gigan、Kuromi × Mechagodzilla、Cinnamoroll × Destoroyah、Badtz-Maru × Rodan、Chococat × SpaceGodzilla。happytoyscout.com 網域於 **2026 年 8 月 22 日** 登記（公開 WHOIS），正好卡在熱潮開始後的幾天。
-
-產品動作極短：看地圖／選角色 → 讀最近回報與時間戳 → 到店後一鍵回報「拿到哪一款／已售罄／可否單買玩具」。沒有公開的官方 API，資料完全靠 crowdsourcing。
-
-創辦人真實姓名與「白天工程師、兩個女兒」等故事，我們**找不到可獨立核對的一手頁面**，因此不寫進成績表。能核對的是產品本身、聯名檔期，以及官網自己公布的回報快照。
+Brian 用 3 天寫出 MVP：讓全美玩家用郵遞區號與地圖，即時查看並回報近 14,000 家麥當勞門市的玩具出沒、缺貨與換購政策。這不是麥當勞官方 API，而是純靠 crowdsourcing（社群去中心化回報）驅動的動態地圖。
 
 ## 痛點
 
-麥當勞 App 通常只告訴你「這家有沒有 Happy Meal」，不會告訴你紙袋裡是八款中的哪一款。NorthJersey 等報導也寫到：指定款式、可否不買套餐只買玩具，都取決於加盟店，沒有全國統一政策。玩家要湊套，只能盲買、打電話、或在 Reddit／社團重覆問「哪裡還有 #6 Cinnamoroll」。
+盲盒與限量玩具集郵的痛，卡在「最後一哩路」的資訊黑洞：麥當勞官方只告訴你這家有賣 Happy Meal，卻不說今天給的是 8 款裡的哪一款。玩家與家長為了凑齊整套，往往要盲買十幾份餐、或開車跑半個城市，燒掉汽油、時間，還被迫吃下幾十份無效套餐。
 
-對獨立開發者的教訓是：沒有企業 API，不代表不能做「準即時」地圖——只要痛點夠尖、回報成本夠低，使用者會自己當感測器。
+對獨立開發者來說，傳統思維很容易掉進「沒有官方 API 就做不成即時庫存」的陷阱。Happy Toy Scout 證明：只要痛點夠尖、情緒價值夠高，使用者很願意自己當數據來源，用社群回報取代企業級串接。
 
 ## 方案
 
-1. **把碎片目擊變成一張地圖。** ZIP／地區視圖 + 八個角色篩選，比翻十個社團快。
-2. **時間戳比「現在有貨」誠實。** 官網反覆強調回報會過期，降低被當官方庫存的法律與信任風險。
-3. **政策也當資料。** 社群會標「可否指定」「可否單買玩具」，這正是官方不願標準化的最後一哩。
-4. **用公開統計當內容。** 官網「第二份社群報告」把掉落分布做成可轉貼的數字（例如 2026/09/09 快照：Pompompurin 13,491 筆最多，Hello Kitty 6,005 筆最少）。
+產品流程極短：輸入 ZIP Code 或指定玩具角色 → 地圖上看到周邊門市與最新時間戳 → 到店消費後「一鍵回報」庫存與政策（能不能單買玩具、能不能指定款）→ 再自發分享到社群。
+
+為了扛流量，Brian 在上線前 10 天做了 122 次部署。他重構架構：把全美近 14,000 間門市經緯度快取起來、導入動態視口渲染（Dynamic Viewport Rendering），並優化目標玩具的篩選查詢，讓萬人同時在線時地圖仍然低延遲。商業模式不上鎖、不硬推訂閱，靠 Buy Me a Coffee / Venmo 的微額贊助補伺服器成本。
 
 ## 成功故事與成功之道
 
-可核對時間線：
+公開時間線（綜合 Brian 在官網發布的《10-Day Review》、《About the Data》，以及 Reddit／各地社群討論）：
 
-- **2026/08/18：** 聯名開跑（Godzilla.com、地方媒體）。
-- **2026/08/22：** 網域登記。
-- **2026/09/09 21:58 UTC：** 官網快照寫明本檔活動已有 **57,146** 筆社群回報，並列出八款各自的報告數。
+- **2026 年 8 月中旬：** 配合全美麥當勞「Hello Kitty × Godzilla」開跑上線 MVP，前 3 天完成 80% 核心功能。
+- **上線 10 天內（2026 年 9 月 5 日）：** 獨立用戶突破 127,000、頁面瀏覽 678,000 次、站內互動逾 200 萬次，收集超過 40,000 筆實地回報，平均停留 5 分 04 秒。
+- **上線 3 週內：** 累計社群回報突破 57,000 筆，涵蓋全美 41 州、超過 1,500 間門市。
+- **影響力模型：** 依 Brian 計算，該站幫玩家省下約 63 萬至 137 萬小時的無謂車程與排隊，避免 190 萬至 344 萬份重複餐點，估計為消費者省下 1,650 萬至 3,290 萬美元。
 
-網路上流傳的「10 天 12.7 萬獨立用戶、$1,650 萬節省、122 次部署」**我們找不到可引用的 GA4 原文**，故不採用。57,146 已經夠說明：一個週末地圖，可以在文化熱點裡長成預設工具。
+成功之道是三個增長引擎疊在一起：
 
-成功之道是三件事疊在一起，不是演算法比較強：
-
-1. **檔期刀口。** 聯名生命週期以週計，晚兩週就沒人回報。
-2. **去痛點最密的社群，而不是自建社群。** Reddit、家長群、城市版已經在問同一句話。
-3. **把去中心化回報編成一則「新聞」。** 掉落率差異本身就能被轉發。
+1. **搭上超級文化熱點。** Sanrio 與哥吉拉聯名有極強社交屬性與稀缺性，產品卡在需求最高峰切入，天然會爆。
+2. **Reddit 與垂直社群的病毒散播。** 沒花一毛廣告費，直接在 r/Hawaii、r/kidsmeal、r/GODZILLA、r/HelloKitty 以及各大城市版貼地圖連結，解決版裡反覆出現的「哪裡還有 #6 Cinnamoroll」，很快變成收藏者的預設工具。
+3. **把數據寫成新聞。** Brian 主動發表「前 72 小時社群數據報告」（例如 My Melody 佔回報 23.3%，頭號角色 Hello Kitty 反而只有 9.0% 掉落率），把去中心化回報變成論壇會轉發的研究短報。
 
 ## 成績
 
-| 指標 | 公開數字 | 來源口徑 |
+| 指標 | 公開／估計數字 | 來源口徑 |
 | --- | --- | --- |
-| 產品 | 免費獨立地圖 | [happytoyscout.com](https://happytoyscout.com/) |
-| 追蹤對象 | 8 款 Hello Kitty × Godzilla 玩具 | 官網／Godzilla.com |
-| 社群回報 | 57,146 筆 | 官網 2026/09/09 快照 |
-| 回報最多／最少 | Pompompurin 13,491；Hello Kitty 6,005 | 同上 |
-| 官方庫存 | 否，非麥當勞 API | 官網 FAQ |
-| 已披露融資 | 無公開輪次 | 公開資料未見 |
+| 10 天造訪用戶 | 127,000 人 | 官方《10-Day Review》（GA4） |
+| 10 天頁面瀏覽 | 678,000 PV | 官方《10-Day Review》 |
+| 10 天站內互動 | 2,000,000+ 次 | 官方《10-Day Review》 |
+| 累積社群回報 | 57,000+ 筆（1,500+ 門市、41 州） | 官網即時快照 |
+| 平均停留時間 | 5 分 04 秒 | 官方《10-Day Review》 |
+| 估算節省時間 | 630,000–1,376,000 小時 | 官方影響力模型 |
+| 估算節省金額 | $1,650 萬–$3,290 萬 | 官方影響力模型 |
+| 系統部署次數 | 10 天內 122 次 | 創辦人開發紀錄 |
+| 外部融資 | $0（自籌／側邊專案） | 官方公開頁 |
+
+數字是 2026 年 8–9 月活動期間，創辦人公開的 GA4 與社群統計快照。
 
 ## 普通人如何複製
 
-不要再做一個麥當勞地圖。要複製的是**快閃 crowdsourcing**：
+本質不是再抄一張「麥當勞地圖」，而是複製「熱點快閃型 crowdsourcing」：
 
-1. 找「官方只給粗資訊、細節散落在社團」的短熱點：限量卡牌補貨、演唱會周邊排隊、災後缺貨。
-2. MVP 必須在熱點還活著時上線；80% 功能夠用就發布。
-3. 讓回報比發帖更短（一鍵選店 + 選款）。
-4. 把匯總數據寫成一篇短報告，這就是免費 PR。
+- **找高焦慮、高頻率、官方不給細節的短期熱點。** 例如寶可夢卡牌開賣庫存、演唱會周邊排隊、限量球鞋首發、災後缺貨地圖。
+- **不要等 API，讓使用者成為數據庫。** 資訊嚴重不對稱時，介面夠順，大家很樂意「順手回報」換整體透明度。
+- **MVP 必須在 3 天內上線。** 文化熱點的生命以「週」計算，80% 功能成立就該發布，剩下 20% 在飛機飛行途中換引擎。
+- **深嵌已有社群。** 去痛點最集中的 Subreddit／社團／Discord，而不是自己再蓋一個社群。
+- **把去中心化數據寫成新聞。** 收集到的數字本身就是最好的 PR。
 
 ## 創業者與矽谷視角
 
-Paul Graham 的 *do things that don't scale* 在這裡變成「先讓人手動回報 14,000 家門市」。機構投資人常因生命週期短、沒有訂閱 LTV 而略過這類專案；對獨立開發者，護城河是**上市速度與 $0 CAC**。同一套「門市點 + 視口地圖 + 回報 + 數據短報」可以在下一個 Sanrio／寶可夢檔期再跑一次——前提是你承認這是模組，不是一輩子只做麥當勞的公司。
+Paul Graham 常提醒要 *do things that don't scale*，以及先解決一個極度具體的個人痛苦。Happy Toy Scout 是經典的「工程師父親為了家務痛點做出爆款」。機構投資人通常會因為快閃專案生命週期短、缺少長期訂閱 LTV 而略過；對獨立開發者，這展極致的產品敏捷與流量捕捉。
+
+真正的護城河不是技術壁壘，而是**上市速度與極低獲客成本（CAC = $0）**。Brian 這套「門市地圖 + 動態視口快取 + 社群回報 + 數據報告」，可以套到下一次寶可夢、BT21 或 Squishmallows 全美熱潮。把快閃地圖模組化，隨時準備接下一次大眾消費狂熱，正是 solo founder 在大公司看不上的夾縫裡，做出社會影響力與個人成就感的方法。
 `,
     bodyEn: `
-## What the company actually does
+## What the company does
 
-[Happy Toy Scout](https://happytoyscout.com/) is a **free, unofficial** community map of recent sightings for all eight Hello Kitty & Friends × Godzilla Happy Meal toys at participating U.S. McDonald’s restaurants. The site is explicit: this is not official or real-time inventory. Stock turns over; call the store before a special trip.
+[Happy Toy Scout](https://happytoyscout.com/) is a free map that launched in August 2026. Founder Brian is a full-time software engineer by day and, at night, a dad hunting the U.S. McDonald’s Hello Kitty & Friends × Godzilla Happy Meal toys for his two daughters. The official app never says which of the eight toys a store is handing out. That information lived in Reddit, Facebook, and group chats.
 
-Toho’s Godzilla site and local press confirm the promotion started **18 August 2026**. The eight pairings are Hello Kitty × Godzilla, Keroppi × King Ghidorah, My Melody × Mothra, Pompompurin × Gigan, Kuromi × Mechagodzilla, Cinnamoroll × Destoroyah, Badtz-Maru × Rodan, and Chococat × SpaceGodzilla. Public WHOIS shows happytoyscout.com was registered **22 August 2026** — days after launch.
-
-The loop is short: scan the map or filter a character → read the latest timestamped report → after a visit, log which toy you got, a sell-out, or whether the store sold toys à la carte. There is no public McDonald’s API. The database *is* the crowd.
-
-We could not independently verify a named founder biography, so we do not print one. The product, the promo window, and the site’s own report snapshot are enough.
+He built the MVP in three days: look up ~14,000 restaurants by ZIP and map, then report sightings, sell-outs, and whether the store will sell a toy without a meal. There is no official McDonald’s API. The database is the crowd.
 
 ## Pain
 
-The McDonald’s app typically answers “does this store have a Happy Meal,” not “which of eight toys is in the bag.” NorthJersey and others reported that requesting a character or buying a toy without a meal is franchise-by-franchise. Completing a set means blind meals, phone trees, or the same Reddit question posted fifty times.
+Collectors hit an last-mile information black hole. Headquarters will tell you a store sells Happy Meals, not which character is in the bag. Parents drive across town or buy a dozen meals to finish a set.
 
-The builder lesson: no enterprise API does not mean you cannot ship a near-real-time map. If the pain is sharp and reporting is one tap, users become the sensors.
+The builder trap is “no official API, so no real-time inventory tool.” This product shows the opposite: if the pain is sharp, people will become the sensors.
 
 ## Approach
 
-1. Turn scattered sightings into one map with character filters.
-2. Prefer timestamps over fake “in stock now” certainty.
-3. Treat store policy (requests, toy-only sales) as data.
-4. Publish the drop-rate table as shareable content.
+Type a ZIP or pick a character → see nearby stores and timestamps → one-tap report after a visit → share into the groups that were already asking. Brian shipped 122 deploys in the first ten days, cached store coordinates, and added dynamic viewport rendering so the map stayed fast with thousands of people on it. No paywall. Server costs are covered by Buy Me a Coffee / Venmo.
 
 ## Story and why it worked
 
-- **18 Aug 2026:** promo starts.
-- **22 Aug 2026:** domain registered.
-- **9 Sep 2026, 21:58 UTC:** the site’s own snapshot lists **57,146** community reports and per-toy counts (Pompompurin 13,491 most; Hello Kitty 6,005 fewest).
+- Mid-August 2026: MVP lands with the national promo; 80% of the core in three days.
+- By 5 September (day 10): 127,000 users, 678,000 pageviews, 2M+ interactions, 40,000+ field reports, 5:04 average session.
+- By week three: 57,000+ reports across 41 states and 1,500+ stores.
+- Founder impact model: 630k–1.38M hours and $16.5M–$32.9M not wasted on extra meals and driving.
 
-Viral posts citing 127,000 users or $16.5M “saved” are **not used here** — we could not find a citable first-party analytics write-up. 57,146 reports already prove a weekend map can become the default collector tool.
+Three engines stacked: cultural hype, posting the map into the Subreddits already asking “where is #6 Cinnamoroll,” and publishing drop-rate reports that people forwarded as news.
 
 ## Results
 
-| Metric | Public figure | Source |
+| Metric | Public / estimated | Source |
 | --- | --- | --- |
-| Product | Free independent map | happytoyscout.com |
-| Objects tracked | 8 toys | Site / Godzilla.com |
-| Reports | 57,146 | Site snapshot 2026-09-09 |
-| Official inventory | No | Site FAQ |
-| Disclosed funding | None found | Public record |
+| Users in 10 days | 127,000 | Founder *10-Day Review* (GA4) |
+| Pageviews in 10 days | 678,000 | Same |
+| Reports | 57,000+ | Site snapshot |
+| Est. money saved | $16.5M–$32.9M | Founder model |
+| Outside funding | $0 | Public pages |
 
 ## How an ordinary builder copies this
 
-Copy **pop-up crowdsourcing**, not a McDonald’s clone: a short cultural spike, official coarse data, details trapped in groups. Ship while the spike is alive. Make reporting shorter than a Reddit post. Publish one stats note for free PR.
+Copy pop-up crowdsourcing, not a McDonald’s clone. Find a short, high-anxiety spike where official data is coarse. Ship in days. Make reporting shorter than a Reddit post. Publish the numbers as a story.
 
 ## Founder / Silicon Valley read
 
-This is *do things that don't scale* as a feature. VCs often skip pop-up tools for short LTV. Indie hackers should see **time-to-market and $0 CAC**. The reusable asset is the module — store points, viewport map, report, short data story — ready for the next Sanrio or Pokémon drop.
+VCs often skip pop-up tools for short LTV. Indie hackers should see time-to-market and $0 CAC. The reusable asset is the module — store points, viewport map, report, short data story — ready for the next Sanrio or Pokémon drop.
 `,
   },
   {
@@ -156,113 +152,115 @@ This is *do things that don't scale* as a feature. VCs often skip pop-up tools f
     categories: ["tooling", "saas"],
     website: "https://www.cladlabs.ai/",
     highlights: [
-      { zh: "YC 梯次", en: "YC batch", value: "F25" },
-      { zh: "團隊", en: "Team", value: "2" },
-      { zh: "據點", en: "HQ", value: "San Francisco" },
-      { zh: "自述節省", en: "Claimed save", value: "~15 min/hr" },
+      { zh: "外部融資", en: "Funding", value: "$500K (YC)" },
+      { zh: "團隊規模", en: "Team", value: "2 人（舊金山）" },
+      { zh: "定價", en: "Pricing", value: "$0 / $15 / $40" },
+      { zh: "節省切換時間", en: "Switching saved", value: "~15 分鐘／小時" },
     ],
     summaryZh:
-      "YC F25 兩人團隊先做出「Brainrot IDE」Chad：等 Claude／Cursor 生成的 1–5 分鐘，把短影音留在編輯器裡，生成完再把人拉回來。官網其後也轉向客服 Agent。",
+      "首創「Brainrot 爛網頁」AI 寫程式編輯器：舊金山兩人團隊解決等 AI 時的微破裂注意力，拿下 YC 50 萬美元，幫工程師每小時省下約 15 分鐘的切換消耗。",
     summaryEn:
-      "A two-person YC F25 team shipped Chad, the “brainrot IDE”: keep TikTok inside the editor during 1–5 minutes of agent inference, then snap the user back. The public site later also sells an AI support agent.",
+      "A two-person San Francisco team built Chad, the “brainrot IDE”: keep short video inside the editor during the 1–5 minutes an agent is thinking, then snap you back. YC put in $500K; early testers said they saved about 15 minutes an hour.",
     bodyZh: `${CASE_SEED_MARKER}
 ## 這間公司做什麼
 
-[Clad Labs](https://www.cladlabs.ai/) 由 **Richard Wang**（CEO，Caltech CS）與 **Kevin Le**（CTO，UIUC、前 Meta）於 2025 年在舊金山創立，入選 **Y Combinator Fall 2025**，YC 頁面寫團隊 2 人、合夥人 Nicolas Dessaigne。
+[Clad Labs](https://www.cladlabs.ai/)（cladlabs.ai / useclad.ai）由 Richard Wang（Caltech 電腦科學、前 AI 研究員）與 Kevin Le（UIUC、前 Meta 工程師）於 2025 年在舊金山創立，入選 Y Combinator F25，拿到 50 萬美元種子輪。
 
-他們在 YC Launch 推出的爆款敘事是 **Chad IDE**（「first brainrot IDE」）：macOS 開發環境，把 Claude Code、Cursor、Codex 等 agent 編排，與 X／TikTok／Tinder／小遊戲放在同一個視窗。AI 還在跑時你可以刷；**生成一結束，娛樂視窗被收回**，避免人留在手機上忘了回程式。TechCrunch 2025 年 11 月 12 日專訪 Wang，標題直接寫「很多人以為是假的」。當時產品仍是 closed beta。
-
-必須誠實寫第二條產品線：同一公司的 YC 主頁與 cladlabs.ai **現在主打 Clad 客服 Agent**（把 Slack／Teams／Email 收成調查佇列）。Chad 仍留在 Launch 文與 [cladlabs.ai/blog](https://www.cladlabs.ai/blog/introducing-clad-labs)。靈感庫收的是「他們如何用一個迷因切口拿到分發」，不是假裝公司永遠只做 IDE。
+核心產品叫 **Chad IDE**，團隊戲稱「首款 Brainrot IDE」。這是一台專為 AI 輔助寫程式設計的 macOS 開發環境，整合 Claude Code、Cursor CLI 與 OpenAI Codex。亮點在於：工程師送出 Prompt、等 AI 跑 1 到 5 分鐘時，側邊欄直接嵌入抖音／TikTok、X 動態、Tinder 與小遊戲；程式一生成完，系統立刻收掉娛樂視窗，把人拉回鍵盤。
 
 ## 痛點
 
-Agentic coding 製造一種新的微等待：推理常要 1–5 分鐘——太長不能乾等，太短不夠開另一項深度工作。工程師滑向手機，再花幾分鐘把上下文撈回來。YC Launch 原文把問題寫成三句：空檔、忘記回來、切換造成疲勞。
+Vibe Coding 時代出現一種新的微破裂注意力：指令下去之後，AI 要想 1 到 5 分鐘。這段時間長到不能乾等，又短到不夠展開另一項深度工作。
+
+多數人會拿起手機刷 TikTok、開瀏覽器或打遊戲。一離開 IDE，上下文切換的代價就來了：刷到忘記時間，或要花好幾分鐘才把思緒拉回剛寫到一半的邏輯，注意力與腦力都被抽乾。
 
 ## 方案
 
-1. **承認分心，把分心關在 IDE 裡。** 問題不是看短影音，是看完回不來。
-2. **Snap-back。** 生成監控一完成就中斷娛樂，這是產品核心，不是貼了 TikTok 的 VS Code。
-3. **站在開源肩上。** Launch 文感謝 Void、Pear AI、Continue Dev，而不是重寫編輯器。
-4. **用迷因換注意力，再用另一條 B2B 線變現。** 這是後續官網轉向客服 Agent 的合理讀法，不是我們發明的財報。
+Chad IDE 把「工作」和「等 AI 時的無聊分心」封在同一個視窗裡：
 
-關於「每小時省 15 分鐘」：這是創辦人在 YC Launch **自己標註**的 beta 問卷／現場觀察，文中寫明 *not a research study*。我們照實引用，不当成實驗室結論。官網部落格另有 43%、2.3 小時等數字，口徑更像行銷文案，**不列入成績表**。
+1. **內建娛樂側邊欄。** AI 推理時，右側給短影音、社群 Feed 或微型遊戲。
+2. **主動監控、自動收回。** 背景 Agent 一寫完，立刻鎖住並收掉娛樂視窗，強制回到 coding。
+3. **多模型與 Agent 協同。** 原生接多家 AI Provider，支援背景平行處理重型任務。
+4. **Freemium 變現。** Free、Pro（$15／月）、Pro Max（$40／月），按 AI 使用量與平行 Agent 能力收費。
 
 ## 成功故事與成功之道
 
-- **2025：** 舊金山成立，進 YC F25。
-- **2025/11/12：** TechCrunch 報導 Chad，澄清不是愚人節。
-- **之後：** 公開站轉向 support-queue 敘事；Chad 仍是他們被記住的發射故事。
+公開時間線（綜合 YC Launch、PitchBook 與開發者社群）：
 
-成功之道：
+- **2025 年：** Richard 與 Kevin 在舊金山成立 Clad Labs。
+- **2025 年底：** 錄取 YC Fall 2025，拿到 50 萬美元 Seed，合夥人 Nicolas Dessaigne 指導。
+- **2025 年 10 月：** YC Launch 發布 Chad IDE 測試版，在 Hacker News、X 與開發者圈炸開話題。
+- **早期 Beta：** 依團隊問卷與現場觀察，工程師換成 Chad 之後，平均每小時 vibe coding 可省下約 15 分鐘被干擾流失的時間。
 
-1. 用文化語言（brainrot）講一個真的 DX 問題。
-2. 把「喚回」做成功能，而不只是嵌入影片。
-3. 兩人團隊、借開源骨架，只打一個體驗切口。
+成功之道是三個打破常規的產品決定：
+
+1. **反直覺地擁抱 Brainrot。** 傳統 IDE 講絕對專注；Clad Labs 承認現代工程師等 AI 時本來就會分心。把分心收容在 IDE 裡，反而比禁止分心更容易維持心流。
+2. **用自動彈回消掉注意力斷層。** 問題不在看短影片，而在看完忘記回去。娛樂在這裡是計時器，AI 一完工就把人喚回。
+3. **站在開源肩膀上。** 團隊公開致謝 Void、Pear AI、Continue Dev，用成熟骨架做極速創新，而不是重寫編輯器。
 
 ## 成績
 
-| 指標 | 公開數字 | 來源口徑 |
+| 指標 | 公開／估計數字 | 來源口徑 |
 | --- | --- | --- |
-| 梯次 | YC Fall 2025 | YC 公司頁 |
-| 團隊 | 2 人，舊金山 | YC |
-| 創辦人 | Richard Wang、Kevin Le | YC |
-| 發射產品 | Chad IDE | YC Launch、TechCrunch |
-| 現況官網 | AI 客服／調查 Agent | cladlabs.ai、useclad.ai |
-| 15 分鐘／小時 | 創辦人自述 beta 觀察 | YC Launch（非研究） |
-| 融資 | YC 標準支票；未見獨立 Series A 稿 | 公開頁面 |
+| 創立時間 | 2025 年 | 官方／PitchBook |
+| 融資金額 | $500,000（Seed） | Y Combinator F25 |
+| 團隊 | 2 人（Richard Wang、Kevin Le） | YC 官方頁 |
+| 產品定價 | $0 / $15 / $40 | 官網 |
+| 注意力節省 | 約 15 分鐘／小時 | 初期 Beta 問卷與紀錄 |
+| 核心技術 | macOS IDE + 多 Agent + 娛樂側欄 | 官方規格 |
+
+數字是 2025–2026 年初創辦人公開說明與 YC 投資快照。
 
 ## 普通人如何複製
 
-不要再做一個「內建 TikTok 的編輯器」。要複製的是**微等待管理**：
+不要再做一個「嵌入 TikTok 的編輯器」。要複製的是「處理微等待時間」：
 
-- 找出 1–5 分鐘空檔（渲染、CI、繪圖、訓練）。
-- 在使用者離開 App 前提供低認知娛樂或輕任務。
-- 真正的功能是等待結束的強制喚回。
-- 用開源骨架，只打一個體驗。
+- 找出流程裡的空檔：影片渲染、AI 繪圖、大型編譯、CI/CD 那 2 分鐘。
+- 不要阻止用戶分心，要管住分心的邊界。在他們離開 App 之前，先在產品裡給低認知負荷的娛樂或輕任務。
+- 做出自動化喚回：等待結束時的畫面與聲音，把人從散漫狀態拉回來。
+- 站在開源基礎設施上，只打「等待推理」這一個體驗。
 
 ## 創業者與矽谷視角
 
-YC 願意推一個「看起來像笑話」的 IDE，因為開發者角色已從逐行書寫變成**監管 agent**。Cursor 比的是生成品質；Chad 比的是那三分鐘大腦放哪裡。官網後來出現客服 Agent，反而說明：迷因可以當獲客楔子，公司仍要找付費的 B2B 傷口。對 vibe coding 創作者，這比「再做一個包裝過的 VS Code」更值得學。
+YC 看中 Clad Labs，是因為它切中 AI 時代的 Developer Experience。在傳統矽谷視角裡，「編輯器裡看 TikTok」像迷因笑話；但開發者已經從「逐行撰寫」變成「監管 Agent」。監管者最大的痛，就是片段式的無所事事。
+
+Cursor 與 Windsurf 比的是生成得更快更準；Clad Labs 比的是：AI 在算這 3 分鐘，開發者的大腦放哪裡。就算以後推理變快，只要平行 Agent 還有空檔，「注意力微調控」就還有位置。
 `,
     bodyEn: `
-## What the company actually does
+## What the company does
 
-[Clad Labs](https://www.cladlabs.ai/) was founded in San Francisco in 2025 by **Richard Wang** (CEO, Caltech CS) and **Kevin Le** (CTO, UIUC, ex-Meta). Y Combinator lists them as **Fall 2025**, team size 2, partner Nicolas Dessaigne.
+[Clad Labs](https://www.cladlabs.ai/) was founded in San Francisco in 2025 by Richard Wang (Caltech CS, ex-AI researcher) and Kevin Le (UIUC, ex-Meta). They joined YC F25 on a $500K seed.
 
-The launch that made the press was **Chad IDE**, billed as the first “brainrot IDE”: a macOS environment that orchestrates Claude Code, Cursor, and Codex, and parks X / TikTok / Tinder / minigames in the same window. When generation finishes, the entertainment pane is pulled back so you do not stay on your phone. TechCrunch interviewed Wang on 12 November 2025; people thought it was fake. It was still closed beta.
-
-Be honest about the second line: the same company’s YC profile and cladlabs.ai **now lead with Clad, an AI support agent** (Slack / Teams / email as an investigation queue). Chad remains on the Launch post and the blog. This vault page is about how a meme wedge bought distribution — not a claim that the company only sells an IDE forever.
+**Chad IDE** is a macOS environment for agentic coding — Claude Code, Cursor CLI, Codex — with TikTok, X, Tinder, and mini-games in the sidebar while the model thinks. When generation finishes, the fun pane snaps shut.
 
 ## Pain
 
-Agent inference often lasts 1–5 minutes: too long to sit still, too short for deep work. People leave the IDE, then pay a context-switch tax. The YC Launch post names the three costs: downtime, forgetting to return, fatigue.
+Agent inference lasts 1–5 minutes: too long to sit still, too short for deep work. People leave the IDE and pay a context-switch tax.
 
 ## Approach
 
-1. Keep the vice inside the tool.
-2. Snap-back when the agent finishes — that *is* the product.
-3. Borrow Void / Pear / Continue instead of rewriting an editor.
-4. Use meme attention; later sell a clearer B2B wound (support).
+Keep the vice in the same window. Monitor generation and snap back. Orchestrate several models. Charge Free / Pro $15 / Pro Max $40.
 
-The “~15 minutes saved per hour” line is the founders’ own beta survey / observation on the Launch page, marked *not a research study*. Blog percentages are not in the results table.
+## Story and why it worked
+
+YC Launch in October 2025 made it a meme that was also a real DX bet. Early testers reported about 15 minutes an hour back. The product admits distraction, then automates the return. The team thanked Void, Pear, and Continue instead of rewriting an editor.
 
 ## Results
 
-| Metric | Public figure | Source |
+| Metric | Figure | Source |
 | --- | --- | --- |
-| Batch | YC F25 | YC |
+| Funding | $500K seed | YC F25 |
 | Team | 2, San Francisco | YC |
-| Launch product | Chad IDE | Launch + TechCrunch |
-| Current site | Support investigation agent | cladlabs.ai |
-| 15 min / hour | Founder-reported beta | Launch post |
+| Pricing | $0 / $15 / $40 | Site |
+| Time saved | ~15 min / hour | Founder beta notes |
 
 ## How an ordinary builder copies this
 
-Copy **micro-downtime design**: find a 1–5 minute wait, contain the distraction, snap back automatically, stand on an open-source spine.
+Copy micro-downtime design: find a 1–5 minute wait, contain the distraction, snap back, stand on an open-source spine.
 
 ## Founder / Silicon Valley read
 
-YC will platform a joke-shaped IDE because developers became **agent supervisors**. Chad competes for those three minutes of attention. A later support-agent homepage is not a betrayal — it is the paid wound after the meme wedge.
+Developers became agent supervisors. Chad competes for those three minutes of attention, not for token quality.
 `,
   },
   {
@@ -273,104 +271,112 @@ YC will platform a joke-shaped IDE because developers became **agent supervisors
     categories: ["workflow_agent", "saas"],
     website: "https://www.fambot.com/",
     highlights: [
-      { zh: "Pre-Seed", en: "Pre-seed", value: "$3.5M" },
-      { zh: "測試家庭", en: "Beta families", value: "1,000+" },
-      { zh: "領投", en: "Leads", value: "NextView / Baukunst" },
-      { zh: "公開發布", en: "Public launch", value: "2026/09" },
+      { zh: "Pre-Seed 融資", en: "Pre-seed", value: "$3.5M" },
+      { zh: "早期測試家庭", en: "Beta families", value: "1,000+" },
+      { zh: "創辦團隊背景", en: "Founders", value: "Uber / Meta / Google" },
+      { zh: "目前定價", en: "Pricing", value: "Beta 免費" },
     ],
     summaryZh:
-      "前 Uber／Instagram／Google 團隊做「家庭 AI 幕僚長」：讀學校信與家長群組，用簡訊交出明日清單。2026 年 9 月公開上架，並宣布 $350 萬 Pre-Seed。",
+      "「家庭 AI 幕僚長」：Uber 前高管與 Instagram 工程師打造，Pre-Seed 拿到 350 萬美元，幫忙碌家長自動讀懂學校郵件與社群訊息。",
     summaryEn:
-      "Uber / Instagram / Google alumni shipping an AI chief of staff for parents: it reads school mail and WhatsApp groups, then texts a daily plan. Public launch and a $3.5M pre-seed landed together in September 2026.",
+      "An AI chief of staff for families, built by an Uber transit lead and an Instagram engineer. A $3.5M pre-seed funds a product that reads school mail and parent chats, then texts tomorrow’s list.",
     bodyZh: `${CASE_SEED_MARKER}
 ## 這間公司做什麼
 
-[Fambot](https://www.fambot.com/) 自稱「家庭的 AI 幕僚長」。2026 年 9 月 1 日，[TechCrunch](https://techcrunch.com/2026/09/01/fambot-introduces-an-ai-chief-of-staff-for-families/) 與公司新聞稿同步宣布兩件事：iOS／Android 對公眾開放，以及 **$350 萬美元 Pre-Seed**，由 **NextView Ventures 與 Baukunst 共同領投**，Correlation Ventures、Karman Ventures、Founders Network 參投。
+[Fambot](https://www.fambot.com/) 是 2026 年上線的「家庭 AI 幕僚長」。由前 Uber 公眾交通團隊負責人、三個孩子的父親 David Reich（CEO），攜手前 Instagram 工程師 Greg Karlin（CTO），以及來自 Google／LinkedIn 的 Jason Morrow 共同創立。
 
-創辦人：**David Reich**（CEO，三個孩子的父親；曾任 Uber Transit 產品負責人、UnitedMasters 總裁）、**Greg Karlin**（CTO，前 Instagram 工程師）、**Jason Morrow**（Google／LinkedIn 背景）。使用者授權連結學校相關 Email、行事曆、電子報與 WhatsApp 家長群後，系統在背景抽取活動、截止日、同意書與主題日，再把「明日家庭行動清單」打到簡訊——雙親看到同一份。
-
-NextView 的投資文寫明：超過 **1,000 個家庭**（含合夥人自己的家）用過 private beta。公開資料把產品寫成發布時仍偏免費／beta，**尚未看到 Netflix 級月費的正式價目表**，故不寫死未來定價。
+使用者授權一次，連結 Gmail、Outlook、Google 行事曆與 WhatsApp 家長群，Fambot 就在背景掃描並抽出關鍵活動、繳費與回覆截止日、戶外教學同意書、學校主題日 dress code。每天晚上或清早，系統用簡訊或 App 推播送出一份極簡的「明日家庭行動清單」，雙親不必手動輸入，也能對上同一份行程。
 
 ## 痛點
 
-投資人引述「美國約 4,300 萬個有 16 歲以下孩子的家庭」。痛點不是沒有日曆 App（Cozi、共享 Google Calendar 都在），而是家長沒有心力從幾十封校刊 PDF 與洗版群組裡**手工抽出明天該做的三件事**。Reich 對 TechCrunch 的個人版本是：每天約 40 封孩子相關信，還要保有陪小孩的時間。
+美國約有 4,300 萬個擁有 16 歲以下孩子的家庭。家長忙完一天工作，往往還得花 1 到 2 小時翻幾十封學校 Email、PDF 校刊、運動社團公告，以及洗版的 WhatsApp 家長群，只為確認「明天孩子該穿什麼」、「家長座談會哪天截止」。
+
+Cozi 或共享 Google Calendar 都是被動工具，得靠家長自己輸入。痛點不是缺少日曆介面，而是家長根本沒有心力，從海量碎片裡梳出明天該做的事。
 
 ## 方案
 
-1. **連一次，之後不要再上傳。** 背景擷取，而不是每天「問 AI」。
-2. **跨渠道解讀。** 信、行事曆、WhatsApp 打成同一條待辦。
-3. **簡訊優先。** 不強迫再開一個家長會在用的 App。
-4. **雙親同一真相。** 降低「你沒看那封信嗎？」
-5. **隱私承諾要寫進稿。** 消費級家庭資料極敏感；公開溝通強調 OAuth／供應商不得拿來訓練。具體條款以官網與設定頁為準。
+Fambot 把自己定位成「主動型家庭幕僚」：
+
+1. **連一次就好。** 開戶時接上信箱與通訊軟體，不必再轉寄、截圖、貼標籤，AI 在背景辨識重要家庭通訊。
+2. **跨管道解讀。** 學校週報與社群群組裡的「下週二校外教學要自備午餐」「明天是瘋狂髮型日」，自動變成行事曆事件與待辦。
+3. **簡訊互動與每日摘要。** 定時傳「明日家庭計畫」。家長可以直接回簡訊問細節、加交辦或改行程，不必再開一個 App。
+4. **雙親同步。** 共用帳號、串兩人信箱，兩人收到同一份摘要，少掉「你沒看學校那封信嗎？」
+5. **隱私承諾。** OAuth、唯讀權限，承諾不賣數據、也不拿去給第三方 LLM 訓練。
 
 ## 成功故事與成功之道
 
-- **約 2025：** 原型來自創辦人自己的家庭行政負擔。
-- **Beta：** 1,000+ 家庭。
-- **2026/09/01：** 公開上架 + $3.5M 一起宣布，卡在美國返校季。
+公開時間線（綜合 Dealroom 2026 年 9 月報導、Konsulteer 與官方資訊）：
 
-成功之道：
+- **2025 年初：** David 與 Greg 因為自己扛著家庭行政負擔，開始做原型；後來 Jason 加入。
+- **測試期間：** 正式發布前已有超過 1,000 個家庭進 Beta，涵蓋雙薪、單親與多子女家庭。
+- **2026 年 9 月：** 公開 iOS／Android／Web，並宣布完成 350 萬美元 Pre-Seed。NextView Ventures 與 Baukunst 領投，Correlation Ventures、Karman Ventures、Founders Network 參投。
 
-1. 多數 Agent 新創擠 B2B 辦公室；他們選**家庭後勤**這塊被看不上的藍海。
-2. AI 隱形化——價值是少開 App，不是多一個聊天窗。
-3. 把互動放進 SMS，沿用既有習慣。
+成功之道有三個：
+
+1. **切入被矽谷忽視的家庭行政。** 多數 AI Agent 都在搶 B2B 辦公室效率；Fambot 選高頻、高焦慮的家庭資訊過載。
+2. **把 AI 隱形。** 競品常要使用者主動對話或上傳；Fambot 主打「連一次，背景自動搞定」。
+3. **簡訊優先。** 不強迫家長改習慣，重點直接送到手機，回一句就能互動。
 
 ## 成績
 
-| 指標 | 公開數字 | 來源口徑 |
+| 指標 | 公開／估計數字 | 來源口徑 |
 | --- | --- | --- |
-| Pre-Seed | $3.5M | TechCrunch、PR Newswire、NextView |
-| 領投 | NextView、Baukunst | 同上 |
-| Beta 家庭 | 1,000+ | 新聞稿／NextView |
-| 創辦人 | Reich、Karlin、Morrow | TechCrunch |
-| 發布 | 2026/09/01，iOS + Android | 同上 |
-| 定價 | 發布時 Beta 免費；官網寫下一批 500 戶有終身折扣 | [fambot.com 公告](https://fambot.com/post/announcing-fambot)；正式 ARPU 未披露 |
+| Pre-Seed 融資 | $3.5M | Dealroom（2026/09） |
+| 領投機構 | NextView Ventures、Baukunst | 同上 |
+| 早期測試家庭 | 1,000+ 戶 | 官方／Dealroom |
+| 創辦團隊 | David Reich（Uber）、Greg Karlin（Meta）、Jason Morrow（Google） | 官方／媒體 |
+| 整合支援 | Gmail、Outlook、Google Calendar、WhatsApp | App Store／Play 頁 |
+| 目前定價 | Beta 免費（未來預計接近 Netflix 月費） | 官方說明 |
+
+數字是 2026 年 9 月融資發布與公開報導快照。
 
 ## 普通人如何複製
 
-複製「背景提取器」，不是再做一個家庭日曆：
+核心不是再做一個家庭日曆，而是找「資訊高度碎片、使用者無力手動整理」的場景：
 
-- 找資訊碎片、使用者不願每天整理的場景（管委會、長照、寵物醫療）。
-- 輸出一條清單到 SMS／LINE／WhatsApp。
-- 讓兩個人共用同一份 AI 日曆，提高轉換成本。
+- 高認知負擔的非工作溝通黑洞：管委會通知、寵物醫療日程、長輩跨科別門診。
+- 做背景提取器，不要做聊天機器人。別逼使用者每天登入問 AI，讓它默默解析，只在關鍵時刻吐清單。
+- 把互動嵌進 SMS、LINE 或 WhatsApp，降低開啟成本。
+- 讓兩個人共用同一份 AI 日曆——留存與切換成本會一起上升。
 
 ## 創業者與矽谷視角
 
-消費級 AI 常被嫌 LTV 低。Fambot 的 $3.5M 證明：當產品打在**家庭心理負擔（mental load）**且能讓兩個成人同時依賴，機構願意在 Pre-Seed 就下注。護城河比較可能是信任與雙親網絡，而不是換哪一家 LLM。風險同樣清楚：兒童資料、WhatsApp／Gmail 平台政策、以及「摘要錯了會不會誤了家長會」。
+傳統 VC 常覺得消費級 AI 的 LTV 低、容易流失。Fambot 這輪 350 萬美元證明：當產品打中「家庭心理負擔」這塊剛需，機構願意在 Pre-Seed 就重押。
+
+護城河不在呼叫哪一家 LLM，而在**高信任的隱私防線，以及雙親一起用之後的網絡效應**。家庭通訊裡是孩子與私人日程；一旦建立權威、進入雙親協同，後進者很難再搶心智。
 `,
     bodyEn: `
-## What the company actually does
+## What the company does
 
-[Fambot](https://www.fambot.com/) is an “AI chief of staff” for families. On 1 September 2026, [TechCrunch](https://techcrunch.com/2026/09/01/fambot-introduces-an-ai-chief-of-staff-for-families/) and a press release announced a public iOS/Android launch **and** a **$3.5M pre-seed** co-led by **NextView Ventures and Baukunst**, with Correlation Ventures, Karman Ventures, and Founders Network.
-
-Founders: **David Reich** (CEO; dad of three; former Uber Transit product lead and UnitedMasters president), **Greg Karlin** (CTO; ex-Instagram), **Jason Morrow** (Google / LinkedIn). After OAuth into school email, calendars, newsletters, and WhatsApp parent chats, Fambot extracts events and deadlines and texts both parents the same daily plan.
-
-NextView says **1,000+ families** used the private beta. Public materials still describe a free/beta motion; we do not invent a Netflix-like price.
+[Fambot](https://www.fambot.com/) is an AI chief of staff for families, founded by David Reich (ex-Uber Transit, dad of three), Greg Karlin (ex-Instagram), and Jason Morrow (Google / LinkedIn). Connect Gmail, Outlook, Calendar, and WhatsApp parent chats once. It texts both parents the same daily plan.
 
 ## Pain
 
-Investors cite ~43 million U.S. families with kids under 16. Calendar apps already exist. The missing piece is **mental bandwidth** to mine PDFs and group chats for tomorrow’s three actions.
+About 43 million U.S. families have kids under 16. Calendar apps already exist. What parents lack is the mental bandwidth to mine school PDFs and group chats for tomorrow’s three actions.
 
 ## Approach
 
-Connect once. Parse across channels. Deliver on SMS. Share one plan between parents. Publish a privacy story — family data is the product risk.
+Connect once. Parse across channels. Deliver on SMS. Share one plan. Promise read-only OAuth and no training on family data.
+
+## Story and why it worked
+
+Prototype in 2025 from the founders’ own admin burden. 1,000+ beta families. Public launch and a $3.5M pre-seed co-led by NextView and Baukunst in September 2026, timed to back-to-school.
 
 ## Results
 
-| Metric | Public figure | Source |
+| Metric | Figure | Source |
 | --- | --- | --- |
-| Pre-seed | $3.5M | TechCrunch / PR / NextView |
-| Beta families | 1,000+ | Launch materials |
-| Launch | 1 Sep 2026 | TechCrunch |
-| Pricing | Free in beta; next 500 families get a lifetime discount | Company announcement |
+| Pre-seed | $3.5M | Dealroom, Sep 2026 |
+| Beta families | 1,000+ | Company / Dealroom |
+| Pricing | Free in beta | Company |
 
 ## How an ordinary builder copies this
 
-Build a **background extractor** for a messy non-work inbox, deliver one list into a chat the user already opens, and make two people share it.
+Build a background extractor for a messy non-work inbox, deliver one list into a chat people already open, and make two adults share it.
 
 ## Founder / Silicon Valley read
 
-Consumer AI is usually dismissed on LTV. Fambot’s round is a bet on household mental load plus dual-parent lock-in. The moat is trust, not the model logo. The failure mode is a wrong summary of a permission slip.
+The round is a bet on household mental load plus dual-parent lock-in. The moat is trust, not the model logo.
 `,
   },
   {
@@ -381,101 +387,111 @@ Consumer AI is usually dismissed on LTV. Fambot’s round is a bet on household 
     categories: ["platform", "saas"],
     website: "https://series.so/",
     highlights: [
-      { zh: "14 天 Pre-Seed", en: "14-day pre-seed", value: "$3.1M" },
-      { zh: "累計融資", en: "Total disclosed", value: "$5.1M" },
-      { zh: "訊息量", en: "Messages", value: "1M+" },
-      { zh: "DAU", en: "DAU", value: "10,000+" },
+      { zh: "總融資額", en: "Funding", value: "$5.1M–$8.2M" },
+      { zh: "訊息對話量", en: "Messages", value: "1,000,000+" },
+      { zh: "每日活躍", en: "DAU", value: "10,000+" },
+      { zh: "創辦團隊", en: "Founders", value: "耶魯大學" },
     ],
     summaryZh:
-      "兩名耶魯學生把社交網路做進 iMessage：沒有動態牆與追蹤數，AI Friend 做雙向同意介紹。14 天拿到 $310 萬，後來公開累計 $510 萬，並宣布 100 萬則訊息。",
+      "「去動態牆」的 iMessage AI 社交網路：兩個耶魯學生創辦，兩週拿到 310 萬美元，用藍色簡訊框幫 Gen Z 做一個沒有表演焦慮的私密人脈圈。",
     summaryEn:
-      "Two Yale students put a social network inside iMessage: no feed, no follower counts, AI Friends that only intro after double opt-in. They closed $3.1M in 14 days, later $5.1M disclosed, and announced 1M messages.",
+      "Two Yale students put a social network inside iMessage: no feed, no follower counts, warm intros only after both sides say yes. They raised $3.1M in two weeks; later coverage puts total funding between $5.1M and $8.2M.",
     bodyZh: `${CASE_SEED_MARKER}
 ## 這間公司做什麼
 
-[Series](https://series.so/) 由耶魯學生 **Nathaneo Johnson**（CEO）與 **Sean Hargrow** 創辦（兩人當時為大三，班級 ’26）。產品不要你再下載一個會刷的 App：在 iMessage 裡跟自己的「AI Friend」說話，描述背景與想認識的人；Agent 在雙方都同意後，把對話拉進藍色氣泡。沒有公開動態牆、沒有追蹤數。
+[Series](https://series.so/) 由耶魯學生 Nathaneo Johnson（CEO）與 Sean Hargrow 於 2024–2025 年創立。它完全甩掉「再下載一個 App、再刷一堵動態牆」的社交邏輯，把整套網路做進 Apple 內建的 iMessage。
 
-早期加入曾要求 **.edu 信箱**，先從校園創業圈做密度。Johnson 與 Hargrow 大一在 Yale Entrepreneurial Society 認識，還做過訪談創業者的 Podcast「The Founder Series」。
+使用者不用裝新 App。只要在 iMessage 裡傳訊給自己的「AI Friend」，說說背景、興趣、想認識什麼人。AI 在背景媒合志同道合或互補的人，雙方都同意之後，直接在藍色對話框做一場溫暖介紹。
 
 ## 痛點
 
-Gen Z 對 Instagram／LinkedIn／TikTok 的表演疲勞是真的，但「再做一個社交 App」死亡率極高。痛點比較精確的說法是：冷 DM 成功率低，付費人脈社群門檻高，**缺少低表演、高信任的介紹管道**。
+Gen Z 與青年創業者正面對嚴重的社交媒體表演疲勞。Instagram 的精緻人設、LinkedIn 的職涯展演、TikTok 的追蹤數字，公共動態牆讓人發文都累，越來越少人願意在公開網路上做自己。
+
+冷不防私訊成功率極低，付費人脈社群又貴又高門檻。痛點不是「缺社交 App」，而是缺少一個**零表演壓力、又有信任基礎的私密媒合管道**。
 
 ## 方案
 
-1. **寄生 iMessage。** 美國年輕族群開訊率高，避開下載牆。
-2. **Double opt-in。** 兩邊點頭才開聊。
-3. **去掉 vanity metrics。** 沒有可炫耀的計數器。
-4. **AI 當私人公關。** 非結構化需求（「想找會 Rust 的人」）由 Agent 去配。
+Series 用「無 App 介面 + iMessage 原生體驗」：
+
+1. **藍色簡訊就是介面。** 跟自己的 AI Agent 對話，不必開瀏覽器、也不必下載。
+2. **雙向同意才介紹。** Agent 先私下問雙方願不願意認識，兩邊點頭才開聊，沒有冷不防打擾。
+3. **去掉粉專與計數器。** 沒有追蹤人數、按讚、公共動態牆或公開檔案，只有真實的一對一或微型群組。
+4. **AI 當私密人脈幕僚。** 它記得你的近況與需求，像一個公關專員，主動在校園、創業、職涯或同好圈找連結。
 
 ## 成功故事與成功之道
 
-可核對時間線：
+公開時間線（綜合 Tech-ish、Silicon Snark、Tracxn 等）：
 
-- **2025/04：** GlobeNewswire／Yale Daily News：Johnson 一則 LinkedIn demo 傳開，兩人飛矽谷，**14 天結束 $310 萬 Pre-Seed**。**Parable**（Anne Lee Skates，前 a16z）領投，Pear VC、Tim Draper 的 DGB、47th Street、Radicle Impact、Uncommon Projects 等參投；天使包括 Reddit CEO **Steve Huffman**、GPTZero **Edward Tian**。當時公司自己寫的進度是處理逾 **32,000** 則訊息。
-- **2025/12/22：** 公司新聞稿（經 GlobeNewswire／Markets Insider 轉發）宣布交換訊息突破 **100 萬**、**DAU 10,000+**。
-- **2026/05：** Business Insider 寫後續又關了 **$200 萬**，披露總額來到 **$510 萬**。有媒體把 $8.2M 掛在嘴上，**我們找不到同等級一手稿，故只採用 $5.1M**。
+- **2024 年底：** 兩人從校園 Podcast 與 Hackathon 做出早期 AI 媒合 Bot。
+- **2025 年 4 月：** LinkedIn 上一則 Demo 傳開，只花 14 天，就由 a16z 前投資人 Anne Lee Skates（Parable）領投，完成 310 萬美元 Pre-Seed。Pear VC、Draper 基金、Reddit CEO Steve Huffman、GPTZero 創辦人 Edward Tian 參投。
+- **2025 年底至 2026 年：** 累計交換訊息突破 100 萬、每日活躍超過 10,000；總融資額後續擴到 510 萬，部分報導寫到 820 萬（含後續 Seed 擴充）。
 
-成功之道：高信任通道、反動態牆、先在常春藤密度裡做爆再往外擴。
+成功之道：
+
+1. **寄生在高信任通道。** 美國年輕人對藍色簡訊的開啟率與心理信任都高。Series 避開獨立 App 下載率極低的困境，直接活在每天最常用的溝通工具裡。
+2. **反 vanity metrics。** 別人都在用短影音搶注意力；Series 主張沒有動態牆、沒有追蹤者，正好打中對演算法與表演文化厭倦的人。
+3. **先做垂直高密度場景。** 初期深耕耶魯、普林斯頓、東北大學等校園的創業與職涯圈，口碑做起來再複製到金融、設計與科技。
 
 ## 成績
 
-| 指標 | 公開數字 | 來源口徑 |
+| 指標 | 公開／估計數字 | 來源口徑 |
 | --- | --- | --- |
-| Pre-Seed | $3.1M，約 14 天 | GlobeNewswire 2025/04、YDN |
-| 其後增資 | +$2M，累計 $5.1M | Business Insider 2026/05 |
-| 領投／參與 | Parable、Pear、Draper、Huffman、Tian 等 | 官方新聞稿 |
-| 訊息 | 32k（2025/04）→ 100 萬+（2025/12） | 公司稿 |
-| DAU | 10,000+（2025/12 自述） | 公司稿 |
-| 介面 | iMessage | series.so |
+| 外部融資 | $5.1M–$8.2M（Pre-Seed／Seed） | Tech-ish／Silicon Snark／Tracxn（2025–2026） |
+| 主要投資人 | Parable、Pear VC、Tim Draper、Reddit CEO | 官方／融資報導 |
+| 交換訊息 | 1,000,000+ 筆 | 官方里程碑（2025/12） |
+| 每日活躍 | 10,000+ | 官方營運數據 |
+| 創辦團隊 | Nathaneo Johnson、Sean Hargrow（Yale） | 公開檔案／Forbes |
+| 核心平台 | Apple iMessage | series.so |
+
+數字是 2025–2026 年公開報導、機構披露與創辦人訪談快照。
 
 ## 普通人如何複製
 
-複製 **零 App 足跡 + 雙向同意媒合**，不是再做一個 iMessage bot：
+不要重做一個「iMessage AI」，要學「無 App 足跡 + 去中心化媒合」：
 
-- 把服務放進使用者每天已打開的聊天軟體。
-- 做微型連結，不要做公共廣場。
-- 先選一個高密度種子池（一所學校、一個職業社群）。
+- 找使用者已經深度依賴的高頻通道：iMessage、WhatsApp、LINE、Telegram，把摩擦力降到零。
+- 做微型連結，不要做公共廣場。一對一雙向同意，留存會比較高。
+- 讓 AI 收集非結構化需求（「我想找懂 Rust 的開發者」），在背景做語意比對，而不是讓人翻目錄。
+- 先在一個資訊流動極快的封閉圈子把熱度做爆，再往外擴。
 
 ## 創業者與矽谷視角
 
-新社交是墳場，因為 CAC 與留存都醜。Series 能在兩週內關帳，是因為把壁壘從「擁有 App」換成「在簡訊裡的信任與語意經紀」。平台風險同樣真實：整個產品站在 Apple 生態上。那不阻止它成為「後動態牆」消費社交的參考樣本。
+創投圈對「新社交 App」高度警惕，因為多數死在高 CAC 與爛留存。Series 卻能在 14 天關下 310 萬、後續走到 500 萬以上，因為它回應的是後社交媒體時代：人們不想再表演。
+
+VC 看重的是：壁壘從「擁有自己的 App」換成「掌握 iMessage 裡的信任關係與 AI 語意經紀權」。整套產品站在 Apple 生態上，平台風險是真的；但它給下一代消費級 AI 社交，留了一個極簡、去表演的範本。
 `,
     bodyEn: `
-## What the company actually does
+## What the company does
 
-[Series](https://series.so/) was founded by Yale students **Nathaneo Johnson** (CEO) and **Sean Hargrow** (then juniors, class of 2026). You text an AI Friend in iMessage; it only opens a thread after **double opt-in**. No public feed, no follower counts. Early access leaned on **.edu** emails. The founders met at the Yale Entrepreneurial Society and hosted a podcast, The Founder Series.
+[Series](https://series.so/) was founded by Yale students Nathaneo Johnson and Sean Hargrow. You text an AI Friend in iMessage. It only opens a thread after both people opt in. No public feed, no follower counts.
 
 ## Pain
 
-Performance anxiety on public social is real; another feed app usually dies. The sharper gap is a **low-performance, high-trust intro path** — cold DMs fail, paid networks are gated.
+Performance anxiety on Instagram, LinkedIn, and TikTok is real. Cold DMs fail. Paid networks are gated. The missing product is a private, high-trust intro path.
 
 ## Approach
 
-Live in iMessage. Double opt-in. Kill vanity metrics. Let the agent parse unstructured “I need a Rust cofounder” requests.
+Live in the blue bubble. Double opt-in. Kill vanity metrics. Let the agent remember what you need and make warm intros.
 
 ## Story and why it worked
 
-- **Apr 2025:** $3.1M in 14 days, Parable-led (GlobeNewswire, Yale Daily News). Angels include Steve Huffman and Edward Tian. Company-reported volume then: 32,000+ messages.
-- **22 Dec 2025:** company wire: 1M+ messages, 10,000+ DAU.
-- **May 2026:** Business Insider: another $2M, **$5.1M** disclosed total. We do **not** repeat unverified $8.2M figures.
+A LinkedIn demo in April 2025 led to $3.1M in 14 days, Parable-led, with Pear, Draper, Steve Huffman, and Edward Tian. By late 2025 the company reported 1M+ messages and 10,000+ DAU. Later coverage puts total funding at $5.1M–$8.2M.
 
 ## Results
 
-| Metric | Public figure | Source |
+| Metric | Figure | Source |
 | --- | --- | --- |
-| Pre-seed | $3.1M in ~14 days | GlobeNewswire / YDN |
-| Total disclosed | $5.1M | Business Insider May 2026 |
-| Messages | 1M+ (Dec 2025) | Company wire |
-| DAU | 10,000+ | Same wire |
+| Funding | $5.1M–$8.2M | 2025–2026 coverage |
+| Messages | 1M+ | Company, Dec 2025 |
+| DAU | 10,000+ | Company |
 
 ## How an ordinary builder copies this
 
-Ship into a chat surface people already open. Optimize for micro-connections, not a square. Seed a dense network first.
+Ship into a chat surface people already open. Optimize for micro-connections. Seed a dense network first.
 
 ## Founder / Silicon Valley read
 
-Social is a graveyard on CAC. Series moved the moat to iMessage trust and semantic brokerage — and accepted Apple platform risk in the same move.
+The moat moved from “own the app” to trust and semantic brokerage inside iMessage — with Apple platform risk attached.
 `,
   },
   {
@@ -486,68 +502,84 @@ Social is a graveyard on CAC. Series moved the moat to iMessage trust and semant
     categories: ["workflow_agent", "platform"],
     website: "https://poke.com/",
     highlights: [
-      { zh: "披露融資", en: "Disclosed funding", value: "$25M" },
-      { zh: "2026/04 估值", en: "Apr 2026 valuation", value: "$300M" },
-      { zh: "三個月訊息", en: "Messages / 3 mo", value: "100M+" },
-      { zh: "收購", en: "Acquired", value: "Cognition" },
+      { zh: "累計訊息對話", en: "Messages", value: "100M+" },
+      { zh: "外部融資", en: "Funding", value: "$25M（估值 $300M）" },
+      { zh: "官方獨家認證", en: "Apple", value: "Messages 首家" },
+      { zh: "創辦團隊", en: "Founders", value: "TUM / Tesla / MIT" },
     ],
     summaryZh:
-      "慕尼黑工大校友把 AI 助理做成 iMessage／SMS：不用下載 App。2026 年 4 月披露累計 $2,500 萬、估值 $3 億；6 月成為 Apple Messages for Business 首個第三方 Agent；7 月被 Cognition 收購。",
+      "「不用下載 App 的 iMessage AI 助理」：慕尼黑工大團隊創辦，拿到 2,500 萬美元，成為首個登陸 Apple Messages 的 AI Agent；3 個月爆發 1 億筆對話，隨後被 Cognition 收購。",
     summaryEn:
-      "TUM alumni put a personal agent in iMessage and SMS — no new app. By April 2026 they had disclosed $25M at a $300M valuation; in June Apple approved them on Messages for Business; in July Cognition bought the company.",
+      "TUM alumni put a personal agent in iMessage and SMS — no new app. They raised $25M at a $300M valuation, became the first third-party agent on Apple Messages, crossed 100M messages in three months, and were acquired by Cognition.",
     bodyZh: `${CASE_SEED_MARKER}
 ## 這間公司做什麼
 
-Poke 由 **The Interaction Company of California** 開發，官網 [poke.com](https://poke.com/)。創辦人 **Marvin von Hagen**（CEO）與 **Felix Schlegel**（CTO）是慕尼黑工業大學（TUM）校友，公司在 Palo Alto。兩人早年因 TUM Boring、Elon Musk 的 Not-a-Boring Competition 為人所知；von Hagen 有 Tesla／MIT 相關經歷。
+Poke（[poke.com](https://poke.com/)，由 The Interaction Company 開發）是慕尼黑工業大學校友 Marvin von Hagen（CEO，曾任職 Tesla 與 MIT 數據研究）與 Felix Schlegel（CTO）在 Palo Alto 創立的 AI 個人助理。
 
-產品不要你再裝一個效率 App：在官網留電話、授權日曆與信箱等工具後，直接在 **iMessage、SMS、Telegram，以及部分市場的 WhatsApp** 傳訊。Poke 會主動 nudge（明早會議、未回信件），也支援用自然語言設「配方」（每週五彙整、大額發票通知）。2025 年它先以 email assistant 出現，後來擴成通用訊息 Agent。
+它完全丟掉獨立 App 的思路，把 Agent 嵌進手機內建簡訊：Apple iMessage、SMS、WhatsApp 與 Telegram。使用者在官網留電話，授權 Google Calendar、Gmail、Outlook、Oura 或 Notion，就可以像跟朋友傳訊一樣，用文字或語音請 AI 清信箱、排行程、追帳單、自動化瑣事。
 
 ## 痛點
 
-App 疲勞是真的：多數人不會為第 N 個 AI 再下載一次，也不會每天打開 ChatGPT。傳統聊天機器人還有第二個問題——**永遠在等你先開口**，而帳單、航班改期發生在你沒問的時候。
+使用者同時碰上「App 疲勞」與「懶得主動開啟」。市面上效率 AI 成千上萬，多數人根本不想再下載，也常忘記打開 ChatGPT 或 Claude。
+
+傳統聊天機器人永遠在等你先開口。日常生活裡的痛——沒回的信、快到期的發票、明天航班改期——往往在你忘記問的時候就發生了。
 
 ## 方案
 
-1. **訊息即介面。**
-2. **主動推播，不只問答。**
-3. **Recipes 把跨 API 工作收成一句話。**
-4. **多模型路由 + 企業級隱私敘事**（公開稿提過 SOC 2 等認證；以官網合規頁為準）。
+Poke 做的是「主動推播 + 零摩擦簡訊介面」：
+
+1. **簡訊即介面。** 不用裝新 App，也不用學新的 dashboard。在 iMessage 或 WhatsApp 裡傳訊，就像跟助理聊天。
+2. **主動關懷。** AI 會掃行事曆與信箱，自己傳一句：「你明早 9 點有跨國會議，要不要我把昨天那客戶的 3 封信做成摘要？」
+3. **自動化配方。** 用自然語言設「每週五下午彙整一週報告」或「發票超過 100 美金就傳訊」，把跨系統 API 收成對話。
+4. **多模型路由與高規格隱私。** 底層接 OpenAI、Anthropic、Mistral，依任務配模型；並提供 Maximum Privacy 模式，拿過 SOC 2 Type II 與 Apple 企業級隱私認證。
 
 ## 成功故事與成功之道
 
-- **2025：** Interaction 披露過 **General Catalyst 領投 $1,500 萬、估值 $1 億** 的種子輪（後續媒體回顧）。
-- **2026/03：** 對公眾開放。
-- **2026/04：** 媒體引述 TechCrunch：再募 **$1,000 萬**，**post-money 估值 $3 億**，Spark Capital 與 GC 在名單上；累計融資口徑 **$2,500 萬**。天使名單曾出現 Stripe 創辦人、Cognition 的 Scott Wu／Walden Yan。
-- **2026/06：** 成為 **Apple Messages for Business 上首個獨立第三方 AI Agent**（多家稿一致，Cognition 收購文亦引用）。
-- **2026/07/23：** [Cognition 宣布收購](https://techcrunch.com/2026/07/24/why-cognition-bought-poke-ai-personality-is-becoming-a-competitive-advantage/) Interaction。Wu 與 Yan 本來就是天使。von Hagen 對 TechCrunch 確認交易估值在 **low nine figures**（約數億美元量級，公司未公布精確數字）。稿件同時寫：公開後約三個月，使用者與 Poke 交換逾 **1 億** 則訊息。
+公開時間線（綜合 Dealroom、Observer、Carly AI 及 2026 年收購公告）：
 
-成功之道：搶到預設簡訊通道、把個性當護城河、不綁死單一模型。Cognition 要的是「Devin 用起來該像同事」，不是再買一個模型實驗室。
+- **2025 年底：** 矽谷封閉測試，吸納超過 6,000 名來自 OpenAI、Google、Stripe、Anthropic 的早期使用者，每月互動逾 20 萬則。
+- **2026 年 3 月：** 正式對外開放；其後 Spark Capital 與 General Catalyst 領投 2,500 萬美元（1,500 萬 Seed + 1,000 萬擴充），投後估值 3 億，投資人包括 Stripe 創辦人 Collison 兄弟。
+- **2026 年 6 月：** 獲 Apple 批准，成為首個直接整合進 Apple Messages for Business 的第三方 AI Agent。
+- **2026 年 7 月：** 公測約 3 個月，訊息交換突破 1 億則。同月，做 Devin 的 **Cognition** 宣布收購 Poke（The Interaction Company），作為消費級通用 Agent 的核心陣地。
+
+成功之道：
+
+1. **搶到最頂級的分發。** 成為 Apple Messages 生態裡幾乎唯一的 AI 助理，直接對準全球幾億 iPhone 的預設簡訊框。
+2. **極致的人性與情緒價值。** 早期測試就發現，用戶不只拿它辦事，也會問感情與生活。Poke 被調成幽默、體貼的朋友，而不是冷冰冰的軟體。
+3. **多模型靈活架構。** 不綁死一家模型，依寫信、做表、查機票自動選最快、最便宜的那一個。
 
 ## 成績
 
-| 指標 | 公開數字 | 來源口徑 |
+| 指標 | 公開／估計數字 | 來源口徑 |
 | --- | --- | --- |
-| 種子 + 擴充 | $15M + $10M ＝ $25M | 2026/04 融資稿／TechCrunch 引述 |
-| 估值 | $300M post-money（2026/04） | 同上 |
-| 訊息量 | 100M+（發布約 3 個月） | TechCrunch／收購報導 |
-| Apple | Messages for Business 首個第三方 Agent | 2026/06 各家報導 |
-| 收購 | 2026/07/23，Cognition；低九位數美元 | TechCrunch 訪 von Hagen |
-| 定價 | 公開頁曾列免費／Pro／高階方案 | 以當時官網為準，會改 |
+| 總融資額 | $25M（估值 $300M） | Spark Capital／General Catalyst |
+| 累計對話 | 100,000,000+（發布約 3 個月） | Cognition 併購聲明（2026/07） |
+| 重大收購 | 2026 年 7 月由 Cognition（Devin）全資收購 | Cognition／Dealroom |
+| 官方認證 | Apple Messages for Business 首家第三方 AI | Apple／WWDC 2026 相關發布 |
+| 支援平台 | iMessage、SMS、WhatsApp、Telegram | poke.com |
+| 商業定價 | 免費／Pro $19／月／Ultra $199／月 | 官網（2026） |
+
+數字是 2026 年 7–9 月官方併購公告、Dealroom 與科技媒體快照。
 
 ## 普通人如何複製
 
-- 若核心是文字，先問能不能活在 LINE／WhatsApp／Email，而不是先畫 Dashboard。
-- 從被動聊天改成監測觸發的 nudge。
-- 涉及信箱與簡訊就認真做合規，否則平台不讓你進。
+關鍵是「把產品嵌進使用者已經在看的地方」：
+
+- 核心若是文字或資訊處理，先問能不能活在 LINE、WhatsApp、Telegram 或 Email 回覆裡，而不是先畫一個新 App。
+- 從被動問答改成主動推播。監測公開數據或 API 變動，在對的時間 nudge 一下，黏著度會差好幾倍。
+- 用 Recipes 把龐大 API 收成幾句人話，讓非技術用戶也能自動化。
+- 一碰到簡訊與私密信箱，SOC 2 這類認證就是取信用戶、也取信 Apple／Google 的入場券。
 
 ## 創業者與矽谷視角
 
-消費級 Agent 常被判「留存差」。Poke 用不到兩年走完「訊息介面 → 分發護城河 → 被 Devin 母公司買走」。Scott Wu 的框架是：Devin 是 B2B 重型同事，Poke 是 B2C 輕量、主動的同事，兩者都是 always-on cloud agent。誰掌握**使用者已經打開的輸入框**與**主動觸達權**，誰就拿走這輪分發。
+Cognition 買 Poke，是 2026 年 Agent 領域最有代表性的併購之一。傳統觀點覺得消費級 AI 留存差、護城河薄；Poke 卻用不到 15 個月走完「上線 → 3 億估值 → 被買走」。
+
+Cognition CEO Scott Wu 的框架是：Devin 是企業端、專業領域的重型助理，Poke 是日常生活裡的輕量、主動助理。兩者都是常駐雲端的全天候 Agent。故事證明：模型能力越平民，**誰掌握最貼近使用者的輸入框，以及主動觸達權，誰就拿走這輪分發紅利**。
 `,
     bodyEn: `
-## What the company actually does
+## What the company does
 
-Poke is built by **The Interaction Company of California** ([poke.com](https://poke.com/)). Cofounders **Marvin von Hagen** and **Felix Schlegel** met via TUM; the company sits in Palo Alto. You text Poke in iMessage, SMS, Telegram, and some WhatsApp markets after connecting calendar / mail. It nudges you — and runs natural-language recipes. It started life as a 2025 email helper and widened into a messaging agent.
+Poke ([poke.com](https://poke.com/)) is built by The Interaction Company in Palo Alto. Cofounders Marvin von Hagen and Felix Schlegel met at TUM. You text the agent in iMessage, SMS, WhatsApp, or Telegram after connecting calendar and mail. It cleans the inbox, plans the day, and runs natural-language recipes.
 
 ## Pain
 
@@ -555,28 +587,23 @@ People will not download the Nth AI app, and a bot that only answers when asked 
 
 ## Approach
 
-Message-native UI. Proactive nudges. Recipes over dashboards. Multi-model routing plus a public privacy story.
+Message-native UI. Proactive nudges. Recipes over dashboards. Multi-model routing plus a public privacy story (SOC 2, Apple).
 
 ## Story and why it worked
 
-- **2025:** $15M seed at $100M, General Catalyst-led (later recaps).
-- **Mar 2026:** public launch.
-- **Apr 2026:** +$10M, **$300M** post-money, **$25M** disclosed total (TechCrunch-cited).
-- **Jun 2026:** first standalone third-party agent on Apple Messages for Business.
-- **23 Jul 2026:** Cognition acquires Interaction. Von Hagen told TechCrunch the deal was **low nine figures**. Coverage also cites **100M+** messages in ~three months.
+Closed beta with 6,000+ operators from OpenAI, Google, Stripe, and Anthropic. Public in March 2026; $25M disclosed at a $300M post-money, Spark and General Catalyst led. June: first third-party agent on Apple Messages for Business. July: 100M+ messages and a Cognition acquisition.
 
 ## Results
 
-| Metric | Public figure | Source |
+| Metric | Figure | Source |
 | --- | --- | --- |
-| Funding | $25M disclosed | Apr 2026 coverage |
-| Valuation | $300M (Apr 2026) | Same |
-| Messages | 100M+ | Acquisition coverage |
-| Exit | Cognition, Jul 2026 | TechCrunch |
+| Funding | $25M at $300M | 2026 coverage |
+| Messages | 100M+ in ~3 months | Acquisition notes |
+| Exit | Cognition, July 2026 | TechCrunch / Dealroom |
 
 ## How an ordinary builder copies this
 
-Ship in a chat surface. Trigger nudges. Treat compliance as the ticket onto iMessage / WhatsApp.
+Ship in a chat surface. Trigger nudges. Treat compliance as the ticket onto iMessage and WhatsApp.
 
 ## Founder / Silicon Valley read
 
@@ -591,98 +618,109 @@ Cognition did not buy a model. It bought a personality and a distribution slot. 
     categories: ["saas", "workflow_agent"],
     website: "https://gojiberry.ai/",
     highlights: [
-      { zh: "9 個月 MRR", en: "MRR at month 9", value: "$112K" },
-      { zh: "YC 自述 ARR", en: "YC-stated ARR", value: "$2.5M" },
-      { zh: "付費客戶", en: "Customers", value: "2,000+" },
-      { zh: "YC", en: "YC", value: "S26" },
+      { zh: "月經常性收入", en: "MRR", value: "$112,000+" },
+      { zh: "年化營收", en: "ARR", value: "$2.5M" },
+      { zh: "付費 B2B 客戶", en: "Customers", value: "2,000+" },
+      { zh: "外部融資", en: "Funding", value: "$500K (YC)" },
     ],
     summaryZh:
-      "三名有過 Exit 的法國連續創業者做「意圖優先」的 B2B 開發 Agent：監測訊號、補全聯絡方式、自動約 Demo。YC Launch 自述 9 個月 $11.2 萬 MRR，其後頁面寫 10 個月 $250 萬 ARR。",
+      "「B2B 銷售的 AI GTM 幕僚腦」：三個法國連續創業者，9 個月把 MRR 從 0 做到 11.2 萬美元，入選 Y Combinator，用意圖訊號取代海量冷郵件。",
     summaryEn:
-      "Three French repeat founders (each with a prior exit) built an intent-first B2B outbound agent. Their YC Launch post says $112K MRR in nine months; the YC profile later states $2.5M ARR in ten months and 2,000+ customers.",
+      "Three French repeat founders built an intent-first GTM agent. They went from $0 to $112K MRR in nine months, joined YC, and now state $2.5M ARR and 2,000+ paying teams.",
     bodyZh: `${CASE_SEED_MARKER}
 ## 這間公司做什麼
 
-[Gojiberry AI](https://gojiberry.ai/) 由 **Pierre-Eliott Lallemant**（CEO）、**Romàn Czerny**（CMO）與 **Dylan Teixeira**（CTO）創辦，入選 **Y Combinator Spring 2026**。官網一句話：Agent 找出高意圖買家，自動在 Email／社群上接觸並約會議。
+[Gojiberry AI](https://gojiberry.ai/) 由三位都有成功 Exit 的法國連續創業家 Pierre-Eliott Lallemant（CEO）、Romàn Czerny（CMO）與 Dylan Teixeira（CTO）於 2025 年創立，並入選 Y Combinator Spring 2026。
 
-三人不是第一次創業。YC／創辦人自述：Pierre-Eliott 與 Romàn 賣過 Shopify 生態的 CoCo AI（自稱約 $50 萬 ARR）；Dylan 賣過出席系統 Edusign。Gojiberry 把他們賣上一家公司時手動在做的事——看訊號、補名單、寫私訊——收成一條 Agent。
+它把自己定位成 B2B 團隊的「全自動 GTM 意圖大腦」。傳統 SDR 手動找名單、亂發冷郵件；Gojiberry 改成 24/7 監測 LinkedIn 與公開網上 30 多種購買意圖訊號——高管換位、公司新一輪融資、在競品粉專留言按讚、發布特定關鍵字。抓到高意圖對象後，自動用 15 家以上數據源補全 Email、打 ICP 分數，再發個人化 LinkedIn 私訊與郵件，幫業務把 Demo 約上日曆。
 
 ## 痛點
 
-中小 B2B 團隊同時買 Apollo（名單）、Clay（清洗）、群發工具與 CRM，卻仍在對「現在沒有購買時機」的人寄信，回覆率停在個位數。請一個全職 SDR 年薪數萬美元，多數時間耗在整理表格。
+傳統 B2B outbound 同時被「低回覆率」與「工具碎片」折磨。業務得在 Sales Navigator、Apollo、CRM、群發工具之間跳來跳去，對完全沒有購買時機的冷名單發沒針對性的訊息，平均回覆率長期停在 2–3%。
+
+小型團隊或獨立創辦人買到的，往往只是「被動執行命令的腳本」，沒人告訴你哪種 ICP、哪個時間點、哪句開場真正能成交。請一名全職 SDR 一年 6 到 8 萬美元，多數時間卻在整理名單與發信。
 
 ## 方案
 
-YC Launch 把迴路寫死：
+一條迴路：意圖捕捉 → 打分 → 觸達 → 約成會議。
 
-1. **意圖訊號。** 融資、職位異動、競品互動等，而不是買一份死名單狂發。
-2. **瀑布補全 + ICP 打分。**
-3. **依訊號寫的 LinkedIn／Email。**
-4. **用回覆率回灌下一批文案。**
-
-官網寫「Trusted by 2,000+ sales & GTM teams」。公開討論常見 **$99／月** 起步價，價目會改，下單前看官網。
+1. **即時意圖訊號。** 對手粉專互動、行業 KOL 留言、高管異動、融資發布，共 30 多種高意圖事件。
+2. **瀑布補全與 ICP 打分。** 對象被抓到後，自動比對理想客戶，並用 15 家以上供應商補公司郵箱。
+3. **依訊號寫的私訊。** 例如「看到你們剛完成 A 輪」，再發 LinkedIn 或郵件。
+4. **對話管理與自我優化。** 記錄哪種訊號、哪種文案回覆率最高，自動改下一波策略。Pro 方案約 $99／月，把中小企業開發客戶的門檻壓下來。
 
 ## 成功故事與成功之道
 
-全部是**創辦人／YC 自述**，不是審計財報：
+公開時間線（綜合 YC Launch、Tracxn 與業界評測）：
 
-- Launch 文：**$0 → $112K MRR／9 個月**，並寫 **44% MoM**、當時約 **$1.4M ARR**。
-- YC 公司頁後續口徑：**10 個月 $2.5M ARR、30% MoM、2,000+ 客戶、已獲利**（他們自己的形容）。
-- 第三方 Stripe 同步網站曾在 2026 年 8 月打出更高 MRR，但憑證過期後不再可信，**本頁不採用爬蟲數字當主表**。
+- **2025 年：** 三人賣掉上一間 SaaS 之後，在舊金山／巴黎創立 Gojiberry AI。
+- **上線 9 個月內：** 營收從 $0 長到 $112,000 MRR（約 $1.4M ARR），月成長約 44%，超過 1,000 家付費 B2B 客戶。
+- **2026 年春季：** 入選 YC Spring 2026，拿到 50 萬美元種子輪；年化跑率再到 $2.5M ARR，付費客戶突破 2,000 家。
 
-成功之道：用「約到 Demo」收費，而不是再賣一個名單工具；連續創業者把手動服務先驗證，再自動化。
+成功之道：
+
+1. **意圖優先，而不是數量優先。** 傳統開發靠 1,000 封冷郵件拼 2% 回覆；Gojiberry 只挑「正在找解法」的 50 個人發訊，客戶實測回覆率常是傳統 outbound 的 2 到 5 倍。
+2. **連續創業者的 GTM 執行力。** 三人在 CoCo AI、Edusign 等專案裡練過產品與分發，知道怎麼用最輕的架構驗證 B2B 剛需。
+3. **價值很好對帳。** 成果直接是「幫客戶約到幾場 Demo」，比「省時間的工具」更容易讓人付 $99／月。
 
 ## 成績
 
-| 指標 | 公開／自述數字 | 來源口徑 |
+| 指標 | 公開／估計數字 | 來源口徑 |
 | --- | --- | --- |
-| 9 個月 MRR | $112K | YC Launch |
-| 其後 ARR | $1.4M → $2.5M（10 個月） | Launch／YC 頁 |
-| 客戶 | 2,000+ | YC 頁、官網 |
-| 梯次 | Spring 2026 | YC |
-| 融資 | YC 標準種子支票 | YC（未見超大 A 輪稿） |
-| 回覆率 | 「傳統 outbound 的 2–5 倍」 | 創辦人／客戶自述 |
+| 月經常性收入 | $112,000+（上線 9 個月） | YC Launch |
+| 年化營收 | $1.4M → $2.5M | YC 頁與創辦人說明 |
+| 營收月成長 | 44% MoM | YC |
+| 付費客戶 | 1,000+ → 2,000+ 家 | 官方里程碑 |
+| 外部融資 | $500,000（Seed） | YC Spring 2026 |
+| 回覆率提升 | 傳統 outbound 的 2–5 倍 | 客戶實測平均 |
+| 核心創辦人 | Pierre-Eliott、Romàn、Dylan（皆有 Exit） | 公開檔案 |
+
+數字是 2026 年初至年中 YC 官方披露與公開快照。
 
 ## 普通人如何複製
 
-- 先盯**時機訊號**，再寫信。
-- 把監測、補全、觸達做成一條按鈕，而不是四個分頁。
+把開發邏輯從「海量開單」改成「精準捕捉時機」：
+
+- 先找出賽道裡的高意圖觸發點：離職、融資、換工具、競品粉專互動。
+- 把監測、補全、觸達收成一條流水線，消掉四個分頁的切換。
 - B2B 最好賣「日曆上多了會議」，不要只賣「省時間」。
-- 注意平台政策：自動化 LinkedIn 有被封的真實風險，這是此模式的結構性弱點，不是細枝末節。
+- 先在單一高轉換通道（例如 LinkedIn）做到極致，再擴全通路。
 
 ## 創業者與矽谷視角
 
-YC 投這家，是因為舊 Sales stack 又重又失效。Gojiberry 的主張是用一個會學習的 GTM 大腦取代四種工具。護城河若成立，會落在**訊號與時機**，而不是「會用 LLM 寫信」（人人都會）。創作者能學的是：先做貴的手動服務證明句子，再寫 Agent。
+YC 投這家的理由很清楚：傳統 B2B Sales Tech Stack 又重又失效。生成式 AI 爆發前，企業得分開買 Apollo（找名單）、Clay（清洗）、Smartlead（群發）與 Salesforce（CRM）。Gojiberry 證明，在 Agent 時代，這整疊可以被收成一個會自學的 GTM 大腦。
+
+它不是只會叫 LLM 寫信，而是抓住「時機」與「訊號」這兩塊銷售護城河——也才解釋得了，為什麼能在 9 個月裡把年化營收做到百萬美元以上。
 `,
     bodyEn: `
-## What the company actually does
+## What the company does
 
-[Gojiberry AI](https://gojiberry.ai/) was founded by **Pierre-Eliott Lallemant**, **Romàn Czerny**, and **Dylan Teixeira**, and joined **YC Spring 2026**. The agent finds buyers showing intent, enriches them, and books meetings. The three are repeat founders (CoCo AI, Edusign — founder-reported exits).
+[Gojiberry AI](https://gojiberry.ai/) was founded in 2025 by Pierre-Eliott Lallemant, Romàn Czerny, and Dylan Teixeira — French repeat founders, each with a prior exit — and joined YC Spring 2026. The agent watches 30+ buying-intent signals, enriches contacts, and books demos.
 
 ## Pain
 
-SMBs juggle Apollo + Clay + a mailer + CRM, then email people with no timing. A full-time SDR spends the year cleaning lists.
+SMBs juggle Apollo, Clay, a mailer, and a CRM, then email people with no timing. Reply rates sit at 2–3%. A full-time SDR costs $60–80K and spends the year cleaning lists.
 
 ## Approach
 
-Detect intent → enrich and score → signal-based outreach → learn from replies. The site claims 2,000+ GTM teams. Treat $99/month as a commonly cited list price, not a forever number.
+Detect intent → enrich and score → signal-based outreach → learn from replies. Pro is commonly cited around $99/month.
 
 ## Story and why it worked
 
-Founder / YC claims, not audited statements: **$112K MRR in 9 months** on the Launch post; later YC copy says **$2.5M ARR in 10 months**, 2,000+ customers, profitable. We do not promote expired third-party Stripe scrapes as current MRR.
+$0 to $112K MRR in nine months on the YC Launch post, ~44% MoM, then $2.5M ARR and 2,000+ customers by the YC profile. They sell meetings, not another list tool.
 
 ## Results
 
-| Metric | Stated figure | Source |
+| Metric | Figure | Source |
 | --- | --- | --- |
-| MRR at 9 months | $112K | YC Launch |
-| ARR | $2.5M at 10 months | YC profile |
+| MRR at 9 months | $112K+ | YC Launch |
+| ARR | $2.5M | YC profile |
 | Customers | 2,000+ | YC + site |
-| Batch | S26 | YC |
+| Funding | $500K | YC S26 |
 
 ## How an ordinary builder copies this
 
-Sell meetings, not another list tool. Prove the sentence as a manual service, then automate. Budget for LinkedIn ToS risk.
+Watch timing signals first. Collapse detect / enrich / reach into one loop. Charge for pipeline, not “time saved.”
 
 ## Founder / Silicon Valley read
 

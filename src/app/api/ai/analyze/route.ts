@@ -170,6 +170,8 @@ export async function POST(request: NextRequest) {
       prompt_type: promptType,
       generated_from_context_version: contextVersionId,
       created_at: new Date().toISOString(),
+      is_executed: false,
+      executed_at: null,
     };
 
     await saveAnalysisResults(

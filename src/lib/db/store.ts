@@ -179,7 +179,7 @@ export async function getProject(projectId: string, userId: string) {
       bugs: bugs.data ?? [],
       enhancements: enhancements.data ?? [],
       artifacts: artifacts.data ?? [],
-      prompt_runs: promptRuns.data ?? [],
+      prompt_runs: ((promptRuns.data ?? []) as PromptRun[]).map(normalizePromptRun),
       context_versions: contextVersions.data ?? [],
       test_runs: testRuns.data ?? [],
       activity_logs: activityLogs.data ?? [],
@@ -199,7 +199,7 @@ export async function getProject(projectId: string, userId: string) {
     bugs: store.bugs.filter((b) => b.project_id === projectId),
     enhancements: store.enhancements.filter((e) => e.project_id === projectId),
     artifacts: store.artifacts.filter((a) => a.project_id === projectId),
-    prompt_runs: store.promptRuns.filter((p) => p.project_id === projectId),
+    prompt_runs: store.promptRuns.filter((p) => p.project_id === projectId).map(normalizePromptRun),
     context_versions: store.contextVersions.filter((c) => c.project_id === projectId),
     test_runs: store.testRuns.filter((t) => t.project_id === projectId),
     activity_logs: store.activityLogs.filter((a) => a.project_id === projectId).slice(0, 50),
@@ -281,6 +281,90 @@ export async function updateProject(projectId: string, userId: string, updates: 
 
 export async function archiveProject(projectId: string, userId: string) {
   return updateProject(projectId, userId, { status: "archived" });
+}
+
+export function normalizePromptRun(run: PromptRun): PromptRun {
+  return {
+    ...run,
+    is_executed: Boolean(run.is_executed),
+    executed_at: run.executed_at ?? null,
+  };
+}
+
+export async function deleteProject(projectId: string, userId: string) {
+  const owned = await getProject(projectId, userId);
+  if (!owned) throw new Error("Project not found");
+
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const { error } = await supabase.from("projects").delete().eq("id", projectId).eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  const store = await ensureStore();
+  store.projects = store.projects.filter((p) => p.id !== projectId);
+  store.artifacts = store.artifacts.filter((item) => item.project_id !== projectId);
+  store.phases = store.phases.filter((item) => item.project_id !== projectId);
+  store.tasks = store.tasks.filter((item) => item.project_id !== projectId);
+  store.uatItems = store.uatItems.filter((item) => item.project_id !== projectId);
+  store.uatRemarks = store.uatRemarks.filter((item) => {
+    const parent = store.uatItems.find((uat) => uat.id === item.uat_item_id);
+    return Boolean(parent);
+  });
+  store.bugs = store.bugs.filter((item) => item.project_id !== projectId);
+  store.enhancements = store.enhancements.filter((item) => item.project_id !== projectId);
+  store.promptRuns = store.promptRuns.filter((item) => item.project_id !== projectId);
+  store.contextVersions = store.contextVersions.filter((item) => item.project_id !== projectId);
+  store.testRuns = store.testRuns.filter((item) => item.project_id !== projectId);
+  store.activityLogs = store.activityLogs.filter((item) => item.project_id !== projectId);
+  store.aiSuggestions = store.aiSuggestions.filter((item) => item.project_id !== projectId);
+  await saveStore(store);
+}
+
+export async function setPromptExecution(
+  promptRunId: string,
+  projectId: string,
+  isExecuted: boolean,
+) {
+  const now = new Date().toISOString();
+  const executedAt = isExecuted ? now : null;
+
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("prompt_runs")
+      .update({ is_executed: isExecuted, executed_at: executedAt })
+      .eq("id", promptRunId)
+      .eq("project_id", projectId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    await logActivity(
+      projectId,
+      isExecuted ? "prompt_executed" : "prompt_unexecuted",
+      isExecuted ? "標記為已貼至 Cursor 執行" : "取消 Cursor 執行標記",
+      { promptRunId },
+    );
+    return normalizePromptRun(data as PromptRun);
+  }
+
+  const store = await ensureStore();
+  const idx = store.promptRuns.findIndex((run) => run.id === promptRunId && run.project_id === projectId);
+  if (idx === -1) throw new Error("Prompt run not found");
+  store.promptRuns[idx] = {
+    ...normalizePromptRun(store.promptRuns[idx]),
+    is_executed: isExecuted,
+    executed_at: executedAt,
+  };
+  await saveStore(store);
+  await logActivity(
+    projectId,
+    isExecuted ? "prompt_executed" : "prompt_unexecuted",
+    isExecuted ? "標記為已貼至 Cursor 執行" : "取消 Cursor 執行標記",
+    { promptRunId },
+  );
+  return store.promptRuns[idx];
 }
 
 export async function saveAnalysisResults(
@@ -913,7 +997,7 @@ export async function getMemberHubSnapshot(userId: string) {
         .slice(0, 6)
         .map((item) => ({ ...item, project_name: projectName.get(item.project_id) ?? "" })),
       recentPrompts: ((promptRuns ?? []) as PromptRun[]).map((run) => ({
-        ...run,
+        ...normalizePromptRun(run),
         project_name: projectName.get(run.project_id) ?? "",
       })),
     };

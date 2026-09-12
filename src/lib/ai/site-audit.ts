@@ -1,10 +1,46 @@
 import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
-import type { AiSuggestion, ProjectWithRelations, SuggestionCategory } from "@/types";
+import type { AiSuggestion, AuditDimension, ProjectWithRelations, SuggestionCategory } from "@/types";
 import type { WebsiteCheckResult } from "@/lib/playwright/check-http";
 import { a11yWarningToTask, httpErrorToTask, metricToPerformanceTask } from "@/lib/ai/executable-spec";
+import { AUDIT_DIMENSIONS, suggestionDimension } from "@/lib/project/audit";
 
-const CATEGORIES: SuggestionCategory[] = ["bug", "ui_ux", "performance", "feature"];
+export const AUDIT_SYSTEM_PROMPT = `
+You are an Elite AI Product Architect and UX Specialist inspecting a live web application.
+Your goal is to provide 3 to 4 actionable, highly specific product enhancement suggestions across distinct categories.
+
+STRICT BALANCING RULE:
+You MUST output suggestions spanning at least 3 of the following 4 dimensions. Do NOT only report backend or performance issues.
+
+1. [UI_UX] (視覺與介面體驗):
+   - Inspect layout spacing, typography hierarchy, mobile alignment, button contrast, and visual polish.
+   - Example: "The stock search input box lacks visual focus state and hover micro-animations."
+
+2. [FEATURE] (功能與商業邏輯):
+   - Analyze feature completeness for the target audience (investors/users).
+   - Example: "Missing quick-preset buttons (e.g., AAPL, TSLA, NVDA) below the analysis prompt input."
+
+3. [COPYWRITING] (文案與用戶引導):
+   - Check micro-copy clarity, onboarding tooltips, empty states, and error messaging.
+   - Example: "Empty analysis result area lacks a helpful getting-started guide for first-time investors."
+
+4. [PERFORMANCE] (效能與錯誤處理):
+   - Page load timing, API latency, console errors, and missing loading skeletons.
+
+STRICT RULE: NEVER write vague cards like "improve UI", "optimize UX", or "conduct UAT".
+Each description MUST name:
+1. Target Component / File route (e.g. src/components/stock-search.tsx or src/app/page.tsx)
+2. Concrete React/Next.js/Tailwind action
+3. Expected outcome and acceptance criteria including npm run build
+
+Prefer Traditional Chinese when the project copy is Chinese.
+Mark must-fix items approved=true; optional polish approved=false.
+
+Return ONLY JSON:
+{"suggestions":[{"category":"ui_ux|feature|copywriting|performance","title":"string","description":"string","severity":"low|medium|high","target_file":"src/components/stock-search.tsx","approved":true}]}
+`.trim();
+
+const CATEGORIES: SuggestionCategory[] = ["bug", "ui_ux", "performance", "feature", "copywriting"];
 const SEVERITIES = ["low", "medium", "high", "critical"] as const;
 
 function getClient() {
@@ -124,28 +160,59 @@ export function heuristicSiteSuggestions(
     );
   }
 
-  if (items.length === 0) {
-    items.push(
-      makeSuggestion(project.id, testRunId, {
-        category: "feature",
-        title: "[Feature] Empty / error / loading triad on src/app/page.tsx",
-        description: `Target: \`src/app/page.tsx\`. Action: add Skeleton, empty Alert, and error Alert around the primary data fetch${result.pageTitle ? ` (page: ${result.pageTitle})` : ""}. Acceptance: new users see a next step in all three states; npm run build passes.`,
-        severity: "medium",
-        approved: true,
-      }),
-    );
-    items.push(
-      makeSuggestion(project.id, testRunId, {
-        category: "ui_ux",
-        title: "[UI] 375px pass on the primary form",
-        description: "Target: `src/app/page.tsx`. Action: `w-full max-w-xl mx-auto px-4` + `grid-cols-1 md:grid-cols-3`. Acceptance: no horizontal scroll at 375px; tap targets ≥44px; npm run build passes.",
-        severity: "low",
-        approved: false,
-      }),
-    );
-  }
+  return balanceAuditDimensions(dedupeSuggestions(items), project, result, testRunId).slice(0, 8);
+}
 
-  return dedupeSuggestions(items).slice(0, 8);
+function dimensionFillers(
+  project: ProjectWithRelations,
+  result: WebsiteCheckResult,
+  testRunId: string | null,
+): Record<AuditDimension, AiSuggestion> {
+  const audience = project.target_audience || project.goal || project.name;
+  return {
+    ui_ux: makeSuggestion(project.id, testRunId, {
+      category: "ui_ux",
+      title: "[UI/UX] 主搜尋框缺 focus／hover 狀態",
+      description: "Target: `src/app/page.tsx`（或主搜尋／分析輸入框元件）。Action: 加上 `focus-visible:ring-2 focus-visible:ring-slate-900`、hover 微動畫，以及 375px 時 `w-full max-w-xl mx-auto`。Acceptance: 鍵盤 focus 看得到環；手機無橫向捲動；npm run build 通過。",
+      severity: "medium",
+    }),
+    feature: makeSuggestion(project.id, testRunId, {
+      category: "feature",
+      title: "[Feature] 主輸入框下方加快速預設按鈕",
+      description: `Target: \`src/app/page.tsx\`。Action: 在分析／搜尋輸入框下加 shadcn Button 預設（依受眾「${audience}」放 3 個常見例子，如 AAPL / TSLA / NVDA）。Acceptance: 點擊即填入並可送出；npm run build 通過。${result.pageTitle ? ` 目前頁標題：${result.pageTitle}` : ""}`,
+      severity: "medium",
+    }),
+    copywriting: makeSuggestion(project.id, testRunId, {
+      category: "copywriting",
+      title: "[Copy] 空結果區缺第一次使用引導",
+      description: "Target: `src/app/page.tsx`。Action: 空狀態改成短文案＋一步 CTA（例如「輸入代號，3 秒內看到分析」），錯誤改成人話而不是 raw 500。Acceptance: 首次進入看得到下一步；npm run build 通過。",
+      severity: "medium",
+    }),
+    performance: makeSuggestion(project.id, testRunId, {
+      category: "performance",
+      title: metricToPerformanceTask(result.durationMs || 0).title,
+      description: metricToPerformanceTask(result.durationMs || 0).description,
+      severity: result.durationMs >= 8000 ? "high" : "medium",
+    }),
+  };
+}
+
+function balanceAuditDimensions(
+  items: AiSuggestion[],
+  project: ProjectWithRelations,
+  result: WebsiteCheckResult,
+  testRunId: string | null,
+): AiSuggestion[] {
+  const next = [...items];
+  const have = new Set(next.map((item) => suggestionDimension(item.category)));
+  const fillers = dimensionFillers(project, result, testRunId);
+  for (const dim of AUDIT_DIMENSIONS) {
+    if (have.size >= 3) break;
+    if (have.has(dim)) continue;
+    next.push(fillers[dim]);
+    have.add(dim);
+  }
+  return dedupeSuggestions(next);
 }
 
 function normalizeCategory(value: string): SuggestionCategory {
@@ -185,18 +252,7 @@ export async function analyzeLiveSite(
       messages: [
         {
           role: "system",
-          content: `You are a Technical Lead. Convert a live website inspection into 3-8 Cursor-executable sprint cards.
-Return ONLY JSON: {"suggestions":[{"category":"bug|ui_ux|performance|feature","title":"string","description":"string","severity":"low|medium|high|critical","approved":true}]}
-STRICT RULE: NEVER write "improve UI", "optimize UX", or "conduct UAT".
-Each description MUST name:
-1. Target file (src/app/page.tsx, src/app/error.tsx, src/components/...)
-2. Concrete React/Next.js/Tailwind action (next/dynamic, Skeleton, grid-cols-1 md:grid-cols-3, error boundary)
-3. Acceptance criteria including npm run build
-If durationMs >= 3000, emit a [Performance] card that dynamic-imports heavy charts — do not say "make it faster".
-If httpStatus >= 400, target error.tsx / the failing API route.
-Ground every card in the inspection evidence. Do not invent stack traces.
-Prefer Traditional Chinese when the project copy is Chinese.
-Mark must-fix items approved=true; optional polish approved=false.`,
+          content: AUDIT_SYSTEM_PROMPT,
         },
         {
           role: "user",
@@ -236,22 +292,27 @@ Mark must-fix items approved=true; optional polish approved=false.`,
         title?: string;
         description?: string;
         severity?: string;
+        target_file?: string;
         approved?: boolean;
       }>;
     };
     const fromModel = (parsed.suggestions ?? [])
       .filter((item) => item.title && item.description)
-      .map((item) =>
-        makeSuggestion(project.id, testRunId, {
+      .map((item) => {
+        const file = item.target_file?.trim();
+        const description = file && !item.description!.includes(file)
+          ? `Target: \`${file}\`\n${item.description}`
+          : item.description!;
+        return makeSuggestion(project.id, testRunId, {
           category: normalizeCategory(item.category ?? "feature"),
           title: item.title!,
-          description: item.description!,
+          description,
           severity: normalizeSeverity(item.severity ?? "medium"),
           approved: item.approved ?? true,
-        }),
-      );
+        });
+      });
 
-    return dedupeSuggestions(fromModel.length ? fromModel : fallback).slice(0, 8);
+    return balanceAuditDimensions(dedupeSuggestions(fromModel.length ? fromModel : fallback), project, result, testRunId).slice(0, 8);
   } catch (error) {
     console.error("analyzeLiveSite failed:", error);
     return fallback;

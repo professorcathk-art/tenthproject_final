@@ -1,8 +1,8 @@
 import {
-  countPublishedCaseStudies,
   deleteCourse,
   getCaseStudyBySlug,
   getCourseBySlug,
+  listPublishedCaseSlugs,
   replaceCaseStudies,
   seedPlatformData,
   upsertCaseStudy,
@@ -27,21 +27,20 @@ export async function ensureCoursesSeeded() {
   }
 }
 
-async function upsertMissingSeedCases() {
-  for (const seed of getSeedCaseStudies()) {
-    const existing = await getCaseStudyBySlug(seed.slug);
-    if (!existing) await upsertCaseStudy(seed);
-  }
+async function upsertMissingSeedCases(existing: Set<string>) {
+  const missing = getSeedCaseStudies().filter((seed) => !existing.has(seed.slug));
+  if (!missing.length) return;
+  await Promise.all(missing.map((seed) => upsertCaseStudy(seed)));
 }
 
 export async function ensureCasesSeeded() {
   if (casesReady) return;
   try {
-    const count = await countPublishedCaseStudies();
-    if (count < 4) {
+    const slugs = await listPublishedCaseSlugs();
+    if (slugs.length < 4) {
       await replaceCaseStudies(getSeedCaseStudies());
     } else {
-      await upsertMissingSeedCases();
+      await upsertMissingSeedCases(new Set(slugs));
     }
     casesReady = true;
   } catch (e) {
