@@ -4,7 +4,8 @@ import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { getCaseStudies, getEnterpriseEnquiries, getCoursesWithLessons, getMembers } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getDict } from "@/lib/i18n/server";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default async function AdminPage() {
   const { user, isAuthenticated } = await getSession();
@@ -18,9 +19,9 @@ export default async function AdminPage() {
           {dict.admin.deniedBody}{" "}
           <span className="font-medium text-slate-900 dark:text-slate-100">{user?.email ?? "—"}</span>.
         </p>
-        <Button asChild className="mt-6">
-          <Link href="/login?redirect=/admin">{dict.admin.deniedCta}</Link>
-        </Button>
+        <Link href="/login?redirect=/admin" className={cn(buttonVariants(), "mt-6")}>
+          {dict.admin.deniedCta}
+        </Link>
       </div>
     );
   }
