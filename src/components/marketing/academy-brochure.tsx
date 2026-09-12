@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { FLAGSHIP_SLUG } from "@/lib/seed/platform-seed";
+import { getDict } from "@/lib/i18n/server";
+import { JoinNowButton } from "@/components/marketing/join-now-button";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -51,7 +53,9 @@ function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
   );
 }
 
-export function AcademyBrochure() {
+export async function AcademyBrochure() {
+  const dict = await getDict();
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <header className="mb-8">
@@ -68,6 +72,10 @@ export function AcademyBrochure() {
         🔥 限時優惠：Lifetime Price 終身價格
         <br />
         只需付一次，永久享有所有未來更新及新增內容
+      </div>
+
+      <div className="mb-8 flex justify-center">
+        <JoinNowButton />
       </div>
 
       <Section title="你將獲得什麼">
@@ -102,7 +110,7 @@ export function AcademyBrochure() {
         <ul className="space-y-3 text-[15px] text-slate-600">
           <li>高品質內容 — 由業界專家親自設計與教授</li>
           <li>實用導向 — 每堂課都聚焦於立即可應用的知識</li>
-          <li>支持式廣東話社群 — 不只是學習，更是一個有人陪伴的成長環境</li>
+          <li>廣東話社群有人陪伴 — 不只是自己學，遇到問題隨時有人幫手</li>
           <li>持續更新 — 緊跟 AI 與職場趨勢，內容定期優化</li>
         </ul>
       </Section>
@@ -120,12 +128,15 @@ export function AcademyBrochure() {
           <li>一人公司到 AI 經營 IG 萬字攻略</li>
           <li>10 小時 Vibe Coding 完整課程 — 用 Cursor 一步步複製月入 6 位數 StealthWriter 工具站</li>
           <li>10 小時以上 AI Agent 從 0 到 1 課程</li>
-          <li>45 分鐘私人咨詢（朱 Sir 與 Chris 同時咨詢）</li>
+          <li>45 分鐘私人諮詢（朱 Sir 與 Chris 同時諮詢）</li>
           <li>專案規劃工具，幫你把網站從想法做到上線</li>
         </ul>
         <Note>
-          適合想學習變現、需要專家指導的創業者與求職者。現在就加入，開始你的 AI 時代之旅。
+          適合想學習變現、需要專家指導的創業者與求職者。現在加入，開始用 AI 做事。
         </Note>
+        <div className="mt-6 flex justify-center">
+          <JoinNowButton />
+        </div>
       </Section>
 
       <Section title="課程概述">
@@ -187,6 +198,9 @@ export function AcademyBrochure() {
           <br />
           👥 <strong className="text-slate-900">名額限制：</strong>嚴格控制在 5 人內確保教學質量
         </Note>
+        <div className="mt-6 flex justify-center">
+          <JoinNowButton />
+        </div>
       </Section>
 
       <Section title="學習成果保證">
@@ -196,6 +210,9 @@ export function AcademyBrochure() {
           <li>✅ <strong className="text-slate-900">完整的商業變現流程：</strong>免費到付費轉化系統</li>
           <li>✅ <strong className="text-slate-900">可重複的開發框架：</strong>為日後獨立開發工具站奠定基礎</li>
         </ul>
+        <div className="mt-6 flex justify-center">
+          <JoinNowButton />
+        </div>
       </Section>
 
       <Section title="🎁 成品：您將獲得什麼？">
@@ -409,19 +426,14 @@ export function AcademyBrochure() {
 
       <div className="rounded-2xl bg-slate-950 px-6 py-10 text-center text-white">
         <p className="text-lg font-semibold">現在就加入 Tenth Project Club</p>
-        <p className="mt-2 text-sm text-slate-300">課程、社群、Q&A 與專案工具同一套系統。登入後即可進入教室。</p>
+        <p className="mt-2 text-sm text-slate-300">課程、社群、Q&A 與專案工具都在同一套系統裡，登入後即可進入教室。</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <JoinNowButton variant="dark" />
           <Link
             href={`/courses/${FLAGSHIP_SLUG}`}
-            className="inline-flex h-11 items-center rounded-full bg-white px-5 text-sm font-semibold text-slate-950"
-          >
-            查看課程大綱
-          </Link>
-          <Link
-            href="/signup?redirect=/dashboard"
             className="inline-flex h-11 items-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white"
           >
-            加入 Lifetime 會員
+            {dict.nav.outline}
           </Link>
         </div>
       </div>

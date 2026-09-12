@@ -8,12 +8,13 @@ export const dictionaries = {
     meta: {
       title: "Tenth Project｜客製化 AI 系統與企業數位轉型",
       description:
-        "用 AI 重新定義企業與產品開發流程：企業流程優化與超自動化、創作者 AI 實戰培訓，以及 Lifetime 會員社群。",
+        "用 AI 重新定義企業流程：企業流程優化與超自動化、創作者 AI 實戰培訓，以及 Lifetime 會員社群。",
     },
     brand: "Tenth Project",
     nav: {
       academy: "學院課程",
-      academyMembers: "學院與會員",
+      academyMembers: "社群福利",
+      joinNow: "現在加入",
       inspiration: "創業靈感庫",
       enterprise: "企業 AI 方案",
       hub: "專案中心",
@@ -54,7 +55,7 @@ export const dictionaries = {
     lang: { zh: "繁", en: "EN" },
     hero: {
       badge: "✨ 客製化 AI 系統 · 企業數位轉型 · 敏捷產品落地",
-      title: "用 AI 重新定義企業與產品開發流程",
+      title: "用 AI 重新定義企業流程",
       titleAccent: "從企業流程優化與超自動化，到個人創作者的 AI 實戰培訓一站式服務",
       subtitle:
         "我們熱愛科技，專注於以前沿 AI 技術解決真實商業痛點。協助企業實現數位轉型降本增效，幫助創作者將願景快速落地為可盈利產品。",
@@ -72,7 +73,7 @@ export const dictionaries = {
     },
     founders: {
       title: "創辦團隊",
-      subtitle: "技術落地與商業轉型同一張桌子——這是客戶願意把關鍵流程交給我們的原因。",
+      subtitle: "技術落地與商業轉型由同一團隊推進，這正是客戶願意把關鍵流程交給我們的原因。",
       felixRole: "技術負責人",
       felixName: "Felix Zhu",
       felix:
@@ -84,7 +85,7 @@ export const dictionaries = {
     },
     vision: {
       title: "關於我們與理念",
-      subtitle: "不講空洞理論。我們用可上線的系統，幫企業與創作者把問題做成果。",
+      subtitle: "不講空洞理論。我們用可上線的系統，幫企業與創作者把問題做成成果。",
       items: {
         tech: {
           title: "熱愛科技與解決問題",
@@ -96,7 +97,7 @@ export const dictionaries = {
         },
         creator: {
           title: "創作者願景落地",
-          desc: "賦能無傳統程式背景的創作者與企業團隊，獨立打造並上線具備商業變現能力的海外級工具產品。",
+          desc: "協助沒有傳統程式背景的創作者與企業團隊，獨立打造並上線具備商業變現能力的海外級工具產品。",
         },
       },
     },
@@ -115,11 +116,11 @@ export const dictionaries = {
         },
         tools: {
           title: "專業社群的力量",
-          desc: "加入認真專業人士組成的封閉社群。開放提問、分享成功與踩坑，建立有意義的職業網絡。支持式廣東話社群。",
+          desc: "加入認真專業人士組成的封閉社群。開放提問、分享成功與踩坑，建立有意義的職業網絡。社群以廣東話交流，有人即時支援。",
         },
         vip: {
           title: "完整會員方案",
-          desc: "線上課程與回放、Vibe Coding 資料庫、專案規劃工具，以及朱 Sir 與 Chris 45 分鐘共同咨詢。適合想變現、需要專家指導的創業者與職場人。",
+          desc: "線上課程與回放、Vibe Coding 資料庫、專案規劃工具，以及朱 Sir 與 Chris 45 分鐘共同諮詢。適合想變現、需要專家指導的創業者與職場人。",
         },
       },
     },
@@ -153,26 +154,26 @@ export const dictionaries = {
     },
     preview: {
       title: "會員專用：專案規劃工具預覽",
-      subtitle: "三步精靈、Master Prompt 生成，以及 Cursor MCP 連線——把想法變成可貼到編輯器的執行稿。",
+      subtitle: "三步規劃精靈、Master Prompt 生成，以及 Cursor MCP 連線，把想法寫成可直接貼進編輯器的執行稿。",
       s1: "描述產品意圖",
       s2: "生成路線圖與 UAT",
       s3: "匯出 Master Prompt",
       cta: "登入後建立專案",
       tabs: {
         wizard: { title: "三步規劃精靈", body: "用產品意圖、目標使用者與驗收標準，生成可執行的衝刺範圍。" },
-        prompt: { title: "Master Prompt 生成", body: "輸出可貼到 Cursor 的完整主提示詞：願景、技術棧、範圍與驗收。" },
+        prompt: { title: "Master Prompt 生成", body: "輸出可直接貼進 Cursor 的完整主提示詞：願景、技術棧、範圍與驗收。" },
         mcp: { title: "Cursor MCP 連線", body: "讓 Cursor 讀取路線圖、回寫 UAT，並在建置失敗時自動登記錯誤。" },
       },
     },
     stats: { courses: "課程", cases: "案例拆解", mcp: "Cursor 整合" },
     ctaBand: {
-      title: "把關鍵流程交給可上線的 AI，而不是另一場示範。",
-      subtitle: "企業可預約免費 1-on-1 諮詢——由技術與商業雙導師直接對接核心流程。",
+      title: "把關鍵流程交給真正能上線的 AI 系統，而不是再看一場示範。",
+      subtitle: "企業可預約免費一對一諮詢，技術與商業兩位導師會一起梳理你的核心流程。",
       items: ["雙領域專家帶隊", "金融級資安隔離", "3–4 週可上線", "可量化 ROI"],
       button: "預約企業諮詢",
     },
     footer: {
-      tagline: "企業 AI 落地，與創作者的 Vibe Coding 會員社群。",
+      tagline: "企業 AI 落地，以及創作者的 Vibe Coding 會員社群。",
       product: "產品",
       company: "公司",
       legal: "法律資訊",
@@ -577,12 +578,13 @@ export const dictionaries = {
     meta: {
       title: "Tenth Project | Custom AI Systems & Enterprise Transformation",
       description:
-        "Redefine how enterprises and products get built with AI: process optimization, hyperautomation, creator training, and a Lifetime membership.",
+        "Redefine enterprise operations with AI: process optimization, hyperautomation, creator training, and a Lifetime membership.",
     },
     brand: "Tenth Project",
     nav: {
       academy: "Academy",
-      academyMembers: "Academy & membership",
+      academyMembers: "Club benefits",
+      joinNow: "Join now",
       inspiration: "Startup Inspiration Vault",
       enterprise: "Enterprise AI",
       hub: "Project Hub",
@@ -623,8 +625,8 @@ export const dictionaries = {
     lang: { zh: "繁", en: "EN" },
     hero: {
       badge: "✨ Custom AI systems · Enterprise transformation · Agile product delivery",
-      title: "Redefine how enterprises and products get built with AI",
-      titleAccent: "From process optimization and hyperautomation to hands-on AI training for creators — one practice",
+      title: "Redefine enterprise operations with AI",
+      titleAccent: "From process optimization and hyperautomation to hands-on AI training for creators — all in one place",
       subtitle:
         "We love technology and use frontier AI to solve real commercial pain. We help enterprises transform digitally, cut cost, and raise output — and help creators turn a vision into a product that can earn.",
       tools: "Custom AI Agents · Enterprise Automation · Data Intelligence · Full-Stack Systems",
@@ -641,7 +643,7 @@ export const dictionaries = {
     },
     founders: {
       title: "Founding leadership",
-      subtitle: "Technical delivery and commercial transformation at the same table — that is why clients trust us with critical workflows.",
+      subtitle: "Technical delivery and commercial transformation stay on the same team — that is why clients trust us with critical workflows.",
       felixRole: "Head of Technology",
       felixName: "Felix Zhu",
       felix:
@@ -653,7 +655,7 @@ export const dictionaries = {
     },
     vision: {
       title: "About us and our philosophy",
-      subtitle: "No empty theory. We use production-ready systems to turn problems into results for enterprises and creators.",
+      subtitle: "No empty theory. We ship systems that go live, and help enterprises and creators turn problems into results.",
       items: {
         tech: {
           title: "We love technology — and solving problems",
@@ -722,7 +724,7 @@ export const dictionaries = {
     },
     preview: {
       title: "Member preview: project planning tools",
-      subtitle: "A three-step wizard, master-prompt generation, and Cursor MCP — turn an idea into an editor-ready brief.",
+      subtitle: "A three-step planner, master-prompt generation, and a Cursor MCP connection — so an idea becomes a brief you can paste into the editor.",
       s1: "Describe the product intent",
       s2: "Generate a roadmap and UAT",
       s3: "Export the master prompt",
@@ -735,8 +737,8 @@ export const dictionaries = {
     },
     stats: { courses: "Courses", cases: "Case studies", mcp: "Cursor integration" },
     ctaBand: {
-      title: "Put critical workflows on production AI — not another demo.",
-      subtitle: "Enterprises can book a free 1-on-1 consult — technology and commercial leads in the same room.",
+      title: "Put critical workflows on AI that can actually go live — not another demo.",
+      subtitle: "Enterprises can book a free one-to-one consult. A technical lead and a commercial lead will work through your core workflow with you.",
       items: ["Tech and commercial leads", "Finance-grade security", "Live in 3–4 weeks", "Measurable ROI"],
       button: "Book an enterprise consult",
     },
