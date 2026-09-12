@@ -11,6 +11,7 @@ import { useI18n } from "@/components/i18n/provider";
 interface McpSettingsProps {
   projectId: string;
   projectName: string;
+  compact?: boolean;
 }
 
 interface KeyRecord {
@@ -21,7 +22,7 @@ interface KeyRecord {
   created_at: string;
 }
 
-export function McpSettings({ projectId, projectName }: McpSettingsProps) {
+export function McpSettings({ projectId, projectName, compact = false }: McpSettingsProps) {
   const { dict, locale } = useI18n();
   const [keys, setKeys] = useState<KeyRecord[]>([]);
   const [newKey, setNewKey] = useState<string | null>(null);
@@ -87,6 +88,76 @@ export function McpSettings({ projectId, projectName }: McpSettingsProps) {
   ];
   const examples = [dict.mcp.example1, dict.mcp.example2, dict.mcp.example3];
 
+  const keyPanel = (
+    <>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={generateKey} disabled={loading}>
+          <Key className="h-4 w-4 mr-1" /> {dict.mcp.generate}
+        </Button>
+      </div>
+
+      {newKey && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
+          <p className="text-sm font-medium text-amber-900">{dict.mcp.saveOnce}</p>
+          <div className="flex gap-2">
+            <Input readOnly value={newKey} className="font-mono text-xs bg-white" />
+            <Button size="icon" variant="outline" onClick={() => copy(newKey, "key")}>
+              {copied === "key" ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {keys.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">{dict.mcp.activeKeys}</p>
+          {keys.map((k) => (
+            <div key={k.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+              <div>
+                <Badge variant="secondary">{k.key_prefix}...</Badge>
+                <span className="ml-2 text-slate-500">{k.label}</span>
+                {k.last_used_at ? (
+                  <span className="ml-2 text-xs text-emerald-600">{dict.mcp.connected}</span>
+                ) : null}
+              </div>
+              <Button size="icon" variant="ghost" onClick={() => revokeKey(k.id)}>
+                <Trash2 className="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div>
+        <p className="text-sm font-medium mb-2">
+          {locale === "zh" ? "貼到專案根目錄" : "Paste into"}{" "}
+          <code className="text-xs bg-slate-100 px-1 rounded">.cursor/mcp.json</code>
+        </p>
+        <pre className="rounded-lg bg-slate-900 text-slate-100 p-3 text-xs overflow-x-auto">{mcpConfig}</pre>
+        <Button size="sm" variant="outline" className="mt-2" onClick={() => copy(mcpConfig, "cfg")}>
+          {copied === "cfg" ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+          {dict.mcp.copyConfig}
+        </Button>
+      </div>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Plug className="h-4 w-4" /> {projectName}
+          </CardTitle>
+          <CardDescription>
+            {dict.mcp.project}: {projectId}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">{keyPanel}</CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Card>
@@ -115,53 +186,8 @@ export function McpSettings({ projectId, projectName }: McpSettingsProps) {
               ))}
             </ol>
           </div>
+          {keyPanel}
 
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={generateKey} disabled={loading}>
-              <Key className="h-4 w-4 mr-1" /> {dict.mcp.generate}
-            </Button>
-          </div>
-
-          {newKey && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
-              <p className="text-sm font-medium text-amber-900">{dict.mcp.saveOnce}</p>
-              <div className="flex gap-2">
-                <Input readOnly value={newKey} className="font-mono text-xs bg-white" />
-                <Button size="icon" variant="outline" onClick={() => copy(newKey, "key")}>
-                  {copied === "key" ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {keys.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">{dict.mcp.activeKeys}</p>
-              {keys.map((k) => (
-                <div key={k.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
-                  <div>
-                    <Badge variant="secondary">{k.key_prefix}...</Badge>
-                    <span className="ml-2 text-slate-500">{k.label}</span>
-                  </div>
-                  <Button size="icon" variant="ghost" onClick={() => revokeKey(k.id)}>
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div>
-            <p className="text-sm font-medium mb-2">
-              {locale === "zh" ? "貼到專案根目錄" : "Paste into"}{" "}
-              <code className="text-xs bg-slate-100 px-1 rounded">.cursor/mcp.json</code>
-            </p>
-            <pre className="rounded-lg bg-slate-900 text-slate-100 p-3 text-xs overflow-x-auto">{mcpConfig}</pre>
-            <Button size="sm" variant="outline" className="mt-2" onClick={() => copy(mcpConfig, "cfg")}>
-              {copied === "cfg" ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
-              {dict.mcp.copyConfig}
-            </Button>
-          </div>
         </CardContent>
       </Card>
 

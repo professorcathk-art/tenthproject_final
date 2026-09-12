@@ -92,7 +92,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
             {mode === "login" && (
               <>
                 {dict.auth.noAccount}{" "}
-                <Link href="/signup" className="font-medium text-slate-900 hover:underline">
+                <Link href="/signup?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
                   {dict.auth.createAccount}
                 </Link>
                 {" · "}
@@ -104,13 +104,13 @@ function AuthFormInner({ mode }: AuthFormProps) {
             {mode === "signup" && (
               <>
                 {dict.auth.hasAccount}{" "}
-                <Link href="/login" className="font-medium text-slate-900 hover:underline">
+                <Link href="/login?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
                   {dict.auth.signIn}
                 </Link>
               </>
             )}
             {mode === "reset" && (
-              <Link href="/login" className="font-medium text-slate-900 hover:underline">
+              <Link href="/login?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
                 {dict.auth.backToLogin}
               </Link>
             )}

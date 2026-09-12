@@ -461,6 +461,52 @@ export async function addTestRun(testRun: TestRun) {
   return testRun;
 }
 
+const OPEN_UAT = new Set(["not_started", "in_progress", "failed", "blocked", "needs_review", "reopened"]);
+
+export async function getMemberHubSnapshot(userId: string) {
+  const projects = await getProjects(userId);
+  const projectIds = projects.map((project) => project.id);
+  const projectName = new Map(projects.map((project) => [project.id, project.name]));
+
+  if (projectIds.length === 0) {
+    return { projects, openUat: [], recentPrompts: [] };
+  }
+
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const [{ data: uatItems }, { data: promptRuns }] = await Promise.all([
+      supabase.from("uat_items").select("*").in("project_id", projectIds),
+      supabase.from("prompt_runs").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(6),
+    ]);
+    return {
+      projects,
+      openUat: ((uatItems ?? []) as UATItem[])
+        .filter((item) => OPEN_UAT.has(item.status))
+        .slice(0, 6)
+        .map((item) => ({ ...item, project_name: projectName.get(item.project_id) ?? "" })),
+      recentPrompts: ((promptRuns ?? []) as PromptRun[]).map((run) => ({
+        ...run,
+        project_name: projectName.get(run.project_id) ?? "",
+      })),
+    };
+  }
+
+  const store = await ensureStore();
+  return {
+    projects,
+    openUat: store.uatItems
+      .filter((item) => projectIds.includes(item.project_id) && OPEN_UAT.has(item.status))
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(0, 6)
+      .map((item) => ({ ...item, project_name: projectName.get(item.project_id) ?? "" })),
+    recentPrompts: store.promptRuns
+      .filter((run) => projectIds.includes(run.project_id))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 6)
+      .map((run) => ({ ...run, project_name: projectName.get(run.project_id) ?? "" })),
+  };
+}
+
 export async function getRecentActivity(userId: string, limit = 10) {
   const projects = await getProjects(userId);
   const projectIds = new Set(projects.map((p) => p.id));

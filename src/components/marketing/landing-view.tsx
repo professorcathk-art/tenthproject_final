@@ -49,7 +49,7 @@ export function LandingView() {
     <>
       <Hero />
 
-      <section className="py-20 border-t border-slate-200/70 dark:border-slate-800/50">
+      <section id="about" className="scroll-mt-20 py-20 border-t border-slate-200/70 dark:border-slate-800/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
             <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.vision.title}</h2>
@@ -74,7 +74,7 @@ export function LandingView() {
         </div>
       </section>
 
-      <section className="py-20 bg-[#f7f7f5] dark:bg-transparent">
+      <section id="team" className="scroll-mt-20 py-20 bg-[#f7f7f5] dark:bg-transparent">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
             <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.founders.title}</h2>
@@ -126,7 +126,7 @@ export function LandingView() {
         </div>
       </section>
 
-      <section className="py-20">
+      <section id="membership" className="scroll-mt-20 py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <FadeIn>
             <h2 className="text-3xl sm:text-4xl font-semibold text-center tracking-[-0.03em]">{dict.membership.title}</h2>
@@ -149,6 +149,15 @@ export function LandingView() {
                 </FadeIn>
               );
             })}
+          </div>
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/courses"
+              className="inline-flex h-11 items-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
+            >
+              {dict.nav.academy}
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>

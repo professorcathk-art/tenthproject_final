@@ -2,15 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { CaseStudy, CaseStudyCategory } from "@/types/platform";
 import { CASE_CATEGORIES, caseCategories } from "@/types/platform";
 import { useI18n } from "@/components/i18n/provider";
+import { localizedCaseText } from "@/lib/inspiration/locale-text";
 
 const FILTERS = ["all", ...CASE_CATEGORIES.map((c) => c.value)] as const;
 
-export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
-  const { dict } = useI18n();
+type CaseCard = Pick<CaseStudy, "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url">;
+
+export function CaseStudyGrid({ studies, basePath = "/inspiration" }: { studies: CaseCard[]; basePath?: string }) {
+  const { dict, locale } = useI18n();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
   const filtered =
     filter === "all" ? studies : studies.filter((s) => caseCategories(s).includes(filter as CaseStudyCategory));
@@ -50,7 +54,7 @@ export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
 
       <div className="grid gap-5 sm:grid-cols-2">
         {filtered.map((study) => (
-          <Link key={study.id} href={`/inspiration/${study.slug}`}>
+          <Link key={study.id} href={`${basePath}/${study.slug}`}>
             <article className="h-full rounded-2xl glass-panel glow-card p-6">
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {caseCategories(study).map((cat) => (
@@ -60,12 +64,15 @@ export function CaseStudyGrid({ studies }: { studies: CaseStudy[] }) {
                 ))}
               </div>
               <h2 className="text-lg font-semibold leading-snug">{study.title}</h2>
-              <p className="text-sm text-slate-600 mt-3 line-clamp-3 leading-relaxed">{study.summary}</p>
-              <div className="flex flex-wrap gap-1.5 mt-4">
-                {study.tech_stack.map((t) => (
-                  <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
-                ))}
-              </div>
+              <p className="text-sm text-slate-600 mt-3 line-clamp-3 leading-relaxed">
+                {localizedCaseText(study.summary, locale)}
+              </p>
+              {study.website_url ? (
+                <p className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                  {study.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                  <ArrowUpRight className="h-3 w-3" />
+                </p>
+              ) : null}
             </article>
           </Link>
         ))}

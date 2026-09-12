@@ -46,7 +46,7 @@ export function LessonClient({ course, lesson, prevLesson, nextLesson, isComplet
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <Link href={`/courses/${course.slug}`} className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-2">
+        <Link href={`/learning/${course.slug}`} className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-2">
           <ArrowLeft className="h-4 w-4 mr-1" /> {course.title}
         </Link>
         <h1 className="text-2xl font-bold">{lesson.title}</h1>
@@ -77,7 +77,7 @@ export function LessonClient({ course, lesson, prevLesson, nextLesson, isComplet
 
       <div className="flex items-center justify-between pt-4 border-t">
         {prevLesson ? (
-          <Link href={`/courses/${course.slug}/lessons/${prevLesson.id}`}>
+          <Link href={`/learning/${course.slug}/lessons/${prevLesson.id}`}>
             <Button variant="outline"><ArrowLeft className="h-4 w-4 mr-1" /> {dict.courses.previous}</Button>
           </Link>
         ) : <div />}
@@ -90,7 +90,7 @@ export function LessonClient({ course, lesson, prevLesson, nextLesson, isComplet
             <span className="flex items-center gap-1 text-green-700 text-sm"><CheckCircle2 className="h-4 w-4" /> {dict.courses.completed}</span>
           )}
           {nextLesson && (
-            <Link href={`/courses/${course.slug}/lessons/${nextLesson.id}`}>
+            <Link href={`/learning/${course.slug}/lessons/${nextLesson.id}`}>
               <Button>{dict.courses.next} <ArrowRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           )}

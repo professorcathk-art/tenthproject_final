@@ -26,20 +26,22 @@ import { cn } from "@/lib/utils";
 interface SiteHeaderProps {
   variant?: "marketing" | "app";
   showAuth?: boolean;
+  initialUser?: { email: string; isAdmin: boolean } | null;
 }
 
-export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeaderProps) {
+export function SiteHeader({ variant = "marketing", showAuth = true, initialUser }: SiteHeaderProps) {
   const { dict } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
-  const [me, setMe] = useState<{ email: string; isAdmin: boolean } | null | undefined>(undefined);
+  const [me, setMe] = useState<{ email: string; isAdmin: boolean } | null | undefined>(initialUser);
 
   useEffect(() => {
+    if (initialUser !== undefined) return;
     fetch("/api/auth/demo")
       .then((r) => (r.ok ? r.json() : { user: null }))
       .then((d) => setMe(d.user ?? null))
       .catch(() => setMe(null));
-  }, [pathname]);
+  }, [initialUser]);
 
   const loggedIn = Boolean(me);
   const isAdmin = Boolean(me?.isAdmin);
@@ -66,6 +68,7 @@ export function SiteHeader({ variant = "marketing", showAuth = true }: SiteHeade
 
   async function handleLogout() {
     await fetch("/api/auth/demo", { method: "DELETE" });
+    setMe(null);
     router.push("/");
     router.refresh();
   }

@@ -1,0 +1,36 @@
+import { CaseStudyGrid } from "@/components/inspiration/case-study-grid";
+import { getCaseStudies } from "@/lib/db/platform-store";
+import { ensurePlatformSeeded } from "@/lib/seed/init";
+import { Lightbulb } from "lucide-react";
+import { getDict } from "@/lib/i18n/server";
+
+export default async function InspirationPage() {
+  await ensurePlatformSeeded();
+  const studies = await getCaseStudies();
+  const dict = await getDict();
+
+  return (
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <div className="mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-sm font-medium text-slate-700 mb-4">
+            <Lightbulb className="h-4 w-4" /> {dict.inspiration.badge}
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] text-slate-950 dark:text-white">
+            {dict.inspiration.title}
+          </h1>
+          <p className="text-slate-500 mt-3 max-w-2xl leading-relaxed">{dict.inspiration.subtitle}</p>
+        </div>
+        <CaseStudyGrid
+          studies={studies.map((study) => ({
+            id: study.id,
+            title: study.title,
+            slug: study.slug,
+            category: study.category,
+            categories: study.categories,
+            summary: study.summary,
+            website_url: study.website_url,
+          }))}
+        />
+      </div>
+  );
+}

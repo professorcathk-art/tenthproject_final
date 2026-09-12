@@ -58,6 +58,12 @@ export interface Certificate {
   course?: Course;
 }
 
+export interface CaseHighlight {
+  zh: string;
+  en: string;
+  value: string;
+}
+
 export interface CaseStudy {
   id: string;
   title: string;
@@ -67,6 +73,8 @@ export interface CaseStudy {
   summary: string;
   breakdown_md: string;
   tech_stack: string[];
+  website_url?: string | null;
+  highlights?: CaseHighlight[];
   cover_image: string | null;
   author_id: string | null;
   is_published: boolean;
@@ -103,18 +111,17 @@ export interface McpApiKey {
 }
 
 export const SERVICE_TYPES = [
-  { value: "custom_agent", zh: "客製 AI Agent", en: "Custom AI Agent" },
-  { value: "workflow_automation", zh: "RPA 與流程自動化", en: "RPA & workflow automation" },
-  { value: "digital_transformation", zh: "數碼轉型顧問", en: "Digital transformation advisory" },
-  { value: "vibe_coding_training", zh: "團隊 Vibe Coding 培訓", en: "Team vibe coding workshops" },
-  { value: "uat_qa_system", zh: "UAT 與品質系統", en: "UAT & QA system setup" },
+  { value: "custom_agent", zh: "客製 AI Agent 開發", en: "Custom AI Agent development" },
+  { value: "workflow_automation", zh: "RPA 工作流自動化", en: "RPA workflow automation" },
+  { value: "digital_transformation", zh: "數位轉型顧問", en: "Digital transformation advisory" },
+  { value: "vibe_coding_training", zh: "團隊 AI 培訓", en: "Team AI enablement" },
+  { value: "other", zh: "其他", en: "Other" },
 ];
 
 export const BUDGET_RANGES = [
-  { value: "under_100k", zh: "港幣 10 萬以下", en: "Under HK$100,000" },
-  { value: "100k_500k", zh: "港幣 10–50 萬", en: "HK$100,000 – 500,000" },
-  { value: "500k_1m", zh: "港幣 50–100 萬", en: "HK$500,000 – 1,000,000" },
-  { value: "1m_plus", zh: "港幣 100 萬以上", en: "HK$1,000,000+" },
+  { value: "30k_100k", zh: "HK$30,000 - HK$100,000", en: "HK$30,000 - HK$100,000" },
+  { value: "100k_300k", zh: "HK$100,000 - HK$300,000", en: "HK$100,000 - HK$300,000" },
+  { value: "300k_plus", zh: "HK$300,000+", en: "HK$300,000+" },
 ];
 
 export interface Member {

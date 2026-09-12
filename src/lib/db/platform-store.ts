@@ -3,6 +3,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { createHash, randomBytes } from "crypto";
 import type {
+  CaseHighlight,
   CaseStudy,
   Certificate,
   Course,
@@ -28,12 +29,16 @@ interface PlatformStore {
   members: Member[];
 }
 
+let memoryStore: PlatformStore | null = null;
+
 async function ensurePlatformStore(): Promise<PlatformStore> {
+  if (memoryStore) return memoryStore;
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     const raw = await fs.readFile(PLATFORM_FILE, "utf-8");
     const parsed = JSON.parse(raw) as PlatformStore;
-    return { ...parsed, members: parsed.members ?? [] };
+    memoryStore = { ...parsed, members: parsed.members ?? [] };
+    return memoryStore;
   } catch {
     const store: PlatformStore = {
       courses: [],
@@ -46,11 +51,13 @@ async function ensurePlatformStore(): Promise<PlatformStore> {
       members: [],
     };
     await fs.writeFile(PLATFORM_FILE, JSON.stringify(store, null, 2));
+    memoryStore = store;
     return store;
   }
 }
 
 async function savePlatformStore(store: PlatformStore) {
+  memoryStore = store;
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(PLATFORM_FILE, JSON.stringify(store, null, 2));
 }
@@ -208,6 +215,15 @@ export async function getCertificateByCode(code: string): Promise<Certificate | 
   return { ...cert, course };
 }
 
+export async function getUserCertificates(userId: string): Promise<Certificate[]> {
+  if (isSupabaseConfigured()) {
+    const { data } = await createServiceClient().from("certificates").select("*").eq("user_id", userId);
+    return (data ?? []) as Certificate[];
+  }
+  const store = await ensurePlatformStore();
+  return store.certificates.filter((cert) => cert.user_id === userId);
+}
+
 export async function getUserCertificate(userId: string, courseId: string): Promise<Certificate | null> {
   if (isSupabaseConfigured()) {
     const { data } = await createServiceClient()
@@ -261,26 +277,51 @@ function parseStack(raw: unknown): string[] {
 }
 
 function persistCaseStudy(cs: CaseStudy): CaseStudy {
-  const { categories: extraCategories, ...rest } = cs;
-  const cleanStack = rest.tech_stack.filter((t) => !t.startsWith("cat:"));
+  const { categories: extraCategories, website_url, highlights, ...rest } = cs;
+  const cleanStack = rest.tech_stack.filter(
+    (t) => !t.startsWith("cat:") && !t.startsWith("site:") && !t.startsWith("hl:"),
+  );
   const cats = extraCategories?.length ? extraCategories : [cs.category];
   const allowed = cats.includes("workflow_agent") ? "ai_agent" : "vibe_coding";
+  const encodedHighlights = (highlights ?? []).map((h) => `hl:${h.zh}|${h.en}|${h.value}`);
   return {
     ...rest,
     category: allowed as unknown as CaseStudy["category"],
-    tech_stack: [...cats.map((c) => `cat:${c}`), ...cleanStack],
+    tech_stack: [
+      ...cats.map((c) => `cat:${c}`),
+      ...(website_url ? [`site:${website_url}`] : []),
+      ...encodedHighlights,
+      ...cleanStack,
+    ],
   };
+}
+
+function parseHighlight(raw: string): CaseHighlight | null {
+  const parts = raw.slice(3).split("|");
+  if (parts.length < 3) return null;
+  const [zh, en, ...value] = parts;
+  return { zh, en, value: value.join("|") };
 }
 
 function normalizeCaseStudy(cs: CaseStudy): CaseStudy {
   const stack = parseStack(cs.tech_stack);
   const tagged = stack.filter((t) => t.startsWith("cat:")).map((t) => t.slice(4)) as CaseStudy["category"][];
   const categories = tagged.length ? tagged : cs.categories?.length ? cs.categories : [cs.category];
+  const site = stack.find((t) => t.startsWith("site:"))?.slice(5) ?? cs.website_url ?? null;
+  const highlights = [
+    ...stack.filter((t) => t.startsWith("hl:")).map(parseHighlight).filter((h): h is CaseHighlight => Boolean(h)),
+    ...(cs.highlights ?? []),
+  ];
+  const uniqueHighlights = highlights.filter(
+    (h, i, all) => all.findIndex((x) => x.zh === h.zh && x.value === h.value) === i,
+  );
   return {
     ...cs,
     category: categories[0],
     categories,
-    tech_stack: stack.filter((t) => !t.startsWith("cat:")),
+    website_url: site,
+    highlights: uniqueHighlights,
+    tech_stack: stack.filter((t) => !t.startsWith("cat:") && !t.startsWith("site:") && !t.startsWith("hl:")),
   };
 }
 
