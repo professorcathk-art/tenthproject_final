@@ -7,13 +7,7 @@ import { getDict, getLocale } from "@/lib/i18n/server";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { CaseArticle } from "@/components/inspiration/case-article";
-
-function memberPrompt(title: string, locale: string) {
-  if (locale === "en") {
-    return `You are a vibe-coding build coach. Rebuild a ${title}-class MVP for a solo founder in 21 days.\n\nConstraints:\n- Ship a narrow core loop first\n- Design pricing with the product, not after launch\n- Write UAT for the magic moment and the payment path\n- Keep the stack small enough for one person to operate\n\nOutput: product vision, user stories, acceptance tests, and a Cursor-ready implementation brief.`;
-  }
-  return `你是 Vibe Coding 建置教練。請為個人創作者規劃一個可在 21 天內上線的 ${title} 同級 MVP。\n\n限制：\n- 先打通最窄的核心迴路\n- 商業化與產品同時設計\n- 為「魔法瞬間」與付款路徑寫 UAT\n- 技術棧克制到一個人能維運\n\n輸出：產品願景、使用者故事、驗收標準，以及可貼到 Cursor 的實作簡報。`;
-}
+import { CaseClonePrompt, CaseStudyMeta } from "@/components/inspiration/case-study-extras";
 
 export default async function VaultCasePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -49,6 +43,7 @@ export default async function VaultCasePage({ params }: { params: Promise<{ slug
           <ArrowUpRight className="h-4 w-4" />
         </a>
       ) : null}
+      <CaseStudyMeta study={study} />
       {(study.highlights ?? []).length > 0 ? (
         <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(study.highlights ?? []).map((item) => (
@@ -64,12 +59,7 @@ export default async function VaultCasePage({ params }: { params: Promise<{ slug
       <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8">
         <CaseArticle markdown={localizedCaseText(study.breakdown_md, locale)} />
       </article>
-      <section className="mt-8 rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white dark:border-slate-800">
-        <p className="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase">
-          {locale === "en" ? "Copy-paste master prompt" : "可複製 Master Prompt"}
-        </p>
-        <pre className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-100">{memberPrompt(study.title, locale)}</pre>
-      </section>
+      <CaseClonePrompt study={study} />
       {related.length > 0 ? (
         <section className="mt-12">
           <h2 className="text-xl font-semibold">{dict.inspiration.related}</h2>

@@ -1,5 +1,6 @@
 import type { CaseStudy } from "@/types/platform";
 import { CASE_SEED_MARKER, CASE_LOCALE_SPLIT } from "@/lib/inspiration/constants";
+import { CASE_EXTRAS } from "@/lib/inspiration/case-extras";
 import { BATCH2_CASES, type SeedCase } from "@/lib/seed/case-studies-batch2";
 
 export { CASE_SEED_MARKER, CASE_LOCALE_SPLIT };
@@ -583,22 +584,30 @@ The warning is equal: demos lie, production slaps. Too many tools and the model 
 
 export function getSeedCaseStudies(): CaseStudy[] {
   const now = new Date().toISOString();
-  return CASES.map((c) => ({
-    id: c.id,
-    title: c.title,
-    slug: c.slug,
-    category: c.category,
-    categories: c.categories,
-    summary: `${c.summaryZh}\n---en---\n${c.summaryEn}`,
-    breakdown_md: `${c.bodyZh}\n${CASE_LOCALE_SPLIT}\n${c.bodyEn}`,
-    tech_stack: [],
-    website_url: c.website,
-    highlights: c.highlights,
-    cover_image: null,
-    author_id: null,
-    is_published: true,
-    created_at: now,
-  }));
+  return CASES.map((c) => {
+    const extra = CASE_EXTRAS[c.slug];
+    return {
+      id: c.id,
+      title: c.title,
+      slug: c.slug,
+      category: c.category,
+      categories: c.categories,
+      summary: `${c.summaryZh}\n---en---\n${c.summaryEn}`,
+      breakdown_md: `${c.bodyZh}\n${CASE_LOCALE_SPLIT}\n${c.bodyEn}`,
+      tech_stack: [],
+      website_url: c.website,
+      highlights: c.highlights,
+      difficulty: extra?.difficulty ?? 3,
+      pitch_deck_url: extra?.pitchDeckUrl ?? null,
+      clone_prompt: extra
+        ? `${extra.clonePromptZh}\n${CASE_LOCALE_SPLIT}\n${extra.clonePromptEn}`
+        : null,
+      cover_image: null,
+      author_id: null,
+      is_published: true,
+      created_at: now,
+    };
+  });
 }
 
 export const CANONICAL_CASE_SLUGS = CASES.map((c) => c.slug);

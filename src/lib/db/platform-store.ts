@@ -18,6 +18,7 @@ import type {
   Member,
   VideoType,
 } from "@/types/platform";
+import { applyCaseFieldEncoding, extractCaseFields } from "@/lib/inspiration/case-fields";
 import { inferVideoType } from "@/lib/classroom/media";
 import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server";
 
@@ -340,7 +341,7 @@ const CASE_STUDIES_TAG = "case-studies";
 
 export type CaseStudyCard = Pick<
   CaseStudy,
-  "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url"
+  "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url" | "difficulty"
 >;
 
 function invalidateCaseCaches() {
@@ -360,6 +361,7 @@ function cardsFromRows(rows: CaseStudy[]): CaseStudyCard[] {
     categories: study.categories,
     summary: study.summary,
     website_url: study.website_url,
+    difficulty: study.difficulty,
   }));
 }
 
@@ -463,23 +465,7 @@ function parseStack(raw: unknown): string[] {
 }
 
 function persistCaseStudy(cs: CaseStudy): CaseStudy {
-  const { categories: extraCategories, website_url, highlights, ...rest } = cs;
-  const cleanStack = rest.tech_stack.filter(
-    (t) => !t.startsWith("cat:") && !t.startsWith("site:") && !t.startsWith("hl:"),
-  );
-  const cats = extraCategories?.length ? extraCategories : [cs.category];
-  const allowed = cats.includes("workflow_agent") ? "ai_agent" : "vibe_coding";
-  const encodedHighlights = (highlights ?? []).map((h) => `hl:${h.zh}|${h.en}|${h.value}`);
-  return {
-    ...rest,
-    category: allowed as unknown as CaseStudy["category"],
-    tech_stack: [
-      ...cats.map((c) => `cat:${c}`),
-      ...(website_url ? [`site:${website_url}`] : []),
-      ...encodedHighlights,
-      ...cleanStack,
-    ],
-  };
+  return applyCaseFieldEncoding(cs);
 }
 
 function parseHighlight(raw: string): CaseHighlight | null {
@@ -501,13 +487,20 @@ function normalizeCaseStudy(cs: CaseStudy): CaseStudy {
   const uniqueHighlights = highlights.filter(
     (h, i, all) => all.findIndex((x) => x.zh === h.zh && x.value === h.value) === i,
   );
+  const extras = extractCaseFields({ ...cs, tech_stack: stack, breakdown_md: cs.breakdown_md });
   return {
     ...cs,
     category: categories[0],
     categories,
     website_url: site,
     highlights: uniqueHighlights,
-    tech_stack: stack.filter((t) => !t.startsWith("cat:") && !t.startsWith("site:") && !t.startsWith("hl:")),
+    difficulty: extras.difficulty,
+    pitch_deck_url: extras.pitch_deck_url,
+    clone_prompt: extras.clone_prompt,
+    breakdown_md: extras.breakdown_md,
+    tech_stack: stack.filter(
+      (t) => !t.startsWith("cat:") && !t.startsWith("site:") && !t.startsWith("hl:") && !t.startsWith("diff:") && !t.startsWith("deck:"),
+    ),
   };
 }
 

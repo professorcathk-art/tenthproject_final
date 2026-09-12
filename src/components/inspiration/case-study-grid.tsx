@@ -8,10 +8,11 @@ import type { CaseStudy, CaseStudyCategory } from "@/types/platform";
 import { CASE_CATEGORIES, caseCategories } from "@/types/platform";
 import { useI18n } from "@/components/i18n/provider";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
+import { DifficultyStars } from "@/components/inspiration/difficulty-stars";
 
 const FILTERS = ["all", ...CASE_CATEGORIES.map((c) => c.value)] as const;
 
-type CaseCard = Pick<CaseStudy, "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url">;
+type CaseCard = Pick<CaseStudy, "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url" | "difficulty">;
 
 export function CaseStudyGrid({ studies, basePath = "/inspiration" }: { studies: CaseCard[]; basePath?: string }) {
   const { dict, locale } = useI18n();
@@ -64,6 +65,9 @@ export function CaseStudyGrid({ studies, basePath = "/inspiration" }: { studies:
                 ))}
               </div>
               <h2 className="text-lg font-semibold leading-snug">{study.title}</h2>
+              <div className="mt-2">
+                <DifficultyStars value={study.difficulty} locale={locale} />
+              </div>
               <p className="text-sm text-slate-600 mt-3 line-clamp-3 leading-relaxed">
                 {localizedCaseText(study.summary, locale)}
               </p>

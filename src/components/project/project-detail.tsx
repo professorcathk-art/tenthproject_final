@@ -38,6 +38,7 @@ import {
 import { UAT_STATUSES, AI_TOOLS, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
 import { McpSettings } from "@/components/project/mcp-settings";
 import { AiSuggestionsModal } from "@/components/project/ai-suggestions-modal";
+import { NextSprintSheet } from "@/components/project/next-sprint-sheet";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW, enUS } from "date-fns/locale";
 import { useI18n } from "@/components/i18n/provider";
@@ -83,6 +84,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const [editBody, setEditBody] = useState("");
   const [editPath, setEditPath] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sprintOpen, setSprintOpen] = useState(false);
 
   const tasks = project.tasks ?? [];
   const uatItems = project.uat_items ?? [];
@@ -100,13 +102,19 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const uatProgress = uatItems.length ? Math.round((passedUAT / uatItems.length) * 100) : 0;
   const openBugCount = bugs.filter((b) => b.status === "open" || b.status === "in_progress").length;
 
-  const refreshProject = useCallback(async () => {
+  const refreshProject = useCallback(async (opts?: { preferLatest?: boolean }) => {
     const res = await fetch(`/api/projects?id=${project.id}`);
     const data = await res.json();
     if (data.project) {
       setProject(data.project);
-      const runs = (data.project.prompt_runs ?? []) as PromptRun[];
-      const preview = previewRunId ? runs.find((run) => run.id === previewRunId) : runs[0];
+      const runs = [...((data.project.prompt_runs ?? []) as PromptRun[])].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      const preview = opts?.preferLatest
+        ? runs[0]
+        : previewRunId
+          ? (runs.find((run) => run.id === previewRunId) ?? runs[0])
+          : runs[0];
       if (preview) {
         setPreviewRunId(preview.id);
         setPromptText(preview.prompt_text);
@@ -183,7 +191,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
       setPromptText(data.promptRun.prompt_text);
       setPreviewRunId(data.promptRun.id);
       setTab("prompt");
-      await refreshProject();
+      await refreshProject({ preferLatest: true });
       toast.success(locale === "zh" ? "提示詞已更新" : "Prompt updated");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
@@ -192,21 +200,26 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
     }
   }
 
-  async function nextSprint() {
+  async function nextSprint(payload: { suggestionIds: string[]; enhancementIds: string[] }) {
     setLoading("sprint");
     try {
       const res = await fetch("/api/ai/sprint-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: project.id, suggestions }),
+        body: JSON.stringify({
+          projectId: project.id,
+          suggestionIds: payload.suggestionIds,
+          enhancementIds: payload.enhancementIds,
+        }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setPromptText(data.promptRun?.prompt_text ?? "");
       setPreviewRunId(data.promptRun?.id ?? null);
+      setSprintOpen(false);
       setTab("prompt");
-      await refreshProject();
-      toast.success(locale === "zh" ? "下一衝刺提示詞已寫入 Cursor 分頁" : "Next-sprint prompt is ready");
+      await refreshProject({ preferLatest: true });
+      toast.success(locale === "zh" ? "已勾選項目寫入提示詞與 UAT" : "Selected items were added to the prompt and UAT");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     } finally {
@@ -305,7 +318,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={nextSprint} disabled={loading === "sprint"}>
+          <Button onClick={() => setSprintOpen(true)} disabled={loading === "sprint"}>
             {loading === "sprint" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
             {loading === "sprint" ? p.synthesizing : `🚀 ${p.nextSprint}`}
           </Button>
@@ -864,6 +877,14 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           setTab("tasks");
           toast.success(p.appliedSprint);
         }}
+      />
+      <NextSprintSheet
+        open={sprintOpen}
+        loading={loading === "sprint"}
+        suggestions={suggestions}
+        enhancements={enhancements}
+        onOpenChange={setSprintOpen}
+        onConfirm={nextSprint}
       />
     </div>
   );

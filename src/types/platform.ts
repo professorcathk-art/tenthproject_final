@@ -96,6 +96,9 @@ export interface CaseStudy {
   tech_stack: string[];
   website_url?: string | null;
   highlights?: CaseHighlight[];
+  difficulty?: number;
+  pitch_deck_url?: string | null;
+  clone_prompt?: string | null;
   cover_image: string | null;
   author_id: string | null;
   is_published: boolean;

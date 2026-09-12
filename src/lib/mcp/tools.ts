@@ -32,7 +32,8 @@ export const MCP_TOOLS = [
   },
   {
     name: "get_sprint_prompt",
-    description: "Fetch the latest Cursor master prompt and approved AI audit suggestions for this sprint",
+    description:
+      "Fetch the newest Cursor master prompt (default to latest version), its execution flag, the ticked sprint scope, and UAT created for those enhancements",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
@@ -78,20 +79,59 @@ export async function executeMcpTool(
         approvedSuggestions: (project.ai_suggestions ?? [])
           .filter((item) => item.approved && item.status !== "dismissed")
           .map((item) => ({ id: item.id, title: item.title, category: item.category, severity: item.severity })),
+        plannedEnhancements: (project.enhancements ?? [])
+          .filter((item) => item.status === "planned")
+          .map((item) => ({ id: item.id, title: item.title, priority: item.priority })),
+        openUat: (project.uat_items ?? [])
+          .filter((item) => item.status === "not_started" || item.status === "in_progress" || item.status === "failed" || item.status === "reopened")
+          .map((item) => ({ id: item.id, title: item.title, status: item.status, test_path: item.test_path })),
         latestPromptType: latestPrompt?.prompt_type ?? null,
         latestPromptAt: latestPrompt?.created_at ?? null,
+        latestPromptExecuted: latestPrompt?.is_executed ?? false,
       };
     }
 
     case "get_sprint_prompt": {
       const latestPrompt = project.prompt_runs?.[0] ?? null;
+      const newestFirst = [...(project.prompt_runs ?? [])].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      const newest = newestFirst[0] ?? latestPrompt;
       return {
         project: project.name,
         website_url: project.website_url,
-        prompt: latestPrompt?.prompt_text ?? null,
-        prompt_type: latestPrompt?.prompt_type ?? null,
-        created_at: latestPrompt?.created_at ?? null,
-        suggestions: project.ai_suggestions ?? [],
+        newest: true,
+        prompt: newest?.prompt_text ?? null,
+        prompt_type: newest?.prompt_type ?? null,
+        created_at: newest?.created_at ?? null,
+        is_executed: newest?.is_executed ?? false,
+        executed_at: newest?.executed_at ?? null,
+        versions: newestFirst.slice(0, 8).map((run) => ({
+          id: run.id,
+          prompt_type: run.prompt_type,
+          created_at: run.created_at,
+          is_executed: run.is_executed,
+        })),
+        sprint_scope: {
+          appliedSuggestions: (project.ai_suggestions ?? [])
+            .filter((item) => item.status === "applied")
+            .map((item) => ({ id: item.id, title: item.title, category: item.category, severity: item.severity })),
+          plannedEnhancements: (project.enhancements ?? [])
+            .filter((item) => item.status === "planned")
+            .map((item) => ({ id: item.id, title: item.title, description: item.description, priority: item.priority })),
+        },
+        openUat: (project.uat_items ?? [])
+          .filter((item) =>
+            ["not_started", "in_progress", "failed", "reopened", "needs_review"].includes(item.status),
+          )
+          .map((item) => ({
+            id: item.id,
+            title: item.title,
+            status: item.status,
+            test_path: item.test_path,
+            expected_result: item.expected_result,
+            priority: item.priority,
+          })),
         failedUat: (project.uat_items ?? [])
           .filter((item) => item.status === "failed" || item.status === "reopened")
           .map((item) => ({ id: item.id, title: item.title, status: item.status })),

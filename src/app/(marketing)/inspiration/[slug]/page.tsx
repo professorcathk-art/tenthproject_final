@@ -9,6 +9,7 @@ import { getDict, getLocale } from "@/lib/i18n/server";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { CaseArticle } from "@/components/inspiration/case-article";
+import { CaseClonePrompt, CaseStudyMeta } from "@/components/inspiration/case-study-extras";
 
 export const revalidate = 300;
 
@@ -67,6 +68,8 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           </a>
         ) : null}
 
+        <CaseStudyMeta study={study} />
+
         {highlights.length > 0 ? (
           <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {highlights.map((item) => (
@@ -83,6 +86,8 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8 sm:py-8">
           <CaseArticle markdown={localizedCaseText(study.breakdown_md, locale)} />
         </article>
+
+        <CaseClonePrompt study={study} />
 
         {related.length > 0 ? (
           <section className="mt-14">

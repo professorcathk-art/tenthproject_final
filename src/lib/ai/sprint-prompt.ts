@@ -1,19 +1,30 @@
-import type { AiSuggestion, ProjectWithRelations } from "@/types";
+import type { AiSuggestion, Enhancement, ProjectWithRelations } from "@/types";
 import { extractSpecFromSuggestion, inferTargetFile, specBlock, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/executable-spec";
 
 export { SPRINT_PROMPT_SYSTEM };
 
-export function collectSprintBacklog(project: ProjectWithRelations, approved: AiSuggestion[] = []) {
+export function collectSprintBacklog(
+  project: ProjectWithRelations,
+  approved: AiSuggestion[] = [],
+  selectedEnhancements: Enhancement[] = [],
+) {
   const openBugs = (project.bugs ?? []).filter((bug) => bug.status === "open" || bug.status === "in_progress");
   const failedUat = (project.uat_items ?? []).filter(
     (item) => item.status === "failed" || item.status === "reopened",
   );
   const todoTasks = (project.tasks ?? []).filter((task) => task.status === "todo" || task.status === "blocked");
+  const openUat = (project.uat_items ?? []).filter(
+    (item) => item.status === "not_started" || item.status === "in_progress" || item.status === "needs_review",
+  );
 
-  return { openBugs, failedUat, todoTasks, approved };
+  return { openBugs, failedUat, todoTasks, approved, selectedEnhancements, openUat };
 }
 
-function collectTargetFiles(project: ProjectWithRelations, approved: AiSuggestion[]) {
+function collectTargetFiles(
+  project: ProjectWithRelations,
+  approved: AiSuggestion[],
+  selectedEnhancements: Enhancement[] = [],
+) {
   const files = new Set<string>();
   for (const item of approved) files.add(extractSpecFromSuggestion(item).file);
   for (const bug of project.bugs ?? []) {
@@ -31,15 +42,22 @@ function collectTargetFiles(project: ProjectWithRelations, approved: AiSuggestio
       files.add(inferTargetFile(`${task.title}\n${task.description ?? ""}`));
     }
   }
+  for (const item of selectedEnhancements) {
+    files.add(inferTargetFile(`${item.title}\n${item.description ?? ""}`));
+  }
   return [...files];
 }
 
-export function synthesizeSprintPrompt(project: ProjectWithRelations, approved: AiSuggestion[] = []) {
-  const { openBugs, failedUat, todoTasks } = collectSprintBacklog(project, approved);
+export function synthesizeSprintPrompt(
+  project: ProjectWithRelations,
+  approved: AiSuggestion[] = [],
+  selectedEnhancements: Enhancement[] = [],
+) {
+  const { openBugs, failedUat, todoTasks } = collectSprintBacklog(project, approved, selectedEnhancements);
   const url = project.website_url ?? "（尚未填寫）";
   const github = project.github_url ?? "（尚未填寫）";
   const tool = project.selected_tool || "cursor";
-  const targets = collectTargetFiles(project, approved);
+  const targets = collectTargetFiles(project, approved, selectedEnhancements);
 
   const suggestionLines = approved.length
     ? approved
@@ -89,6 +107,19 @@ export function synthesizeSprintPrompt(project: ProjectWithRelations, approved: 
         .join("\n")
     : "- 待辦任務已清空，請只處理上方建議／錯誤／UAT";
 
+  const enhancementLines = selectedEnhancements.length
+    ? selectedEnhancements
+        .map((item) => {
+          const file = inferTargetFile(`${item.title}\n${item.description ?? ""}`);
+          return specBlock({
+            file,
+            action: `[${item.priority}] ${item.title}`,
+            acceptance: item.description || "Visible result + matching UAT passes",
+          });
+        })
+        .join("\n")
+    : "- 本輪沒有勾選額外增強";
+
   const fileList = targets.length ? targets.map((file) => `- \`${file}\``).join("\n") : "- `src/app/page.tsx`";
 
   return `# Cursor Master Prompt — ${project.name}
@@ -111,7 +142,7 @@ export function synthesizeSprintPrompt(project: ProjectWithRelations, approved: 
 ${fileList}
 
 ## 3. This sprint objective
-只處理「已批准的 AI 建議 + 未解錯誤 + 失敗／重開 UAT」。每一項都必須寫成：檔案 → 具體 Tailwind/React 動作 → 驗收。
+只處理使用者勾選的 AI 建議／增強 + 未解錯誤 + 失敗／重開 UAT。勾選項目已自動寫入 UAT。每一項都必須寫成：檔案 → 具體 Tailwind/React 動作 → 驗收。
 
 ## 4. Step-by-step code modifications
 
@@ -126,6 +157,9 @@ ${uatLines}
 
 ### 4d. Existing todo / blocked tasks
 ${taskLines}
+
+### 4e. Selected enhancements (this sprint)
+${enhancementLines}
 
 ## 5. Execution rules (Cursor)
 1. 先 \`Glob\`/\`Grep\` 確認目標檔存在；沒有就在最近的 App Router 路徑新建，不要重寫整個 repo。

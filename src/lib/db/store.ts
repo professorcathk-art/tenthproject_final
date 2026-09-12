@@ -890,7 +890,11 @@ export async function saveAiSuggestions(projectId: string, suggestions: AiSugges
   return suggestions;
 }
 
-export async function applyApprovedSuggestions(projectId: string, drafts: AiSuggestion[]) {
+export async function applyApprovedSuggestions(
+  projectId: string,
+  drafts: AiSuggestion[],
+  options?: { alwaysCreateUat?: boolean },
+) {
   const existing = await loadAiSuggestions(projectId);
   const selected = drafts.filter((item) => item.approved && item.status === "pending");
   const now = new Date().toISOString();
@@ -941,7 +945,9 @@ export async function applyApprovedSuggestions(projectId: string, drafts: AiSugg
     }
 
     const uatTitle = `驗收：${item.title}`;
-    if ((item.severity === "high" || item.severity === "critical") && !uatTitles.has(uatTitle.toLowerCase())) {
+    const shouldCreateUat =
+      options?.alwaysCreateUat || item.severity === "high" || item.severity === "critical";
+    if (shouldCreateUat && !uatTitles.has(uatTitle.toLowerCase())) {
       await createUATItem(projectId, {
         title: uatTitle,
         test_path: inferTargetFile(`${item.title}\n${item.description}`),
@@ -971,6 +977,74 @@ export async function applyApprovedSuggestions(projectId: string, drafts: AiSugg
   const extras = drafts.filter((item) => !existing.some((current) => current.id === item.id));
   await saveAiSuggestions(projectId, [...next, ...extras]);
   return { created, suggestions: await loadAiSuggestions(projectId) };
+}
+
+export async function queueEnhancementsForSprint(projectId: string, enhancementIds: string[]) {
+  const created = { tasks: 0, uat: 0 };
+  if (!enhancementIds.length) return created;
+
+  const project = isSupabaseConfigured()
+    ? null
+    : await ensureStore();
+  const enhancements = isSupabaseConfigured()
+    ? ((
+        await createServiceClient()
+          .from("enhancements")
+          .select("*")
+          .eq("project_id", projectId)
+          .in("id", enhancementIds)
+      ).data as Enhancement[] | null) ?? []
+    : (project?.enhancements ?? []).filter(
+        (item) => item.project_id === projectId && enhancementIds.includes(item.id),
+      );
+
+  const taskTitles = new Set<string>();
+  const uatTitles = new Set<string>();
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const [{ data: tasks }, { data: uat }] = await Promise.all([
+      supabase.from("tasks").select("title").eq("project_id", projectId),
+      supabase.from("uat_items").select("title").eq("project_id", projectId),
+    ]);
+    for (const row of tasks ?? []) if (row.title) taskTitles.add(row.title.toLowerCase());
+    for (const row of uat ?? []) if (row.title) uatTitles.add(row.title.toLowerCase());
+  } else {
+    const store = await ensureStore();
+    for (const row of store.tasks.filter((item) => item.project_id === projectId)) taskTitles.add(row.title.toLowerCase());
+    for (const row of store.uatItems.filter((item) => item.project_id === projectId)) uatTitles.add(row.title.toLowerCase());
+  }
+
+  for (const item of enhancements) {
+    const key = item.title.toLowerCase();
+    if (!taskTitles.has(key)) {
+      await createTask(projectId, {
+        title: item.title,
+        description: item.description,
+        priority: item.priority,
+        source: "ai",
+      });
+      created.tasks += 1;
+      taskTitles.add(key);
+    }
+
+    const uatTitle = `驗收：${item.title}`;
+    if (!uatTitles.has(uatTitle.toLowerCase())) {
+      await createUATItem(projectId, {
+        title: uatTitle,
+        test_path: inferTargetFile(`${item.title}\n${item.description ?? ""}`),
+        expected_result: item.description,
+        priority: item.priority,
+      });
+      created.uat += 1;
+      uatTitles.add(uatTitle.toLowerCase());
+    }
+
+    if (item.status === "suggested") {
+      await updateEnhancement(item.id, projectId, { status: "planned" });
+    }
+  }
+
+  return created;
 }
 
 const OPEN_UAT = new Set(["not_started", "in_progress", "failed", "blocked", "needs_review", "reopened"]);
