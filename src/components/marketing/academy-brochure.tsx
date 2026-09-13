@@ -111,13 +111,13 @@ const CORE_LESSONS = [
 
 const WORKSHOPS = [
   { lesson: "Lesson 5", title: "如何用 Coze 知識庫建立你的 SaaS 產品", meta: "深度掌握 RAG 私有知識庫技術 (4 小時線上課)" },
-  { lesson: "Lesson 6", title: "Mobile APP Vibe Coding 實戰 Workshop", meta: "(2 小時線上課 / 錄影)" },
-  { lesson: "Lesson 7", title: "平台網站 Vibe Coding 實戰 Workshop", meta: "(2 小時線上課 / 錄影)" },
-  { lesson: "Lesson 8", title: "投資分析網站 Vibe Coding 實戰 Workshop", meta: "(2 小時線上課 / 錄影)" },
-  { lesson: "Lesson 9", title: "高效 Vibe Coding 開發 Flow 最佳實踐", meta: "(隨選即播)" },
-  { lesson: "Lesson 10", title: "OpenClaw 龍蝦 Agent 實戰教學", meta: "(4 小時線上課)" },
-  { lesson: "Lesson 11", title: "Tencent Workbuddy AI Agent 實戰 Workshop", meta: "(2 小時線上課)" },
-  { lesson: "Lesson 13", title: "Grok AI Agent 實戰 Workshop", meta: "(每月 Zoom Live 直播互動)" },
+  { lesson: "Lesson 6", title: "Mobile APP Vibe Coding 實戰 Workshop", meta: "動手做一個Expense Tracking App (2 小時線上課 / 錄影)" },
+  { lesson: "Lesson 7", title: "平台網站 Vibe Coding 實戰 Workshop", meta: "製作一個買賣平台 (2 小時線上課 / 錄影)" },
+  { lesson: "Lesson 8", title: "投資分析網站 Vibe Coding 實戰 Workshop", meta: "製作追蹤Portfolio表現網站 (2 小時線上課 / 錄影)" },
+  { lesson: "Lesson 9", title: "高效 Vibe Coding 開發 Mobile App Workshop", meta: "製作食譜App (1 小時線上課)" },
+  { lesson: "Lesson 10", title: "OpenClaw 龍蝦 Agent 實戰教學", meta: "從安裝到訓練Openclaw (4 小時線上課)" },
+  { lesson: "Lesson 11", title: "Tencent Workbuddy AI Agent 實戰 Workshop", meta: "實戰使用Tencent AI Agent (2 小時線上課)" },
+  { lesson: "Lesson 12", title: "Grok AI Agent 實戰 Workshop", meta: "(每月 Zoom Live 直播互動)" },
 ];
 
 const VIP_PERKS = [
@@ -202,7 +202,7 @@ export function MembershipSyllabus() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {WORKSHOPS.map((item) => (
-            <SoftCard key={item.lesson} className={item.lesson === "Lesson 5" || item.lesson === "Lesson 13" ? "sm:col-span-2" : ""}>
+            <SoftCard key={item.lesson} className={item.lesson === "Lesson 5" || item.lesson === "Lesson 12" ? "sm:col-span-2" : ""}>
               <CardHeader>
                 <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">{item.lesson}</p>
                 <CardTitle className="text-lg">{item.title}</CardTitle>
