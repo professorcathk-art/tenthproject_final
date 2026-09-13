@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { captureFreeCheckoutLead, isPaidEmail } from "@/lib/auth/membership";
 import { getSession } from "@/lib/auth/session";
 import { getCheckoutBaseUrl, getLifetimePriceId, getStripe } from "@/lib/stripe";
 
@@ -26,11 +27,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Name, email, and WhatsApp are required." }, { status: 400 });
     }
 
+    if (await isPaidEmail(email)) {
+      return NextResponse.json(
+        { error: "此電郵已是付費會員，請直接登入，無需重複購買。", code: "already_paid" },
+        { status: 409 },
+      );
+    }
+
+    try {
+      await captureFreeCheckoutLead(email, name, whatsapp);
+    } catch (error) {
+      console.error("captureFreeCheckoutLead:", error);
+    }
+
     const stripe = getStripe();
     const checkout = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [{ price: getLifetimePriceId(), quantity: 1 }],
       mode: "payment",
+      allow_promotion_codes: true,
       customer_email: email,
       metadata: {
         name,

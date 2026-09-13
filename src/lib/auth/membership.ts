@@ -34,6 +34,45 @@ export async function ensureMemberRecord(email: string, name?: string, admin = f
   return member;
 }
 
+export async function isPaidEmail(email: string | null | undefined): Promise<boolean> {
+  const normalized = email?.trim().toLowerCase() || "";
+  if (!normalized) return false;
+  if (isAdminEmail(normalized)) return true;
+  const member = await getMemberByEmail(normalized);
+  if (member && member.status === "active" && isPaidPlan(member.plan)) return true;
+  if (isSupabaseConfigured()) {
+    const { data } = await createServiceClient()
+      .from("profiles")
+      .select("is_lifetime_member")
+      .eq("email", normalized)
+      .maybeSingle();
+    if (data?.is_lifetime_member) return true;
+  }
+  return false;
+}
+
+export async function captureFreeCheckoutLead(email: string, name: string, whatsapp: string): Promise<Member> {
+  const member = await ensureMemberRecord(email, name);
+  if (isPaidPlan(member.plan) && member.status === "active") return member;
+
+  const whatsappNote = whatsapp.trim() ? `WhatsApp ${whatsapp.trim()}` : "";
+  let notes = member.notes;
+  if (whatsappNote && !notes?.includes(whatsappNote)) {
+    notes = notes ? `${notes} · ${whatsappNote}` : whatsappNote;
+  }
+
+  const next: Member = {
+    ...member,
+    name: name.trim() || member.name,
+    plan: "free",
+    notes,
+  };
+  if (next.name !== member.name || next.notes !== member.notes) {
+    await upsertMember(next);
+  }
+  return next;
+}
+
 export async function getMembershipAccess(email: string | null | undefined, isAdmin = false): Promise<MembershipAccess> {
   if (!email) return { paid: false, plan: "free", status: "active", member: null };
   const admin = isAdmin || isAdminEmail(email);

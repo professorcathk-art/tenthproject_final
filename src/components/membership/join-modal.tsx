@@ -58,9 +58,11 @@ export function JoinModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string; code?: string };
       if (!res.ok || !data.url) {
-        setError(data.error || copy.error);
+        const message = data.code === "already_paid" ? copy.alreadyPaid : data.error || copy.error;
+        setError(message);
+        if (data.code === "already_paid") window.alert(message);
         return;
       }
       window.location.href = data.url;

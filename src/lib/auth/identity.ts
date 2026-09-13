@@ -1,7 +1,22 @@
 import type { User } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { createAnonClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { ensureMemberRecord } from "@/lib/auth/membership";
+import { isAdminEmail } from "@/lib/auth/admin";
+
+export type AuthResult =
+  | { ok: true; userId: string; email: string; name: string; isAdmin: boolean }
+  | { ok: false; code: "invalid_input" | "no_account" | "invalid_password" | "already_exists" | "unavailable"; message: string };
+
+const MIN_PASSWORD = 6;
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function validEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export async function findAuthUserByEmail(email: string): Promise<User | null> {
   if (!isSupabaseConfigured()) return null;
@@ -105,4 +120,64 @@ export async function resolveSignedInAccount(email: string, name?: string, isAdm
   });
   if (error) console.error("resolveSignedInAccount profile:", error.message);
   return { member, userId: user.id };
+}
+
+async function finishAuthenticatedSession(user: User, name?: string): Promise<Extract<AuthResult, { ok: true }>> {
+  const email = normalizeEmail(user.email || "");
+  const displayName = name?.trim() || String(user.user_metadata?.full_name || "").trim() || "Member";
+  const member = await ensureMemberRecord(email, displayName, isAdminEmail(email));
+  if (isSupabaseConfigured()) {
+    const { error } = await createAdminClient().from("profiles").upsert({
+      id: user.id,
+      email,
+      name: member.name,
+    });
+    if (error) console.error("auth profile upsert:", error.message);
+  }
+  return { ok: true, userId: user.id, email, name: member.name, isAdmin: isAdminEmail(email) };
+}
+
+export async function loginWithPassword(emailRaw: string, password: string): Promise<AuthResult> {
+  const email = normalizeEmail(emailRaw);
+  if (!validEmail(email) || password.length < MIN_PASSWORD) {
+    return { ok: false, code: "invalid_input", message: "請輸入有效電郵，以及至少 6 位密碼。" };
+  }
+  if (!isSupabaseConfigured()) {
+    return { ok: false, code: "unavailable", message: "登入服務尚未設定，請稍後再試。" };
+  }
+
+  const existing = await findAuthUserByEmail(email);
+  if (!existing) {
+    return { ok: false, code: "no_account", message: "此電郵尚未註冊，請先免費註冊。" };
+  }
+
+  const { data, error } = await createAnonClient().auth.signInWithPassword({ email, password });
+  if (error || !data.user) {
+    return { ok: false, code: "invalid_password", message: "密碼不正確，請再試一次。" };
+  }
+
+  return finishAuthenticatedSession(data.user);
+}
+
+export async function signupWithPassword(emailRaw: string, password: string, nameRaw: string): Promise<AuthResult> {
+  const email = normalizeEmail(emailRaw);
+  const name = nameRaw.trim();
+  if (!validEmail(email) || password.length < MIN_PASSWORD || !name) {
+    return { ok: false, code: "invalid_input", message: "請輸入姓名、有效電郵，以及至少 6 位密碼。" };
+  }
+  if (!isSupabaseConfigured()) {
+    return { ok: false, code: "unavailable", message: "註冊服務尚未設定，請稍後再試。" };
+  }
+
+  const existing = await findAuthUserByEmail(email);
+  if (existing) {
+    const { data, error } = await createAnonClient().auth.signInWithPassword({ email, password });
+    if (!error && data.user) {
+      return finishAuthenticatedSession(data.user, name);
+    }
+    return { ok: false, code: "already_exists", message: "此電郵已有帳號，請登入。" };
+  }
+
+  const user = await ensureAuthUser(email, name, { password });
+  return finishAuthenticatedSession(user, name);
 }

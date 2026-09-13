@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE, buildUser, writeSessionCookie } from "@/lib/auth/session";
-import { resolveSignedInAccount } from "@/lib/auth/identity";
+import { AUTH_COOKIE, getSession, writeSessionCookie } from "@/lib/auth/session";
+import { loginWithPassword, signupWithPassword } from "@/lib/auth/identity";
 import { getMembershipAccess } from "@/lib/auth/membership";
 
 export async function GET() {
-  const { getSession } = await import("@/lib/auth/session");
   const session = await getSession();
   if (!session.isAuthenticated || !session.user) {
     return NextResponse.json({ user: null });
@@ -31,38 +30,43 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  let email = "demo@tenthproject.app";
-  let name: string | undefined;
-  let password: string | undefined;
+  let email = "";
+  let name = "";
+  let password = "";
+  let mode: "login" | "signup" = "login";
   try {
     const body = await request.json();
-    if (typeof body.email === "string" && body.email.includes("@")) email = body.email;
-    if (typeof body.name === "string" && body.name.trim()) name = body.name.trim();
-    if (typeof body.password === "string" && body.password.length >= 6) password = body.password;
+    if (typeof body.email === "string") email = body.email;
+    if (typeof body.name === "string") name = body.name;
+    if (typeof body.password === "string") password = body.password;
+    if (body.mode === "signup") mode = "signup";
   } catch {
-    /* demo defaults */
+    return NextResponse.json({ error: "invalid_body", message: "請輸入電郵和密碼。" }, { status: 400 });
   }
 
-  const user = buildUser(email, name);
-  let plan: "free" | "paid" = user.isAdmin ? "paid" : "free";
-  let paid = user.isAdmin;
-  let memberId = user.id;
+  const result = mode === "signup" ? await signupWithPassword(email, password, name) : await loginWithPassword(email, password);
+  if (!result.ok) {
+    const status = result.code === "invalid_input" ? 400 : result.code === "already_exists" ? 409 : 401;
+    return NextResponse.json({ error: result.code, message: result.message }, { status });
+  }
+
+  let plan: "free" | "paid" = result.isAdmin ? "paid" : "free";
+  let paid = result.isAdmin;
   try {
-    const { userId } = await resolveSignedInAccount(user.email, user.name, user.isAdmin, password);
-    const access = await getMembershipAccess(user.email, user.isAdmin);
-    memberId = userId;
+    const access = await getMembershipAccess(result.email, result.isAdmin);
     plan = access.paid ? "paid" : "free";
     paid = access.paid;
   } catch (error) {
-    console.error("resolveSignedInAccount:", error);
+    console.error("getMembershipAccess:", error);
   }
+
   const response = NextResponse.json({
     success: true,
-    isAdmin: user.isAdmin,
+    isAdmin: result.isAdmin,
     plan,
     paid,
   });
-  writeSessionCookie(response, { email: user.email, name: user.name, id: memberId });
+  writeSessionCookie(response, { email: result.email, name: result.name, id: result.userId });
   return response;
 }
 

@@ -20,6 +20,7 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
   const searchParams = useSearchParams();
   const { dict } = useI18n();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const split = variant === "split" && mode !== "reset";
@@ -33,20 +34,47 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError("");
+    if (mode === "reset") {
+      const message = "請聯絡 chris.lau@professor-cat.com 重設密碼。";
+      setError(message);
+      window.alert(message);
+      return;
+    }
     setLoading(true);
     const form = new FormData(e.currentTarget);
     const submittedEmail = String(form.get("email") ?? email).trim();
     const submittedName = String(form.get("name") ?? name).trim();
     const submittedPassword = String(form.get("password") ?? "").trim();
-    const res = await fetch("/api/auth/demo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: submittedEmail, name: submittedName, password: submittedPassword }),
-    });
-    const data = (await res.json().catch(() => ({}))) as { isAdmin?: boolean };
-    const next = searchParams.get("redirect") || (data.isAdmin ? "/admin" : "/dashboard");
-    router.push(next);
-    router.refresh();
+    try {
+      const res = await fetch("/api/auth/demo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: submittedEmail,
+          name: submittedName,
+          password: submittedPassword,
+          mode: mode === "signup" ? "signup" : "login",
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { isAdmin?: boolean; message?: string; error?: string };
+      if (!res.ok) {
+        const message = data.message || (mode === "signup" ? "註冊失敗，請再試一次。" : "登入失敗，請再試一次。");
+        setError(message);
+        window.alert(message);
+        return;
+      }
+      const redirect = searchParams.get("redirect");
+      const next = redirect || (data.isAdmin ? "/admin" : "/dashboard");
+      router.push(next);
+      router.refresh();
+    } catch {
+      const message = "連線失敗，請再試一次。";
+      setError(message);
+      window.alert(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const formCard = (
@@ -60,6 +88,11 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error ? (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+              {error}
+            </p>
+          ) : null}
           {mode === "signup" || (!split && mode !== "reset") ? (
             <div className="space-y-2">
               <Label htmlFor="name">{split ? "姓名 (Full Name)" : dict.auth.name}</Label>
@@ -95,6 +128,7 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                 name="password"
                 type="password"
                 required
+                minLength={6}
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
               />
             </div>

@@ -22,9 +22,15 @@ export function createServiceClient(): SupabaseClient {
 }
 
 export function createBrowserClient(): SupabaseClient {
+  return createAnonClient();
+}
+
+export function createAnonClient(): SupabaseClient {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !anonKey) {
     throw new Error("Supabase not configured");
   }
-  return createClient(supabaseUrl, anonKey);
+  return createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
