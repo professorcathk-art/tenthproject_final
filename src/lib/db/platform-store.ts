@@ -10,6 +10,7 @@ import type {
   Certificate,
   Course,
   EnterpriseEnquiry,
+  WebinarSignup,
   Lesson,
   LessonLink,
   LessonMaterial,
@@ -33,6 +34,7 @@ interface PlatformStore {
   certificates: Certificate[];
   caseStudies: CaseStudy[];
   enterpriseEnquiries: EnterpriseEnquiry[];
+  webinarSignups: WebinarSignup[];
   mcpApiKeys: McpApiKey[];
   members: Member[];
 }
@@ -45,6 +47,7 @@ function emptyPlatformStore(): PlatformStore {
     certificates: [],
     caseStudies: [],
     enterpriseEnquiries: [],
+    webinarSignups: [],
     mcpApiKeys: [],
     members: [],
   };
@@ -68,7 +71,7 @@ async function ensurePlatformStore(): Promise<PlatformStore> {
     try {
       const raw = await fs.readFile(PLATFORM_FILE, "utf-8");
       const parsed = JSON.parse(raw) as PlatformStore;
-      memoryStore = { ...parsed, members: parsed.members ?? [] };
+      memoryStore = { ...parsed, members: parsed.members ?? [], webinarSignups: parsed.webinarSignups ?? [] };
       return memoryStore;
     } catch {
       /* seed an empty local file below */
@@ -737,6 +740,61 @@ export async function getMemberByEmail(email: string): Promise<Member | null> {
   }
   const store = await ensurePlatformStore();
   return store.members.find((member) => member.email === normalized) ?? null;
+}
+
+export async function createWebinarSignup(data: Omit<WebinarSignup, "id" | "status" | "created_at">) {
+  const signup: WebinarSignup = {
+    id: uuidv4(),
+    status: "pending",
+    created_at: new Date().toISOString(),
+    ...data,
+  };
+
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("webinar_signups").insert(signup);
+    if (error) throw new Error(error.message);
+    return signup;
+  }
+  const store = await ensurePlatformStore();
+  store.webinarSignups.unshift(signup);
+  await savePlatformStore(store);
+  return signup;
+}
+
+export async function getWebinarSignups(): Promise<WebinarSignup[]> {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await createServiceClient()
+      .from("webinar_signups")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as WebinarSignup[];
+  }
+  const store = await ensurePlatformStore();
+  return store.webinarSignups ?? [];
+}
+
+export async function updateWebinarSignupStatus(id: string, status: WebinarSignup["status"]) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("webinar_signups").update({ status }).eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensurePlatformStore();
+  const idx = store.webinarSignups.findIndex((item) => item.id === id);
+  if (idx >= 0) store.webinarSignups[idx].status = status;
+  await savePlatformStore(store);
+}
+
+export async function deleteWebinarSignup(id: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("webinar_signups").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensurePlatformStore();
+  store.webinarSignups = store.webinarSignups.filter((item) => item.id !== id);
+  await savePlatformStore(store);
 }
 
 export async function deleteEnquiry(id: string) {

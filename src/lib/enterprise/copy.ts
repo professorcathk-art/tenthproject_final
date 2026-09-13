@@ -4,7 +4,7 @@ export const enterpriseCopy = {
       badge: "✨ Enterprise AI Transformation & Workflow Automation",
       headline: "強大、精準、可量化的企業級 AI 轉型解決方案",
       subheadline:
-        "結合前阿里巴巴技術專家硬核架構，與前國際投資銀行高管數位轉型經驗。我們不談空洞概念，專注於從商業痛點審計到 100% 可上線的客製化 AI Agent 與自動化工作流部署，助企業降本增效 60% 以上。",
+        "結合前阿里巴巴技術專家硬核架構，與前國際投資銀行高管數位轉型經驗。我們拒絕空談理論，專注於從商業痛點審計，到 100% 落地部署客製化 AI Agent 與自動化工作流，協助企業實現 60% 以上的降本增效。",
       ctaPrimary: "預約 1-on-1 專家免費諮詢",
       ctaSecondary: "查看企業成功案例",
       metrics: [
@@ -147,26 +147,6 @@ export const enterpriseCopy = {
           ],
           resultLabel: "量化成效",
           result: "分析師文件審閱速度提升 10 倍，DD 報告撰寫時間從 3 天縮短至 2 小時，大幅提升併購案處理量。",
-        },
-      ],
-    },
-    testimonials: {
-      title: "聽聽來自企業決策者的真實聲音",
-      items: [
-        {
-          role: "跨境電商集團 COO - Ray Chen",
-          quote:
-            "Tenth Project 團隊最令我們印象深刻的是『商業落地速度』。Felix 與 Chris 帶領的團隊僅用 3 星期就完成了我們討論了半年的 AI 自動化排單與對帳系統。系統上線第一個月就替我們省下了近百萬日圓的營收流失，這是我們近年做過回報率最高的 IT 投資。",
-        },
-        {
-          role: "知名人力資源公司 Operations Director - Sarah Wong",
-          quote:
-            "市場上很多講 AI 轉型的公司都只是在大談空話，但 Tenth Project 展現的是大廠級別的硬核技術能力。他們幫我們設計的 HR Agent 準確度高達 95% 以上，團隊的資安防護規格也完全達到我們 Enterprise 客戶的嚴格要求。",
-        },
-        {
-          role: "科技新創 Founder & CEO - Marcus Lam",
-          quote:
-            "作為創辦人，我最怕 IT 專案延期或規格不符。Tenth Project 的 5 步流程非常透明，從 POC 到正式上線的每一個 Milestone 都清清楚楚。他們的 AI Enablement 工作坊甚至讓我們的非技術同仁也能自主打造簡單的自動化工具！",
         },
       ],
     },

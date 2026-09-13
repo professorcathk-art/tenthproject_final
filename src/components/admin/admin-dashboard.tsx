@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/i18n/provider";
 import { ClassroomEditor } from "@/components/admin/classroom-editor";
-import type { CaseStudy, Course, EnterpriseEnquiry, Member } from "@/types/platform";
+import type { CaseStudy, Course, EnterpriseEnquiry, Member, WebinarSignup } from "@/types/platform";
 
 interface AdminDashboardProps {
   initialCaseStudies: CaseStudy[];
   initialEnquiries: EnterpriseEnquiry[];
   initialCourses: Course[];
   initialMembers: Member[];
+  initialWebinars: WebinarSignup[];
 }
 
 const emptyMember = {
@@ -32,6 +33,7 @@ export function AdminDashboard({
   initialEnquiries,
   initialCourses,
   initialMembers,
+  initialWebinars,
 }: AdminDashboardProps) {
   const { dict, locale } = useI18n();
   const a = dict.admin;
@@ -39,6 +41,7 @@ export function AdminDashboard({
   const [enquiries, setEnquiries] = useState(initialEnquiries);
   const [courses, setCourses] = useState(initialCourses);
   const [members, setMembers] = useState(initialMembers);
+  const [webinars, setWebinars] = useState(initialWebinars);
   const [memberForm, setMemberForm] = useState(emptyMember);
   const [newStudy, setNewStudy] = useState({
     title: "",
@@ -123,6 +126,25 @@ export function AdminDashboard({
     setEnquiries((list) => list.filter((item) => item.id !== id));
   }
 
+  async function updateWebinarStatus(id: string, status: string) {
+    await fetch("/api/admin/webinars", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    setWebinars((list) => list.map((item) => (item.id === id ? { ...item, status: status as WebinarSignup["status"] } : item)));
+  }
+
+  async function removeWebinar(id: string) {
+    if (!confirm(a.confirmDelete)) return;
+    await fetch("/api/admin/webinars", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setWebinars((list) => list.filter((item) => item.id !== id));
+  }
+
   async function deleteStudy(id: string) {
     if (!confirm(a.confirmDelete)) return;
     await fetch("/api/admin/case-studies", {
@@ -140,7 +162,7 @@ export function AdminDashboard({
         <p className="text-slate-600 mt-1">{a.subtitle}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-slate-500">{a.courses}</CardTitle>
@@ -176,6 +198,17 @@ export function AdminDashboard({
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-slate-500">{a.webinars}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">
+              {webinars.filter((item) => item.status === "pending").length}{" "}
+              <span className="text-sm font-normal text-slate-500">{a.pending}</span>
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="courses">
@@ -184,6 +217,7 @@ export function AdminDashboard({
           <TabsTrigger value="members">{a.members}</TabsTrigger>
           <TabsTrigger value="case-studies">{a.cases}</TabsTrigger>
           <TabsTrigger value="enquiries">{a.leads}</TabsTrigger>
+          <TabsTrigger value="webinars">{a.webinars}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="courses">
@@ -314,6 +348,36 @@ export function AdminDashboard({
                       </SelectContent>
                     </Select>
                     <Button size="sm" variant="ghost" onClick={() => removeEnquiry(e.id)}>{a.delete}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="webinars" className="mt-4 space-y-2">
+          <p className="mb-3 text-sm text-slate-500">{a.webinarsHint}</p>
+          {webinars.length === 0 ? (
+            <p className="text-sm text-slate-500">{a.webinarsHint}</p>
+          ) : (
+            webinars.map((item) => (
+              <Card key={item.id}>
+                <CardContent className="flex flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center">
+                  <div>
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-sm text-slate-500">{item.email} · {a.whatsapp} {item.whatsapp}</p>
+                    <p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select value={item.status} onValueChange={(v) => v && updateWebinarStatus(item.id, v)}>
+                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">{a.pending}</SelectItem>
+                        <SelectItem value="contacted">{locale === "zh" ? "已聯絡" : "Contacted"}</SelectItem>
+                        <SelectItem value="closed">{locale === "zh" ? "已結束" : "Closed"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" variant="ghost" onClick={() => removeWebinar(item.id)}>{a.delete}</Button>
                   </div>
                 </CardContent>
               </Card>

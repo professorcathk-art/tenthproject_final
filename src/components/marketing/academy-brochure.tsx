@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WebinarSignupButton } from "@/components/marketing/webinar-signup-dialog";
 
 const JOIN_HREF = "/signup?redirect=/dashboard";
 
@@ -265,9 +266,10 @@ export function AcademyBrochure() {
         <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           一次加入，永久享用所有核心主修課、高階實戰 Workshop、AI 專案規劃工具與導師社群支援。
         </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
           <JoinCta />
           <OutlineCta />
+          <WebinarSignupButton />
         </div>
       </header>
 
@@ -292,6 +294,7 @@ export function AcademyBrochure() {
           >
             查看課程詳細大綱
           </Link>
+          <WebinarSignupButton variant="dark" />
         </div>
       </section>
     </div>

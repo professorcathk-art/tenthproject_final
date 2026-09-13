@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth/session";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { getCaseStudies, getEnterpriseEnquiries, getCoursesWithLessons, getMembers } from "@/lib/db/platform-store";
+import { getCaseStudies, getEnterpriseEnquiries, getCoursesWithLessons, getMembers, getWebinarSignups } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getDict } from "@/lib/i18n/server";
 import { buttonVariants } from "@/components/ui/button";
@@ -27,11 +27,12 @@ export default async function AdminPage() {
   }
 
   await ensurePlatformSeeded();
-  const [caseStudies, enquiries, courses, members] = await Promise.all([
+  const [caseStudies, enquiries, courses, members, webinars] = await Promise.all([
     getCaseStudies(undefined, false),
     getEnterpriseEnquiries(),
     getCoursesWithLessons(),
     getMembers(),
+    getWebinarSignups(),
   ]);
 
   return (
@@ -40,6 +41,7 @@ export default async function AdminPage() {
         initialEnquiries={enquiries}
         initialCourses={courses}
         initialMembers={members}
+        initialWebinars={webinars}
       />
   );
 }

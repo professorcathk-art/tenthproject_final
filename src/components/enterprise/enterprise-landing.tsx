@@ -26,52 +26,51 @@ const caseImages = [
 export function EnterpriseLanding() {
   return (
     <div className="bg-[#f4f4f1] dark:bg-slate-950">
-      <section className="relative overflow-hidden border-b border-slate-200/70 dark:border-slate-800/50">
-        <div className="grid lg:grid-cols-2">
-          <div className="relative flex flex-col justify-center px-4 py-16 sm:px-6 lg:px-12 lg:py-24">
-            <FadeIn>
-              <p className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/70 px-4 py-1.5 text-sm font-medium text-slate-600 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-200">
-                {copy.hero.badge}
-              </p>
-              <h1 className="mt-6 max-w-xl text-3xl font-semibold tracking-[-0.04em] leading-[1.12] text-slate-950 sm:text-5xl dark:text-white">
-                {copy.hero.headline}
-              </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-400">
-                {copy.hero.subheadline}
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="#booking"
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950"
-                >
-                  {copy.hero.ctaPrimary}
-                </a>
-                <a
-                  href="#cases"
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-6 text-sm font-semibold text-slate-800 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200"
-                >
-                  {copy.hero.ctaSecondary}
-                </a>
+      <section className="relative w-full overflow-hidden border-b border-slate-200/70 py-12 dark:border-slate-800/50 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+            <div className="pr-0 lg:col-span-7 lg:pr-6">
+              <FadeIn className="space-y-6">
+                <p className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/70 px-4 py-1.5 text-sm font-medium text-slate-600 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-200">
+                  {copy.hero.badge}
+                </p>
+                <h1 className="text-3xl font-semibold tracking-[-0.04em] leading-[1.12] text-slate-950 sm:text-5xl dark:text-white">
+                  {copy.hero.headline}
+                </h1>
+                <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+                  {copy.hero.subheadline}
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href="#booking"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950"
+                  >
+                    {copy.hero.ctaPrimary}
+                  </a>
+                  <a
+                    href="#cases"
+                    className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-6 text-sm font-semibold text-slate-800 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200"
+                  >
+                    {copy.hero.ctaSecondary}
+                  </a>
+                </div>
+              </FadeIn>
+            </div>
+            <div className="relative lg:col-span-5">
+              <div className="relative min-h-[320px] overflow-hidden rounded-3xl lg:min-h-[520px]">
+                <Image
+                  src="/images/enterprise-consulting.jpg"
+                  alt="Tenth Project 顧問與企業客戶在香港進行一對一諮詢"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-cover object-[center_28%] brightness-[0.7] contrast-[1.03] saturate-[0.75]"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(15,23,42,0.42)_100%)]" />
               </div>
-            </FadeIn>
+            </div>
           </div>
-
-          <div className="relative min-h-[320px] lg:min-h-[640px]">
-            <Image
-              src="/images/enterprise-consulting.jpg"
-              alt="Tenth Project 顧問與企業客戶在香港進行一對一諮詢"
-              fill
-              priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover object-[center_28%] brightness-[0.7] contrast-[1.03] saturate-[0.75]"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(15,23,42,0.42)_100%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#f4f4f1] via-transparent to-slate-950/10 lg:bg-gradient-to-r lg:from-[#f4f4f1] lg:via-[#f4f4f1]/20 lg:to-transparent dark:from-slate-950 dark:lg:from-slate-950" />
-          </div>
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {copy.hero.metrics.map((metric, index) => (
               <FadeIn key={metric.value} delay={0.08 * index}>
                 <div className="rounded-2xl border border-slate-200/70 bg-white/70 px-5 py-5 dark:border-slate-800/50 dark:bg-slate-950/40">
@@ -223,24 +222,6 @@ export function EnterpriseLanding() {
               </FadeIn>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <FadeIn>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
-            {copy.testimonials.title}
-          </h2>
-        </FadeIn>
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
-          {copy.testimonials.items.map((item, index) => (
-            <FadeIn key={item.role} delay={0.06 * index}>
-              <blockquote className="flex h-full flex-col rounded-3xl glass-panel p-7">
-                <p className="flex-1 text-sm leading-7 text-slate-600 dark:text-slate-300">「{item.quote}」</p>
-                <footer className="mt-6 text-sm font-semibold text-slate-950 dark:text-white">{item.role}</footer>
-              </blockquote>
-            </FadeIn>
-          ))}
         </div>
       </section>
 

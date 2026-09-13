@@ -123,6 +123,15 @@ export interface EnterpriseEnquiry {
   created_at: string;
 }
 
+export interface WebinarSignup {
+  id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  status: "pending" | "contacted" | "closed";
+  created_at: string;
+}
+
 export interface McpApiKey {
   id: string;
   user_id: string;
