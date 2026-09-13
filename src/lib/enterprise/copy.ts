@@ -190,11 +190,6 @@ export const enterpriseCopy = {
       pickDate: "選擇日期",
       pickTime: "選擇 30 分鐘時段",
       tz: "香港時間 HKT",
-      emailLabel: "Direct Email",
-      phoneLabel: "WhatsApp / Phone",
-      officeLabel: "Office Location",
-      office: "Hong Kong Science and Technology Park (HKSTP)",
-      phoneDisplay: "+852 9690 3338",
     },
   },
 } as const;

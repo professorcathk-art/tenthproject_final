@@ -18,7 +18,8 @@ export function DifficultyStars({
 
   return (
     <div className="inline-flex items-center gap-1.5" title={locale === "en" ? label.en : label.zh}>
-      <span className="inline-flex" aria-label={locale === "en" ? `${stars} of 5 difficulty` : `複製難度 ${stars} 星`}>
+      <span className="text-xs font-medium text-slate-500">{locale === "en" ? "Difficulty" : "難度"}</span>
+      <span className="inline-flex" aria-label={locale === "en" ? `Difficulty ${stars} of 5` : `難度 ${stars} 星`}>
         {[1, 2, 3, 4, 5].map((n) => (
           <Star
             key={n}

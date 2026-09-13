@@ -13,12 +13,7 @@ export function CaseStudyMeta({ study }: { study: Pick<CaseStudy, "difficulty" |
 
   return (
     <div className="mb-6 flex flex-wrap items-center gap-3">
-      <div>
-        <p className="text-[11px] font-medium tracking-wide text-slate-500 uppercase">{dict.inspiration.difficulty}</p>
-        <div className="mt-1">
-          <DifficultyStars value={study.difficulty} locale={locale} size="md" />
-        </div>
-      </div>
+      <DifficultyStars value={study.difficulty} locale={locale} size="md" />
       {study.pitch_deck_url ? (
         <a
           href={study.pitch_deck_url}

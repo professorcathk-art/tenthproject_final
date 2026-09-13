@@ -16,10 +16,10 @@ function brief(input: {
   avoidEn: string;
 }): { zh: string; en: string } {
   return {
-    zh: `# 規劃簡報：抄 ${input.name} 的核心迴路（不是抄品牌）
+    zh: `# 規劃簡報：模仿 ${input.name} 的核心迴路（不是品牌本身）
 
 你是產品教練，正在幫一位個人創作者用 Cursor Planning／ChatGPT／Codex 規劃 21 天 MVP。
-不要抄商標、視覺識別或專有數據。要抄的是機制。
+不要使用對方的商標、視覺識別或專有數據。要模仿的是機制。
 
 ## 產品
 官網：${input.site}
@@ -46,10 +46,10 @@ ${input.avoidZh}
 5. 輸出可貼進 Cursor 的實作簡報（檔案 → 動作 → 驗收）
 
 只問會卡住迴路的問題。`,
-    en: `# Planning brief: clone the core loop of ${input.name} (not the brand)
+    en: `# Planning brief: imitate the core loop of ${input.name} (not the brand)
 
 You are a product coach helping a solo founder plan a 21-day MVP in Cursor Planning, ChatGPT, or Codex.
-Do not copy trademarks, visual identity, or proprietary data. Copy the mechanism.
+Do not reuse trademarks, visual identity, or proprietary data. Imitate the mechanism.
 
 ## Product
 Site: ${input.site}

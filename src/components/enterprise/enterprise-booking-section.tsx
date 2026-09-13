@@ -7,9 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, CheckCircle2, Loader2, Mail, MapPin, Phone } from "lucide-react";
+import { Calendar, CheckCircle2, Loader2 } from "lucide-react";
 import { BUDGET_RANGES, SERVICE_TYPES } from "@/types/platform";
-import { ENTERPRISE_EMAIL, WHATSAPP_URL } from "@/lib/contact";
 import { enterpriseCopy } from "@/lib/enterprise/copy";
 import { cn } from "@/lib/utils";
 
@@ -239,37 +238,6 @@ export function EnterpriseBookingSection() {
               })}
             </div>
             <p className="mt-3 text-xs text-slate-400">{copy.tz}</p>
-          </div>
-          <div className="grid gap-3">
-            <a
-              href={`mailto:${ENTERPRISE_EMAIL}`}
-              className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40"
-            >
-              <Mail className="mt-0.5 h-4 w-4" />
-              <div>
-                <p className="text-xs text-slate-500">{copy.emailLabel}</p>
-                <p className="text-sm font-semibold">{ENTERPRISE_EMAIL}</p>
-              </div>
-            </a>
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40"
-            >
-              <Phone className="mt-0.5 h-4 w-4" />
-              <div>
-                <p className="text-xs text-slate-500">{copy.phoneLabel}</p>
-                <p className="text-sm font-semibold">{copy.phoneDisplay}</p>
-              </div>
-            </a>
-            <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
-              <MapPin className="mt-0.5 h-4 w-4" />
-              <div>
-                <p className="text-xs text-slate-500">{copy.officeLabel}</p>
-                <p className="text-sm font-semibold">{copy.office}</p>
-              </div>
-            </div>
           </div>
         </aside>
       </div>
