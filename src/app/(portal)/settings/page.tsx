@@ -13,7 +13,6 @@ export default function SettingsPage() {
   const { dict } = useI18n();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [plan, setPlan] = useState("free");
   const [paid, setPaid] = useState(false);
 
   useEffect(() => {
@@ -22,7 +21,6 @@ export default function SettingsPage() {
       .then((d) => {
         setEmail(d.user?.email ?? "");
         setName(d.user?.name ?? "");
-        setPlan(d.user?.plan ?? "free");
         setPaid(Boolean(d.user?.paid));
       });
   }, []);
@@ -40,7 +38,9 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <Badge className="mb-3">{paid ? dict.settings.lifetime : dict.admin.free}</Badge>
-          <p className="text-sm text-slate-500">{dict.settings.currentPlan}: {plan}</p>
+          <p className="text-sm text-slate-500">
+            {dict.settings.currentPlan}: {paid ? dict.admin.paidPlan : dict.admin.free}
+          </p>
           <p className="mt-2 text-sm text-slate-600">
             {paid ? dict.settings.lifetimeNote : dict.settings.freeLockedNote}
           </p>

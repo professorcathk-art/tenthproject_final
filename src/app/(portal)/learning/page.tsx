@@ -8,17 +8,27 @@ import { getDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 import { MembershipSyllabus } from "@/components/marketing/academy-brochure";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { VipSkoolWelcome } from "@/components/membership/vip-skool-welcome";
 
 export default async function LearningHomePage() {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) redirect("/login?redirect=/learning");
 
   await ensurePlatformSeeded();
-  const dict = await getDict();
-  const [access, certificates] = await Promise.all([
+  const [dict, access] = await Promise.all([
+    getDict(),
     getMembershipAccess(user.email, user.isAdmin),
-    getUserCertificates(user.id),
   ]);
+
+  if (access.paid) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <VipSkoolWelcome />
+      </div>
+    );
+  }
+
+  const certificates = await getUserCertificates(user.id);
 
   return (
     <div className="space-y-8">
@@ -28,9 +38,7 @@ export default async function LearningHomePage() {
         </div>
         <h1 className="text-2xl font-bold tracking-tight">{dict.courses.title}</h1>
         <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">{dict.courses.subtitle}</p>
-        {!access.paid ? (
-          <JoinLifetimeButton className="mt-4">{dict.courses.enroll}</JoinLifetimeButton>
-        ) : null}
+        <JoinLifetimeButton className="mt-4">{dict.courses.enroll}</JoinLifetimeButton>
       </div>
       <MembershipSyllabus />
 

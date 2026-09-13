@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/i18n/provider";
 import { ClassroomEditor } from "@/components/admin/classroom-editor";
-import type { CaseStudy, Course, EnterpriseEnquiry, Member, WebinarSignup } from "@/types/platform";
+import { EnterpriseLeadsTable, WebinarLeadsTable } from "@/components/admin/admin-lead-tables";
+import { fromBillingTier, toBillingTier, type CaseStudy, type Course, type EnterpriseEnquiry, type Member, type WebinarSignup } from "@/types/platform";
 
 interface AdminDashboardProps {
   initialCaseStudies: CaseStudy[];
@@ -233,12 +234,14 @@ export function AdminDashboard({
             <CardContent className="grid gap-3 sm:grid-cols-2">
               <Input placeholder={a.email} type="email" value={memberForm.email} onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })} />
               <Input placeholder={a.name} value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} />
-              <Select value={memberForm.plan} onValueChange={(v) => v && setMemberForm({ ...memberForm, plan: v as Member["plan"] })}>
+              <Select
+                value={toBillingTier(memberForm.plan)}
+                onValueChange={(v) => v && setMemberForm({ ...memberForm, plan: fromBillingTier(v as "free" | "paid") })}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="free">{a.free}</SelectItem>
-                  <SelectItem value="academy">{a.academyPlan}</SelectItem>
-                  <SelectItem value="enterprise">{a.enterprisePlan}</SelectItem>
+                  <SelectItem value="paid">{a.paidPlan}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={memberForm.status} onValueChange={(v) => v && setMemberForm({ ...memberForm, status: v as Member["status"] })}>
@@ -264,12 +267,14 @@ export function AdminDashboard({
                       {m.notes ? <p className="text-xs text-slate-400 mt-1">{m.notes}</p> : null}
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Select value={m.plan} onValueChange={(v) => v && updateMember(m, { plan: v as Member["plan"] })}>
+                      <Select
+                        value={toBillingTier(m.plan)}
+                        onValueChange={(v) => v && updateMember(m, { plan: fromBillingTier(v as "free" | "paid", m.plan) })}
+                      >
                         <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="free">{a.free}</SelectItem>
-                          <SelectItem value="academy">{a.academyPlan}</SelectItem>
-                          <SelectItem value="enterprise">{a.enterprisePlan}</SelectItem>
+                          <SelectItem value="paid">{a.paidPlan}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Select value={m.status} onValueChange={(v) => v && updateMember(m, { status: v as Member["status"] })}>
@@ -325,64 +330,18 @@ export function AdminDashboard({
           </div>
         </TabsContent>
 
-        <TabsContent value="enquiries" className="mt-4 space-y-2">
-          <p className="text-sm text-slate-500 mb-3">{a.leadsHint}</p>
-          {enquiries.length === 0 ? (
-            <p className="text-slate-500 text-sm">{a.leadsHint}</p>
-          ) : (
-            enquiries.map((e) => (
-              <Card key={e.id}>
-                <CardContent className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{e.company_name} — {e.contact_name}</p>
-                    <p className="text-sm text-slate-500">{e.email} · {e.service_type}</p>
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-2">{e.project_description}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select value={e.status} onValueChange={(v) => v && updateEnquiryStatus(e.id, v)}>
-                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">{a.pending}</SelectItem>
-                        <SelectItem value="contacted">{locale === "zh" ? "已聯絡" : "Contacted"}</SelectItem>
-                        <SelectItem value="closed">{locale === "zh" ? "已結束" : "Closed"}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" variant="ghost" onClick={() => removeEnquiry(e.id)}>{a.delete}</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+        <TabsContent value="enquiries" className="mt-4">
+          <EnterpriseLeadsTable
+            rows={enquiries}
+            locale={locale}
+            labels={a}
+            onStatus={updateEnquiryStatus}
+            onDelete={removeEnquiry}
+          />
         </TabsContent>
 
-        <TabsContent value="webinars" className="mt-4 space-y-2">
-          <p className="mb-3 text-sm text-slate-500">{a.webinarsHint}</p>
-          {webinars.length === 0 ? (
-            <p className="text-sm text-slate-500">{a.webinarsHint}</p>
-          ) : (
-            webinars.map((item) => (
-              <Card key={item.id}>
-                <CardContent className="flex flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-slate-500">{item.email} · {a.whatsapp} {item.whatsapp}</p>
-                    <p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select value={item.status} onValueChange={(v) => v && updateWebinarStatus(item.id, v)}>
-                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">{a.pending}</SelectItem>
-                        <SelectItem value="contacted">{locale === "zh" ? "已聯絡" : "Contacted"}</SelectItem>
-                        <SelectItem value="closed">{locale === "zh" ? "已結束" : "Closed"}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" variant="ghost" onClick={() => removeWebinar(item.id)}>{a.delete}</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+        <TabsContent value="webinars" className="mt-4">
+          <WebinarLeadsTable rows={webinars} labels={a} onStatus={updateWebinarStatus} onDelete={removeWebinar} />
         </TabsContent>
       </Tabs>
     </div>

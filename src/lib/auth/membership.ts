@@ -15,7 +15,7 @@ export async function ensureMemberRecord(email: string, name?: string, admin = f
   const existing = await getMemberByEmail(email);
   if (existing) {
     if (admin && existing.plan === "free") {
-      const upgraded = { ...existing, plan: "enterprise" as const, name: name?.trim() || existing.name };
+      const upgraded = { ...existing, plan: "academy" as const, name: name?.trim() || existing.name };
       await upsertMember(upgraded);
       return upgraded;
     }
@@ -25,7 +25,7 @@ export async function ensureMemberRecord(email: string, name?: string, admin = f
     id: uuidv4(),
     email: email.trim().toLowerCase(),
     name: name?.trim() || (admin ? "Professor Cat" : "Member"),
-    plan: admin ? "enterprise" : "free",
+    plan: admin ? "academy" : "free",
     status: "active",
     notes: null,
     created_at: new Date().toISOString(),
@@ -49,7 +49,7 @@ export async function getMembershipAccess(email: string | null | undefined, isAd
       .eq("email", email.trim().toLowerCase())
       .maybeSingle();
     if (data?.is_lifetime_member) {
-      return { paid: true, plan: member.plan === "enterprise" ? "enterprise" : "academy", status: "active", member };
+      return { paid: true, plan: isPaidPlan(member.plan) ? member.plan : "academy", status: "active", member };
     }
   }
   return {

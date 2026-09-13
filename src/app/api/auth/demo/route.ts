@@ -9,11 +9,11 @@ export async function GET() {
   if (!session.isAuthenticated || !session.user) {
     return NextResponse.json({ user: null });
   }
-  let plan: "free" | "academy" | "enterprise" = session.user.isAdmin ? "enterprise" : "free";
+  let plan: "free" | "paid" = session.user.isAdmin ? "paid" : "free";
   let paid = session.user.isAdmin;
   try {
     const access = await getMembershipAccess(session.user.email, session.user.isAdmin);
-    plan = access.plan;
+    plan = access.paid ? "paid" : "free";
     paid = access.paid;
   } catch (error) {
     console.error("getMembershipAccess:", error);
@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
   }
 
   const user = buildUser(email, name);
-  let plan: "free" | "academy" | "enterprise" = user.isAdmin ? "enterprise" : "free";
+  let plan: "free" | "paid" = user.isAdmin ? "paid" : "free";
   let paid = user.isAdmin;
   let memberId = user.id;
   try {
-    const { member, userId } = await resolveSignedInAccount(user.email, user.name, user.isAdmin, password);
+    const { userId } = await resolveSignedInAccount(user.email, user.name, user.isAdmin, password);
     const access = await getMembershipAccess(user.email, user.isAdmin);
     memberId = userId;
-    plan = member.plan;
+    plan = access.paid ? "paid" : "free";
     paid = access.paid;
   } catch (error) {
     console.error("resolveSignedInAccount:", error);

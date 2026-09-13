@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { requireAdmin } from "@/lib/auth/session";
-import { getMembers, upsertMember, deleteMember } from "@/lib/db/platform-store";
+import { deleteMember, getMemberByEmail, getMembers, upsertMember } from "@/lib/db/platform-store";
+import { normalizeStoredPlan } from "@/lib/membership/plan";
 import type { Member } from "@/types/platform";
 
 export async function GET() {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       id: body.id || uuidv4(),
       email: String(body.email).trim().toLowerCase(),
       name: body.name || "Member",
-      plan: body.plan || "free",
+      plan: normalizeStoredPlan(body.plan),
       status: body.status || "active",
       notes: body.notes || null,
       created_at: new Date().toISOString(),
@@ -43,14 +44,16 @@ export async function PATCH(request: NextRequest) {
     if (!body.id && !body.email) {
       return NextResponse.json({ error: "Member id required" }, { status: 400 });
     }
+    const email = String(body.email).trim().toLowerCase();
+    const existing = await getMemberByEmail(email);
     const member: Member = {
-      id: body.id || uuidv4(),
-      email: String(body.email).trim().toLowerCase(),
-      name: body.name || "Member",
-      plan: body.plan || "free",
-      status: body.status || "active",
-      notes: body.notes ?? null,
-      created_at: body.created_at || new Date().toISOString(),
+      id: body.id || existing?.id || uuidv4(),
+      email,
+      name: body.name || existing?.name || "Member",
+      plan: normalizeStoredPlan(body.plan, existing?.plan),
+      status: body.status || existing?.status || "active",
+      notes: body.notes ?? existing?.notes ?? null,
+      created_at: body.created_at || existing?.created_at || new Date().toISOString(),
     };
     await upsertMember(member);
     return NextResponse.json({ member });

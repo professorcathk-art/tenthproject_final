@@ -16,7 +16,6 @@ import {
   Search,
   Settings,
   Shield,
-  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,6 @@ import {
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useI18n } from "@/components/i18n/provider";
-import { SKOOL_URL } from "@/lib/contact";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 import { FREE_PROJECT_LIMIT } from "@/lib/membership/constants";
 import { cn } from "@/lib/utils";
@@ -41,14 +39,10 @@ type PortalUser = { email: string; name?: string; isAdmin: boolean };
 function PortalNavLinks({
   items,
   pathname,
-  community,
-  skool,
   onNavigate,
 }: {
   items: { href: string; label: string; icon: typeof FolderKanban }[];
   pathname: string;
-  community: string;
-  skool: string;
   onNavigate?: () => void;
 }) {
   return (
@@ -73,18 +67,6 @@ function PortalNavLinks({
           </Link>
         );
       })}
-      <p className="px-3 pt-4 pb-1 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
-        {community}
-      </p>
-      <a
-        href={SKOOL_URL}
-        target="_blank"
-        rel="noreferrer"
-        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        <Users className="h-4 w-4" />
-        {skool}
-      </a>
     </nav>
   );
 }
@@ -122,9 +104,8 @@ export function PortalShell({
     () => [
       ...nav,
       { href: "/projects/new", label: dict.portal.newProject, icon: Plus },
-      { href: SKOOL_URL, label: dict.portal.skool, icon: Users, external: true },
     ],
-    [dict.portal.newProject, dict.portal.skool, nav],
+    [dict.portal.newProject, nav],
   );
 
   const filtered = commands.filter((item) => item.label.toLowerCase().includes(query.trim().toLowerCase()));
@@ -161,12 +142,7 @@ export function PortalShell({
           <Image src="/logo.jpg" alt="Tenth Project" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
           <span className="tracking-tight">{dict.portal.brand}</span>
         </Link>
-        <PortalNavLinks
-          items={nav}
-          pathname={pathname}
-          community={dict.portal.community}
-          skool={dict.portal.skool}
-        />
+        <PortalNavLinks items={nav} pathname={pathname} />
         <div className="mt-auto space-y-3">
           {paid ? null : (
             <JoinLifetimeButton className="h-10 w-full shadow-[0_0_18px_rgba(251,191,36,0.45)]">
@@ -191,12 +167,7 @@ export function PortalShell({
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
                 <div className="mt-10">
-                  <PortalNavLinks
-                    items={nav}
-                    pathname={pathname}
-                    community={dict.portal.community}
-                    skool={dict.portal.skool}
-                  />
+                  <PortalNavLinks items={nav} pathname={pathname} />
                 </div>
               </SheetContent>
             </Sheet>

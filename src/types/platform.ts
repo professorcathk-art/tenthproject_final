@@ -168,7 +168,16 @@ export interface Member {
 }
 
 export function isPaidPlan(plan: string | null | undefined) {
-  return plan === "academy" || plan === "enterprise";
+  return plan === "paid" || plan === "academy" || plan === "enterprise";
+}
+
+export function toBillingTier(plan: string | null | undefined): "free" | "paid" {
+  return isPaidPlan(plan) ? "paid" : "free";
+}
+
+export function fromBillingTier(tier: "free" | "paid", existing?: string | null): MemberPlan {
+  if (tier === "free") return "free";
+  return existing === "enterprise" ? "enterprise" : "academy";
 }
 
 export const COMPANY_SIZES = [
