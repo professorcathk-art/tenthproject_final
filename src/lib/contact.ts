@@ -5,5 +5,3 @@ export const WHATSAPP_E164 = "85296903338";
 export const WHATSAPP_DISPLAY = "+852 96903338";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_E164}`;
 export const SKOOL_URL = process.env.NEXT_PUBLIC_SKOOL_URL ?? "https://www.skool.com/tenthproject";
-export const WHATSAPP_VIP_URL = process.env.NEXT_PUBLIC_WHATSAPP_VIP_URL ?? WHATSAPP_URL;
-export const MENTOR_BOOKING_URL = process.env.NEXT_PUBLIC_MENTOR_BOOKING_URL ?? "/enterprise#booking";

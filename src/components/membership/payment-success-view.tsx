@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import confetti from "canvas-confetti";
-import { Calendar, MessageCircle, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useI18n } from "@/components/i18n/provider";
-import { MENTOR_BOOKING_URL, SKOOL_URL, WHATSAPP_VIP_URL } from "@/lib/contact";
+import { SKOOL_URL } from "@/lib/contact";
 
 export function PaymentSuccessView() {
   const { dict } = useI18n();
@@ -39,11 +39,7 @@ export function PaymentSuccessView() {
     };
   }, [sessionId]);
 
-  const cards = [
-    { href: SKOOL_URL, title: copy.cardSkool, icon: Users },
-    { href: WHATSAPP_VIP_URL, title: copy.cardWhatsapp, icon: MessageCircle },
-    { href: MENTOR_BOOKING_URL, title: copy.cardBooking, icon: Calendar },
-  ];
+  const cards = [{ href: SKOOL_URL, title: copy.cardSkool, icon: Users }];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
@@ -57,7 +53,7 @@ export function PaymentSuccessView() {
         {status === "ok" ? (
           <>
             <h1 className="text-3xl font-semibold tracking-tight">{copy.successTitle}</h1>
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <div className="mx-auto mt-10 grid max-w-sm gap-4">
               {cards.map((card) => {
                 const Icon = card.icon;
                 const external = card.href.startsWith("http");
