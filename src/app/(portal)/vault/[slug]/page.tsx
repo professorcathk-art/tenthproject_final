@@ -4,28 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
 import { getDict, getLocale } from "@/lib/i18n/server";
-import { getSession } from "@/lib/auth/session";
-import { getMembershipAccess } from "@/lib/auth/membership";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
-import { remainderMarkdown, teaserMarkdown } from "@/lib/inspiration/teaser";
 import { CaseArticle } from "@/components/inspiration/case-article";
 import { CaseClonePrompt, CaseStudyMeta } from "@/components/inspiration/case-study-extras";
-import { VipContentGate } from "@/components/inspiration/vip-content-gate";
 
 export default async function VaultCasePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [study, studies, dict, locale, session] = await Promise.all([
+  const [study, studies, dict, locale] = await Promise.all([
     getCaseStudyBySlug(slug),
     getCaseStudyCards(),
     getDict(),
     getLocale(),
-    getSession(),
   ]);
   if (!study) notFound();
-  const access = session.user
-    ? await getMembershipAccess(session.user.email, session.user.isAdmin)
-    : { paid: false };
   const article = localizedCaseText(study.breakdown_md, locale);
   const related = studies.filter((item) => item.slug !== study.slug).slice(0, 3);
 
@@ -65,28 +57,10 @@ export default async function VaultCasePage({ params }: { params: Promise<{ slug
           ))}
         </div>
       ) : null}
-      {access.paid ? (
-        <>
-          <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8">
-            <CaseArticle markdown={article} />
-          </article>
-          <CaseClonePrompt study={study} />
-        </>
-      ) : (
-        <>
-          <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8">
-            <CaseArticle markdown={teaserMarkdown(article)} />
-          </article>
-          <VipContentGate>
-            {remainderMarkdown(article) ? (
-              <article className="rounded-3xl bg-white px-5 py-6 dark:bg-slate-950 sm:px-8">
-                <CaseArticle markdown={remainderMarkdown(article)} />
-              </article>
-            ) : null}
-            <CaseClonePrompt study={study} />
-          </VipContentGate>
-        </>
-      )}
+      <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8">
+        <CaseArticle markdown={article} />
+      </article>
+      <CaseClonePrompt study={study} />
       {related.length > 0 ? (
         <section className="mt-12">
           <h2 className="text-xl font-semibold">{dict.inspiration.related}</h2>

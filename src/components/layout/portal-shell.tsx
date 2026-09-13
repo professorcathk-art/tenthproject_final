@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -11,12 +12,10 @@ import {
   Lightbulb,
   LogOut,
   Menu,
-  MessageCircle,
   Plus,
   Search,
   Settings,
   Shield,
-  Sparkles,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ import {
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useI18n } from "@/components/i18n/provider";
-import { SKOOL_URL, WHATSAPP_URL } from "@/lib/contact";
+import { SKOOL_URL } from "@/lib/contact";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 import { FREE_PROJECT_LIMIT } from "@/lib/membership/constants";
 import { cn } from "@/lib/utils";
@@ -44,14 +43,12 @@ function PortalNavLinks({
   pathname,
   community,
   skool,
-  whatsapp,
   onNavigate,
 }: {
   items: { href: string; label: string; icon: typeof FolderKanban }[];
   pathname: string;
   community: string;
   skool: string;
-  whatsapp: string;
   onNavigate?: () => void;
 }) {
   return (
@@ -87,15 +84,6 @@ function PortalNavLinks({
       >
         <Users className="h-4 w-4" />
         {skool}
-      </a>
-      <a
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noreferrer"
-        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        <MessageCircle className="h-4 w-4" />
-        {whatsapp}
       </a>
     </nav>
   );
@@ -135,9 +123,8 @@ export function PortalShell({
       ...nav,
       { href: "/projects/new", label: dict.portal.newProject, icon: Plus },
       { href: SKOOL_URL, label: dict.portal.skool, icon: Users, external: true },
-      { href: WHATSAPP_URL, label: dict.portal.whatsapp, icon: MessageCircle, external: true },
     ],
-    [dict.portal.newProject, dict.portal.skool, dict.portal.whatsapp, nav],
+    [dict.portal.newProject, dict.portal.skool, nav],
   );
 
   const filtered = commands.filter((item) => item.label.toLowerCase().includes(query.trim().toLowerCase()));
@@ -171,9 +158,7 @@ export function PortalShell({
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white/80 px-4 py-5 backdrop-blur-xl lg:flex dark:border-slate-800 dark:bg-slate-950/70">
         <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-950">
-            <Sparkles className="h-4 w-4" />
-          </div>
+          <Image src="/logo.jpg" alt="Tenth Project" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
           <span className="tracking-tight">{dict.portal.brand}</span>
         </Link>
         <PortalNavLinks
@@ -181,7 +166,6 @@ export function PortalShell({
           pathname={pathname}
           community={dict.portal.community}
           skool={dict.portal.skool}
-          whatsapp={dict.portal.whatsapp}
         />
         <div className="mt-auto space-y-3">
           {paid ? null : (
@@ -212,7 +196,6 @@ export function PortalShell({
                     pathname={pathname}
                     community={dict.portal.community}
                     skool={dict.portal.skool}
-                    whatsapp={dict.portal.whatsapp}
                   />
                 </div>
               </SheetContent>

@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { ArrowRight, BookOpen } from "lucide-react";
-import { getCourseBySlug, getCourses, getLessonProgress, getUserCertificates } from "@/lib/db/platform-store";
+import { BookOpen } from "lucide-react";
+import { getUserCertificates } from "@/lib/db/platform-store";
 import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
 import { getMembershipAccess } from "@/lib/auth/membership";
-import { classroomFileSrc } from "@/lib/classroom/media";
 import { getDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 import { MembershipSyllabus } from "@/components/marketing/academy-brochure";
@@ -17,20 +14,9 @@ export default async function LearningHomePage() {
   if (!isAuthenticated || !user) redirect("/login?redirect=/learning");
 
   await ensurePlatformSeeded();
-  const courses = await getCourses();
   const dict = await getDict();
-  const access = await getMembershipAccess(user.email, user.isAdmin);
-
-  const [rows, certificates] = await Promise.all([
-    Promise.all(
-      courses.map(async (course) => {
-        const full = await getCourseBySlug(course.slug);
-        const lessons = full?.lessons ?? [];
-        const progress = await getLessonProgress(user.id, course.id);
-        const done = progress.filter((item) => item.completed).length;
-        return { course, lessons: lessons.length, done, pct: lessons.length ? Math.round((done / lessons.length) * 100) : 0 };
-      }),
-    ),
+  const [access, certificates] = await Promise.all([
+    getMembershipAccess(user.email, user.isAdmin),
     getUserCertificates(user.id),
   ]);
 
@@ -45,37 +31,6 @@ export default async function LearningHomePage() {
         {!access.paid ? (
           <JoinLifetimeButton className="mt-4">{dict.courses.enroll}</JoinLifetimeButton>
         ) : null}
-        {!access.paid ? (
-          <p className="mt-3 text-sm text-amber-700">{dict.courses.upgradeToWatch}</p>
-        ) : null}
-      </div>
-      <div className="grid gap-4">
-        {rows.map(({ course, lessons, done, pct }) => (
-          <Link key={course.id} href={`/learning/${course.slug}`} className="rounded-2xl glass-panel glow-card p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                {classroomFileSrc(course.cover_image) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={classroomFileSrc(course.cover_image) ?? ""} alt="" className="mb-4 h-32 w-full rounded-xl object-cover" />
-                ) : null}
-                <h2 className="text-lg font-semibold">{course.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{course.description}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge variant="outline">{lessons} {dict.courses.lessons}</Badge>
-                  <Badge variant="secondary">{done}/{lessons}</Badge>
-                </div>
-              </div>
-              <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
-            </div>
-            <div className="mt-5">
-              <div className="mb-1 flex justify-between text-xs text-slate-500">
-                <span>{dict.courses.progress}</span>
-                <span>{pct}%</span>
-              </div>
-              <Progress value={pct} className="h-2" />
-            </div>
-          </Link>
-        ))}
       </div>
       <MembershipSyllabus />
 

@@ -7,14 +7,12 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getSession } from "@/lib/auth/session";
-import { getMembershipAccess } from "@/lib/auth/membership";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
-import { remainderMarkdown, teaserMarkdown } from "@/lib/inspiration/teaser";
+import { teaserMarkdown } from "@/lib/inspiration/teaser";
 import { CaseArticle } from "@/components/inspiration/case-article";
 import { CaseClonePrompt, CaseStudyMeta } from "@/components/inspiration/case-study-extras";
 import { GuestUnlockModal } from "@/components/inspiration/guest-unlock-modal";
-import { VipContentGate } from "@/components/inspiration/vip-content-gate";
 import { isPublicInspirationSlug } from "@/lib/inspiration/public-cases";
 
 export async function generateStaticParams() {
@@ -44,14 +42,10 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
   ]);
   if (!study) notFound();
 
-  const access = session.user
-    ? await getMembershipAccess(session.user.email, session.user.isAdmin)
-    : { paid: false };
   const isGuest = !session.isAuthenticated && !isPublicInspirationSlug(study.slug);
-  const isPaid = access.paid;
+  const canReadFull = session.isAuthenticated;
   const article = localizedCaseText(study.breakdown_md, locale);
   const teaser = teaserMarkdown(article);
-  const remainder = remainderMarkdown(article);
 
   const related = studies.filter((item) => item.slug !== study.slug).slice(0, 3);
   const website = study.website_url;
@@ -88,7 +82,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           </a>
         ) : null}
 
-        {isGuest ? <GuestUnlockModal title={study.title} redirectTo={`/inspiration/${study.slug}`} /> : null}
+        {isGuest ? <GuestUnlockModal title={study.title} slug={study.slug} /> : null}
 
         {isGuest ? null : <CaseStudyMeta study={study} />}
 
@@ -105,26 +99,12 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           </div>
         ) : null}
 
-        {isGuest ? null : isPaid ? (
+        {isGuest ? null : (
           <>
             <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8 sm:py-8">
-              <CaseArticle markdown={article} />
+              <CaseArticle markdown={canReadFull ? article : teaser} />
             </article>
-            <CaseClonePrompt study={study} />
-          </>
-        ) : (
-          <>
-            <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8 sm:py-8">
-              <CaseArticle markdown={teaser} />
-            </article>
-            <VipContentGate>
-              {remainder ? (
-                <article className="rounded-3xl bg-white px-5 py-6 dark:bg-slate-950 sm:px-8 sm:py-8">
-                  <CaseArticle markdown={remainder} />
-                </article>
-              ) : null}
-              <CaseClonePrompt study={study} />
-            </VipContentGate>
+            {canReadFull ? <CaseClonePrompt study={study} /> : null}
           </>
         )}
 
