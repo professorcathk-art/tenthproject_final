@@ -11,6 +11,8 @@ import type {
   Course,
   EnterpriseEnquiry,
   WebinarSignup,
+  CaseStudyMark,
+  CaseMarkStatus,
   Lesson,
   LessonLink,
   LessonMaterial,
@@ -37,6 +39,7 @@ interface PlatformStore {
   webinarSignups: WebinarSignup[];
   mcpApiKeys: McpApiKey[];
   members: Member[];
+  caseMarks: CaseStudyMark[];
 }
 
 function emptyPlatformStore(): PlatformStore {
@@ -50,6 +53,7 @@ function emptyPlatformStore(): PlatformStore {
     webinarSignups: [],
     mcpApiKeys: [],
     members: [],
+    caseMarks: [],
   };
 }
 
@@ -71,7 +75,12 @@ async function ensurePlatformStore(): Promise<PlatformStore> {
     try {
       const raw = await fs.readFile(PLATFORM_FILE, "utf-8");
       const parsed = JSON.parse(raw) as PlatformStore;
-      memoryStore = { ...parsed, members: parsed.members ?? [], webinarSignups: parsed.webinarSignups ?? [] };
+      memoryStore = {
+        ...parsed,
+        members: parsed.members ?? [],
+        webinarSignups: parsed.webinarSignups ?? [],
+        caseMarks: parsed.caseMarks ?? [],
+      };
       return memoryStore;
     } catch {
       /* seed an empty local file below */
@@ -531,6 +540,49 @@ export async function deleteCaseStudy(id: string) {
   const store = await ensurePlatformStore();
   store.caseStudies = store.caseStudies.filter((c) => c.id !== id);
   await savePlatformStore(store);
+}
+
+export async function getCaseMarksForUser(userId: string): Promise<Record<string, CaseMarkStatus>> {
+  if (isSupabaseConfigured()) {
+    const { data } = await createServiceClient().from("case_study_marks").select("case_slug, status").eq("user_id", userId);
+    return Object.fromEntries(((data ?? []) as { case_slug: string; status: CaseMarkStatus }[]).map((row) => [row.case_slug, row.status]));
+  }
+  const store = await ensurePlatformStore();
+  return Object.fromEntries(
+    (store.caseMarks ?? []).filter((row) => row.user_id === userId).map((row) => [row.case_slug, row.status]),
+  );
+}
+
+export async function setCaseMarkForUser(userId: string, slug: string, status: CaseMarkStatus | null): Promise<Record<string, CaseMarkStatus>> {
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    if (!status) {
+      const { error } = await supabase.from("case_study_marks").delete().eq("user_id", userId).eq("case_slug", slug);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabase.from("case_study_marks").upsert({
+        user_id: userId,
+        case_slug: slug,
+        status,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error(error.message);
+    }
+    return getCaseMarksForUser(userId);
+  }
+  const store = await ensurePlatformStore();
+  store.caseMarks = store.caseMarks ?? [];
+  store.caseMarks = store.caseMarks.filter((row) => !(row.user_id === userId && row.case_slug === slug));
+  if (status) {
+    store.caseMarks.push({
+      user_id: userId,
+      case_slug: slug,
+      status,
+      updated_at: new Date().toISOString(),
+    });
+  }
+  await savePlatformStore(store);
+  return getCaseMarksForUser(userId);
 }
 
 // ─── Enterprise ────────────────────────────────────────────

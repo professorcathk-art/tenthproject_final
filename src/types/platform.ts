@@ -132,6 +132,15 @@ export interface WebinarSignup {
   created_at: string;
 }
 
+export type CaseMarkStatus = "saved" | "passed";
+
+export interface CaseStudyMark {
+  user_id: string;
+  case_slug: string;
+  status: CaseMarkStatus;
+  updated_at: string;
+}
+
 export interface McpApiKey {
   id: string;
   user_id: string;

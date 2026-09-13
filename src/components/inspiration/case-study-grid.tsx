@@ -2,28 +2,71 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, EyeOff, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { CaseStudy, CaseStudyCategory } from "@/types/platform";
+import type { CaseMarkStatus, CaseStudy, CaseStudyCategory } from "@/types/platform";
 import { CASE_CATEGORIES, caseCategories } from "@/types/platform";
 import { useI18n } from "@/components/i18n/provider";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { DifficultyStars } from "@/components/inspiration/difficulty-stars";
+import { useCaseMarks } from "@/components/inspiration/use-case-marks";
 
 const FILTERS = ["all", ...CASE_CATEGORIES.map((c) => c.value)] as const;
+const MARK_FILTERS = ["all", "saved", "passed"] as const;
 
 type CaseCard = Pick<CaseStudy, "id" | "title" | "slug" | "category" | "categories" | "summary" | "website_url" | "difficulty">;
+type MarkFilter = (typeof MARK_FILTERS)[number];
 
-export function CaseStudyGrid({ studies, basePath = "/inspiration" }: { studies: CaseCard[]; basePath?: string }) {
+function CaseMarkBadge({ status, savedLabel, passedLabel }: { status?: CaseMarkStatus; savedLabel: string; passedLabel: string }) {
+  if (status === "saved") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+        <Heart className="h-3 w-3 fill-rose-500 text-rose-500" />
+        {savedLabel}
+      </span>
+    );
+  }
+  if (status === "passed") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <EyeOff className="h-3 w-3" />
+        {passedLabel}
+      </span>
+    );
+  }
+  return null;
+}
+
+export function CaseStudyGrid({
+  studies,
+  basePath = "/inspiration",
+  initialMarks,
+  personal = false,
+}: {
+  studies: CaseCard[];
+  basePath?: string;
+  initialMarks?: Record<string, CaseMarkStatus>;
+  personal?: boolean;
+}) {
   const { dict, locale } = useI18n();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
-  const filtered =
-    filter === "all" ? studies : studies.filter((s) => caseCategories(s).includes(filter as CaseStudyCategory));
+  const [markFilter, setMarkFilter] = useState<MarkFilter>("all");
+  const { marks, toggle, pendingSlug } = useCaseMarks(initialMarks ?? {});
   const cats = dict.inspiration.cats;
 
   function label(key: string) {
     return cats[key as keyof typeof cats] ?? key;
   }
+
+  const categoryFiltered =
+    filter === "all" ? studies : studies.filter((s) => caseCategories(s).includes(filter as CaseStudyCategory));
+  const filtered =
+    !personal || markFilter === "all"
+      ? categoryFiltered
+      : categoryFiltered.filter((s) => marks[s.slug] === markFilter);
+
+  const savedCount = studies.filter((s) => marks[s.slug] === "saved").length;
+  const passedCount = studies.filter((s) => marks[s.slug] === "passed").length;
 
   return (
     <div className="space-y-6">
@@ -53,34 +96,91 @@ export function CaseStudyGrid({ studies, basePath = "/inspiration" }: { studies:
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        {filtered.map((study) => (
-          <Link key={study.id} href={`${basePath}/${study.slug}`}>
-            <article className="h-full rounded-2xl glass-panel glow-card p-6">
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {caseCategories(study).map((cat) => (
-                  <Badge key={cat} variant="secondary">
-                    {label(cat)}
-                  </Badge>
-                ))}
-              </div>
-              <h2 className="text-lg font-semibold leading-snug">{study.title}</h2>
-              <div className="mt-2">
-                <DifficultyStars value={study.difficulty} locale={locale} />
-              </div>
-              <p className="text-sm text-slate-600 mt-3 line-clamp-3 leading-relaxed">
-                {localizedCaseText(study.summary, locale)}
-              </p>
-              {study.website_url ? (
-                <p className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-slate-500">
-                  {study.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                  <ArrowUpRight className="h-3 w-3" />
-                </p>
-              ) : null}
-            </article>
-          </Link>
-        ))}
-      </div>
+      {personal ? (
+        <div className="flex gap-2 overflow-x-auto">
+          {MARK_FILTERS.map((value) => {
+            const count = value === "all" ? studies.length : value === "saved" ? savedCount : passedCount;
+            const active = markFilter === value;
+            const text =
+              value === "saved"
+                ? dict.inspiration.filterSaved
+                : value === "passed"
+                  ? dict.inspiration.filterPassed
+                  : dict.inspiration.all;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setMarkFilter(value)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium ${
+                  active
+                    ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
+                }`}
+              >
+                {text} ({count})
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {filtered.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-800">
+          {markFilter === "saved" ? dict.inspiration.noSaved : markFilter === "passed" ? dict.inspiration.noPassed : dict.inspiration.subtitle}
+        </p>
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-2">
+          {filtered.map((study) => {
+            const status = marks[study.slug];
+            return (
+              <article key={study.id} className="relative h-full rounded-2xl glass-panel glow-card p-6">
+                {personal ? (
+                  <button
+                    type="button"
+                    disabled={pendingSlug === study.slug}
+                    aria-pressed={status === "saved"}
+                    aria-label={status === "saved" ? dict.inspiration.saved : dict.inspiration.save}
+                    onClick={() => toggle(study.slug, "saved")}
+                    className="absolute right-4 top-4 z-10 rounded-full border border-slate-200 bg-white/90 p-2 text-slate-500 hover:text-rose-600 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950/80"
+                  >
+                    <Heart className={`h-4 w-4 ${status === "saved" ? "fill-rose-500 text-rose-500" : ""}`} />
+                  </button>
+                ) : null}
+                <Link href={`${basePath}/${study.slug}`} className="block pr-10">
+                  <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                    {caseCategories(study).map((cat) => (
+                      <Badge key={cat} variant="secondary">
+                        {label(cat)}
+                      </Badge>
+                    ))}
+                    {personal ? (
+                      <CaseMarkBadge
+                        status={status}
+                        savedLabel={dict.inspiration.saved}
+                        passedLabel={dict.inspiration.markedPassed}
+                      />
+                    ) : null}
+                  </div>
+                  <h2 className="text-lg font-semibold leading-snug">{study.title}</h2>
+                  <div className="mt-2">
+                    <DifficultyStars value={study.difficulty} locale={locale} />
+                  </div>
+                  <p className="text-sm text-slate-600 mt-3 line-clamp-3 leading-relaxed">
+                    {localizedCaseText(study.summary, locale)}
+                  </p>
+                  {study.website_url ? (
+                    <p className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                      {study.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                      <ArrowUpRight className="h-3 w-3" />
+                    </p>
+                  ) : null}
+                </Link>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
