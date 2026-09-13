@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-500">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-500">正在確認付款並為你登入…</div>}>
       <PaymentSuccessView />
     </Suspense>
   );

@@ -107,7 +107,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                 href="/login?redirect=/dashboard"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "hidden font-semibold sm:inline-flex",
+                  "font-semibold",
                   overHero && "text-white hover:bg-white/10 hover:text-white",
                 )}
               >
@@ -122,16 +122,6 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                 )}
               >
                 {dict.nav.bookConsult}
-              </Link>
-              <Link
-                href="/signup?redirect=/dashboard"
-                className={cn(
-                  buttonVariants({ size: "sm" }),
-                  "rounded-full font-semibold",
-                  overHero ? "bg-white text-slate-950 hover:bg-white/90" : "hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]",
-                )}
-              >
-                {dict.nav.signup}
               </Link>
             </>
           )}
@@ -171,9 +161,6 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                     </Link>
                     <Link href="/enterprise#booking" className="px-3 py-2 text-sm font-semibold">
                       {dict.nav.bookConsult}
-                    </Link>
-                    <Link href="/signup?redirect=/dashboard" className="px-3 py-2 text-sm font-semibold">
-                      {dict.nav.signup}
                     </Link>
                   </>
                 )}

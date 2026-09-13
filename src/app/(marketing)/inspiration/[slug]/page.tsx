@@ -6,12 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
 import { getDict, getLocale } from "@/lib/i18n/server";
+import { getSession } from "@/lib/auth/session";
+import { getMembershipAccess } from "@/lib/auth/membership";
 import { caseCategories } from "@/types/platform";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
+import { remainderMarkdown, teaserMarkdown } from "@/lib/inspiration/teaser";
 import { CaseArticle } from "@/components/inspiration/case-article";
 import { CaseClonePrompt, CaseStudyMeta } from "@/components/inspiration/case-study-extras";
-
-export const revalidate = 300;
+import { GuestUnlockModal } from "@/components/inspiration/guest-unlock-modal";
+import { VipContentGate } from "@/components/inspiration/vip-content-gate";
+import { isPublicInspirationSlug } from "@/lib/inspiration/public-cases";
 
 export async function generateStaticParams() {
   const studies = await getCaseStudyCards();
@@ -31,17 +35,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [study, studies, dict, locale] = await Promise.all([
+  const [study, studies, dict, locale, session] = await Promise.all([
     getCaseStudyBySlug(slug),
     getCaseStudyCards(),
     getDict(),
     getLocale(),
+    getSession(),
   ]);
   if (!study) notFound();
+
+  const access = session.user
+    ? await getMembershipAccess(session.user.email, session.user.isAdmin)
+    : { paid: false };
+  const isGuest = !session.isAuthenticated && !isPublicInspirationSlug(study.slug);
+  const isPaid = access.paid;
+  const article = localizedCaseText(study.breakdown_md, locale);
+  const teaser = teaserMarkdown(article);
+  const remainder = remainderMarkdown(article);
 
   const related = studies.filter((item) => item.slug !== study.slug).slice(0, 3);
   const website = study.website_url;
   const highlights = study.highlights ?? [];
+  const techStack = study.tech_stack ?? [];
 
   return (
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -51,6 +66,11 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <div className="mb-3 flex flex-wrap gap-2">
           {caseCategories(study).map((cat) => (
             <Badge key={cat}>{dict.inspiration.cats[cat as keyof typeof dict.inspiration.cats] ?? cat}</Badge>
+          ))}
+          {techStack.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
           ))}
         </div>
         <h1 className="text-3xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-4xl">{study.title}</h1>
@@ -68,9 +88,11 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           </a>
         ) : null}
 
-        <CaseStudyMeta study={study} />
+        {isGuest ? <GuestUnlockModal title={study.title} redirectTo={`/inspiration/${study.slug}`} /> : null}
 
-        {highlights.length > 0 ? (
+        {isGuest ? null : <CaseStudyMeta study={study} />}
+
+        {!isGuest && highlights.length > 0 ? (
           <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {highlights.map((item) => (
               <div key={`${item.zh}-${item.value}`} className="rounded-2xl glass-panel px-3 py-3">
@@ -83,11 +105,28 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           </div>
         ) : null}
 
-        <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8 sm:py-8">
-          <CaseArticle markdown={localizedCaseText(study.breakdown_md, locale)} />
-        </article>
-
-        <CaseClonePrompt study={study} />
+        {isGuest ? null : isPaid ? (
+          <>
+            <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8 sm:py-8">
+              <CaseArticle markdown={article} />
+            </article>
+            <CaseClonePrompt study={study} />
+          </>
+        ) : (
+          <>
+            <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8 sm:py-8">
+              <CaseArticle markdown={teaser} />
+            </article>
+            <VipContentGate>
+              {remainder ? (
+                <article className="rounded-3xl bg-white px-5 py-6 dark:bg-slate-950 sm:px-8 sm:py-8">
+                  <CaseArticle markdown={remainder} />
+                </article>
+              ) : null}
+              <CaseClonePrompt study={study} />
+            </VipContentGate>
+          </>
+        )}
 
         {related.length > 0 ? (
           <section className="mt-14">

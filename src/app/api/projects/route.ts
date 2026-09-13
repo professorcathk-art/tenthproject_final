@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
+import { FREE_TIER_LIMIT_MESSAGE, getProjectQuota } from "@/lib/membership/limits";
 import {
   getProjects,
   getProject,
@@ -50,7 +51,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
-    await ensureProfile(user);
+    const quota = await getProjectQuota(user.email, user.id, user.isAdmin);
+    if (quota.atLimit) {
+      return NextResponse.json(
+        { error: "FREE_TIER_LIMIT_REACHED", message: FREE_TIER_LIMIT_MESSAGE },
+        { status: 403 },
+      );
+    }
+    try {
+      await ensureProfile(user);
+    } catch (error) {
+      console.error("ensureProfile:", error);
+    }
     const body = await request.json();
 
     const project = await createProject(user.id, {

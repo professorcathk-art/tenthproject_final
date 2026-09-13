@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       whatsapp: session.metadata?.whatsapp || "",
       stripeCustomerId: typeof session.customer === "string" ? session.customer : null,
       stripeSessionId: session.id,
+      existingUserId: session.metadata?.user_id || null,
     });
 
     const response = NextResponse.json({

@@ -33,6 +33,8 @@ import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useI18n } from "@/components/i18n/provider";
 import { SKOOL_URL, WHATSAPP_URL } from "@/lib/contact";
+import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { FREE_PROJECT_LIMIT } from "@/lib/membership/constants";
 import { cn } from "@/lib/utils";
 
 type PortalUser = { email: string; name?: string; isAdmin: boolean };
@@ -99,7 +101,17 @@ function PortalNavLinks({
   );
 }
 
-export function PortalShell({ user, children }: { user: PortalUser; children: React.ReactNode }) {
+export function PortalShell({
+  user,
+  children,
+  paid,
+  projectCount,
+}: {
+  user: PortalUser;
+  children: React.ReactNode;
+  paid: boolean;
+  projectCount: number;
+}) {
   const { dict } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
@@ -171,9 +183,18 @@ export function PortalShell({ user, children }: { user: PortalUser; children: Re
           skool={dict.portal.skool}
           whatsapp={dict.portal.whatsapp}
         />
-        <div className="mt-auto rounded-2xl border border-slate-200/80 px-3 py-3 text-xs text-slate-500 dark:border-slate-800">
-          <p className="font-semibold text-slate-900 dark:text-white">{dict.portal.lifetime}</p>
-          <p className="mt-1 truncate">{user.email}</p>
+        <div className="mt-auto space-y-3">
+          {paid ? null : (
+            <JoinLifetimeButton className="h-10 w-full shadow-[0_0_18px_rgba(251,191,36,0.45)]">
+              ⚡ 升級 VIP 終身會員
+            </JoinLifetimeButton>
+          )}
+          <div className="rounded-2xl border border-slate-200/80 px-3 py-3 text-xs text-slate-500 dark:border-slate-800">
+            <p className="font-semibold text-slate-900 dark:text-white">
+              {paid ? dict.portal.lifetime : `專案額度: ${projectCount}/${FREE_PROJECT_LIMIT} (免費版)`}
+            </p>
+            <p className="mt-1 truncate">{user.email}</p>
+          </div>
         </div>
       </aside>
 
@@ -209,6 +230,11 @@ export function PortalShell({ user, children }: { user: PortalUser; children: Re
             </button>
           </div>
           <div className="flex items-center gap-2">
+            {paid ? null : (
+              <JoinLifetimeButton className="hidden h-9 px-4 text-xs shadow-[0_0_18px_rgba(251,191,36,0.45)] sm:inline-flex">
+                ⚡ 升級 VIP 終身會員
+              </JoinLifetimeButton>
+            )}
             <Link href="/projects/new" className="hidden sm:block">
               <Button size="sm" className="rounded-full font-semibold">
                 <Plus className="mr-1 h-4 w-4" />

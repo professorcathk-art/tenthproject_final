@@ -48,6 +48,7 @@ export async function POST(req: Request) {
           whatsapp: session.metadata?.whatsapp || "",
           stripeCustomerId: sessionCustomerId(session),
           stripeSessionId: session.id,
+          existingUserId: session.metadata?.user_id || null,
         });
       } catch (error) {
         console.error("grantLifetimeMembership:", error);

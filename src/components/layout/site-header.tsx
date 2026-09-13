@@ -126,11 +126,8 @@ export function SiteHeader({ variant = "marketing", showAuth = true, initialUser
               </>
             ) : (
               <>
-                <Link href="/login?redirect=/dashboard" className="hidden sm:block">
+                <Link href="/login?redirect=/dashboard">
                   <Button variant="ghost" size="sm" className="font-semibold">{dict.nav.login}</Button>
-                </Link>
-                <Link href="/signup?redirect=/courses">
-                  <Button size="sm" className="rounded-full font-semibold">{dict.nav.signup}</Button>
                 </Link>
               </>
             )
@@ -160,9 +157,11 @@ export function SiteHeader({ variant = "marketing", showAuth = true, initialUser
                     <Link href={loggedIn ? "/dashboard" : "/login?redirect=/dashboard"} className="mt-3 px-3 py-2 text-sm font-semibold">
                       {loggedIn ? dict.nav.learningHub : dict.nav.login}
                     </Link>
-                    <Link href={loggedIn ? "/courses" : "/signup?redirect=/courses"} className="px-3 py-2 text-sm font-semibold">
-                      {loggedIn ? dict.nav.classroom : dict.nav.signup}
-                    </Link>
+                    {loggedIn ? (
+                      <Link href="/courses" className="px-3 py-2 text-sm font-semibold">
+                        {dict.nav.classroom}
+                      </Link>
+                    ) : null}
                   </>
                 )}
                 {variant === "app" && (

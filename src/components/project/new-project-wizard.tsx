@@ -51,8 +51,11 @@ export function NewProjectWizard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const { project, error } = await res.json();
-      if (error) throw new Error(error);
+      const data = (await res.json()) as { project?: { id: string }; error?: string; message?: string };
+      if (!res.ok || !data.project) {
+        throw new Error(data.message || data.error || "Failed");
+      }
+      const { project } = data;
 
       setProjectId(project.id);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,28 @@ export function JoinModal({
   const copy = dict.joinLifetime;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [signedIn, setSignedIn] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", whatsapp: "" });
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    fetch("/api/auth/demo")
+      .then((res) => res.json())
+      .then((data: { user?: { name?: string; email?: string } | null }) => {
+        if (cancelled || !data.user?.email) return;
+        setSignedIn(true);
+        setForm((current) => ({
+          ...current,
+          name: current.name || data.user?.name || "",
+          email: data.user?.email || current.email,
+        }));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -81,6 +102,7 @@ export function JoinModal({
               type="email"
               required
               autoComplete="email"
+              readOnly={signedIn}
               value={form.email}
               onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
             />
