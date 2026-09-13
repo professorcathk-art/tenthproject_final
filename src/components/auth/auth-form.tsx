@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useI18n } from "@/components/i18n/provider";
@@ -52,8 +52,8 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
   const formCard = (
     <Card className={`w-full max-w-md shadow-none ${split ? "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" : "glass-panel"}`}>
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
-          <Sparkles className="h-6 w-6" />
+        <div className="mx-auto mb-4 h-12 w-12 overflow-hidden rounded-full">
+          <Image src="/logo.jpg" alt="Tenth Project" width={48} height={48} className="h-12 w-12 object-cover" />
         </div>
         <CardTitle className="text-2xl">{title}</CardTitle>
         <CardDescription>{desc}</CardDescription>

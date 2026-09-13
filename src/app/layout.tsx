@@ -43,6 +43,10 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: SITE_NAME,
     publisher: SITE_NAME,
     alternates: { canonical: SITE_URL },
+    icons: {
+      icon: [{ url: "/logo.jpg", type: "image/jpeg" }],
+      apple: [{ url: "/logo.jpg", type: "image/jpeg" }],
+    },
     openGraph: {
       type: "website",
       locale: "zh_HK",
@@ -51,11 +55,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title: dict.meta.title,
       description: dict.meta.description,
       url: SITE_URL,
+      images: [{ url: "/logo.jpg", width: 1024, height: 1024, alt: SITE_NAME }],
     },
     twitter: {
       card: "summary_large_image",
       title: dict.meta.title,
       description: dict.meta.description,
+      images: ["/logo.jpg"],
     },
     robots: {
       index: true,

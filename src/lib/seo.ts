@@ -53,11 +53,13 @@ export function pageMetadata({
       title: fullTitle,
       description,
       url,
+      images: [{ url: "/logo.jpg", width: 1024, height: 1024, alt: SITE_NAME }],
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
+      images: ["/logo.jpg"],
     },
   };
 }

@@ -10,7 +10,7 @@ export function AuthSplitShell({ children }: { children: React.ReactNode }) {
           </Link>
           <h1 className="mt-8 text-3xl font-semibold tracking-tight lg:text-4xl">開啟你的 AI 產品與 Vibe Coding 之旅</h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 lg:text-base">
-            無須寫程式背景。加入社群，體驗 AI Build Coach 如何幫你把想法快速落地方案。
+            無須寫程式背景。體驗 AI Build Coach 如何幫你把想法快速落地方案。
           </p>
           <ul className="mt-10 space-y-6 text-sm leading-relaxed text-slate-200">
             <li>
