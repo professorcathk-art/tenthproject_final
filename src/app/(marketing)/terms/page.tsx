@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getDict, getLocale } from "@/lib/i18n/server";
+import { PUBLIC_CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -37,7 +38,7 @@ export default async function TermsPage() {
             <h2>8. 準據法</h2>
             <p>本條款受香港特別行政區法律管轄。</p>
             <h2>9. 聯絡</h2>
-            <p>professor.cat.hk@gmail.com</p>
+            <p>{PUBLIC_CONTACT_EMAIL}</p>
           </>
         ) : (
           <>
@@ -59,7 +60,7 @@ export default async function TermsPage() {
             <h2>8. Governing law</h2>
             <p>These terms are governed by the laws of the Hong Kong SAR.</p>
             <h2>9. Contact</h2>
-            <p>professor.cat.hk@gmail.com</p>
+            <p>{PUBLIC_CONTACT_EMAIL}</p>
           </>
         )}
       </article>

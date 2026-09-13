@@ -1,7 +1,7 @@
-import Link from "next/link";
+"use client";
+
 import { Lock } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 
 export function PaidGate({
   title,
@@ -17,9 +17,7 @@ export function PaidGate({
       <Lock className="mx-auto h-8 w-8 text-slate-400" />
       <h2 className="mt-4 text-xl font-semibold tracking-tight">{title}</h2>
       <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{body}</p>
-      <Link href="/courses" className={cn(buttonVariants(), "mt-6")}>
-        {cta}
-      </Link>
+      <JoinLifetimeButton className="mt-6">{cta}</JoinLifetimeButton>
     </div>
   );
 }

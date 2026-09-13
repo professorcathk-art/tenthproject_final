@@ -1,37 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WebinarSignupButton } from "@/components/marketing/webinar-signup-dialog";
+import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 
-const JOIN_HREF = "/signup?redirect=/dashboard";
 const TITLE = "Tenth Project 會員：Vibe Coding 與 AI Agent 從零到高手全攻略";
 const BADGE = "🔥 限時Lifetime 終身會員優惠";
-
-function JoinCta({ className = "" }: { className?: string }) {
-  return (
-    <Link
-      href={JOIN_HREF}
-      className={`inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white hover:bg-slate-800 ${className}`}
-    >
-      立即加入 Lifetime 會員
-      <ArrowUpRight className="ml-1.5 h-4 w-4" />
-    </Link>
-  );
-}
-
-function OutlineCta() {
-  return (
-    <Link
-      href="#outline"
-      className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 hover:border-slate-300 dark:border-slate-800 dark:bg-transparent dark:text-white"
-    >
-      查看課程詳細大綱
-      <ArrowRight className="ml-1.5 h-4 w-4" />
-    </Link>
-  );
-}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -61,14 +35,6 @@ function SoftCard({
 function InnerCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-5 last:mb-0 dark:border-slate-800 dark:bg-slate-900/40">
-      {children}
-    </div>
-  );
-}
-
-function Note({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-4 rounded-xl border-l-2 border-slate-900 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600 dark:bg-slate-900/50 dark:text-slate-300">
       {children}
     </div>
   );
@@ -183,26 +149,11 @@ const VIP_PERKS = [
 ];
 
 const FORMAT = [
-  {
-    zh: "學生在付款後的24小時內，將會被加入 Skool 社群，並可即時瀏覽所有 On-Demand 影片及教學內容。(廣東話教學)",
-    en: "Students will be added to the Skool community within 24 hours after payment and gain immediate access to all on-demand videos and course materials.",
-  },
-  {
-    zh: "建議同學在 Q&A 與 Live Session 前先完成所有影片教學，以便更有效參與討論。",
-    en: "We recommend completing all video lessons before the Q&A and Live Sessions to get the most out of the interactive discussions.",
-  },
-  {
-    zh: "Q&A 及 Live Session 均以 Zoom 進行，報名後將透過電郵發送 Zoom 連結。",
-    en: "Both the Q&A and Live Sessions will be conducted on Zoom. A Zoom link will be emailed to you after registration.",
-  },
-  {
-    zh: "若未能即時參加 Zoom Live，可在稍後於 Skool 平台上重溫錄影內容。",
-    en: "If you miss the live Zoom session, you can replay the recording later on the Skool platform.",
-  },
-  {
-    zh: "所有教學材料均可終身存取，讓你隨時重溫學習內容。",
-    en: "All learning materials come with lifetime access, so you can revisit them anytime.",
-  },
+  "學生在付款後的24小時內，將會被加入 Skool 社群，並可即時瀏覽所有 On-Demand 影片及教學內容。(廣東話教學)",
+  "建議同學在 Q&A 與 Live Session 前先完成所有影片教學，以便更有效參與討論。",
+  "Q&A 及 Live Session 均以 Zoom 進行，報名後將透過電郵發送 Zoom 連結。",
+  "若未能即時參加 Zoom Live，可在稍後於 Skool 平台上重溫錄影內容。",
+  "所有教學材料均可終身存取，讓你隨時重溫學習內容。",
 ];
 
 export function MembershipSyllabus() {
@@ -303,67 +254,53 @@ export function AcademyBrochure() {
           一次加入，永久享用所有核心主修課、高階實戰 Workshop、AI 專案規劃工具與導師社群支援。
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <JoinCta />
-          <OutlineCta />
+          <JoinLifetimeButton />
           <WebinarSignupButton />
         </div>
       </header>
 
       <Section title="🎯 核心理念">
         <p className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
-          結合項目導向學習（PBL）與AI技術，21天內從零開始打造可盈利的海外工具站副業。Tenth Project「<strong className="text-slate-900 dark:text-white">幫助學生在21天實戰中複製一個海外月入6位數美金的工具站</strong>」只需用 Cursor, Vercel, GPT API 等工具，無需寫 code。
+          採納「項目導向學習（PBL）」機制，結合現代 AI 開發工具鏈（Cursor、Vercel、OpenAI/Claude API）。我們不講空洞理論，專注於帶領會員在實戰中從 0 到 1 獨立開發並上線具備完整商業變現能力的海外級 AI 工具產品。
         </p>
       </Section>
 
       <Section title="學習成果保證">
         <ul className="space-y-3 text-[15px] text-slate-600 dark:text-slate-300">
           <li>
-            ✅ <strong className="text-slate-900 dark:text-white">1個完整工具復刻：</strong>
-            從需求挖掘開始，完整復刻月賺6位數美金的 Stealthwriter，包括支付系統，即做完即可開始收款！無需 IT 背景
+            <strong className="text-slate-900 dark:text-white">獨立交付完整 AI 工具：</strong>
+            從需求洞察到產品發佈，全程實戰復刻如 StealthWriter 等高頻需求的 AI SaaS 產品，含完整用戶體系與線上支付。
           </li>
           <li>
-            ✅ <strong className="text-slate-900 dark:text-white">真實海外盈利產品：</strong>
-            跟著導師實作完成
+            <strong className="text-slate-900 dark:text-white">具備商業營運能力的線上產品：</strong>
+            在雙導師帶領下完成真實產品上線，具備收取訂閱費與點數付費機制。
           </li>
           <li>
-            ✅ <strong className="text-slate-900 dark:text-white">完整的商業變現流程：</strong>
-            免費到付費轉化系統
+            <strong className="text-slate-900 dark:text-white">完整端到端變現閉環：</strong>
+            掌握從免費體驗（Freemium）到付費轉化（Stripe Integration）的產品設計架構。
           </li>
           <li>
-            ✅ <strong className="text-slate-900 dark:text-white">可重複的開發框架：</strong>
-            為日後獨立開發工具站奠定基礎
+            <strong className="text-slate-900 dark:text-white">可重複套用的敏捷開發 SOP：</strong>
+            建立語言無關的編程思維與 Prompt 驅動開發流程，為日後獨立開發第二、第三個 AI 產品奠定堅實基礎。
           </li>
         </ul>
       </Section>
 
       <Section title="🎁 成品：您將獲得什麼？">
         <InnerCard>
-          <h3 className="mb-3 font-semibold">1. 一個真實運營中的網站</h3>
+          <h3 className="mb-3 font-semibold">1. 一個具備完整商業能力的線上 AI 產品</h3>
           <ul className="space-y-2 text-[15px] text-slate-600 dark:text-slate-300">
-            <li>✅ <strong className="text-slate-900 dark:text-white">可以收款</strong>（Stripe 已接好）</li>
-            <li>✅ <strong className="text-slate-900 dark:text-white">可以展示</strong>（portfolio 展示作品）</li>
-            <li>✅ <strong className="text-slate-900 dark:text-white">可以迭代</strong>（您擁有 code）- 可自主構建第 2、第 3 個系統</li>
+            <li>✅ <strong className="text-slate-900 dark:text-white">線上收款能力：</strong>已完成 Stripe 支付與 Webhook 訂閱計費串接。</li>
+            <li>✅ <strong className="text-slate-900 dark:text-white">作品集展示與營運：</strong>具備完整的用戶註冊、登入與資料庫認證架構。</li>
+            <li>✅ <strong className="text-slate-900 dark:text-white">100% 程式碼自主權：</strong>擁有完整源碼與部署權限，可隨時自主迭代與擴充功能。</li>
           </ul>
-          <Note>
-            💰 <strong className="text-slate-900 dark:text-white">價值對比：</strong>
-            <br />
-            • 市場上租用系統年費：5 位數
-            <br />
-            • 購買或定製系統：6 位數以上
-            <br />
-            • <strong className="text-slate-900 dark:text-white">21 天後擁有完整可收款的網站？</strong>
-          </Note>
         </InnerCard>
         <InnerCard>
-          <h3 className="mb-3 font-semibold">2. 21天後擁有一套可複製的方法論</h3>
+          <h3 className="mb-3 font-semibold">2. 一套可持續複刻的 AI 開發方法論</h3>
           <ul className="space-y-2 text-[15px] text-slate-600 dark:text-slate-300">
-            <li>🔍 需求發現框架</li>
-            <li>💻 AI 開發 SOP</li>
-            <li>💰 收款部署方法</li>
-            <li>
-              🚀 用同一套方法做第 2、第 3 個產品：
-              <strong className="text-slate-900 dark:text-white">需求→開發→上線→變現</strong>
-            </li>
+            <li>🔍 <strong className="text-slate-900 dark:text-white">商業需求驗證框架：</strong>精準找到市場切入點與 MVP 功能範疇。</li>
+            <li>💻 <strong className="text-slate-900 dark:text-white">Prompt 驅動開發 SOP：</strong>靈活運用 Cursor 與 Master Prompt 進行敏捷開發。</li>
+            <li>💳 <strong className="text-slate-900 dark:text-white">自動化變現部署流程：</strong>掌握資料庫、API 與支付網關的實戰整合。</li>
           </ul>
         </InnerCard>
       </Section>
@@ -373,7 +310,7 @@ export function AcademyBrochure() {
           <h3 className="mb-2 font-semibold">🎯 課程如何設計</h3>
           <p className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
             基於<strong className="text-slate-900 dark:text-white">項目導向學習（PBL）</strong>
-            優勢設計，我們將複雜的 AI 產品開發過程拆解成 4 個清晰的里程碑。每一週都有實戰項目，確保您不只是學習理論，而是真正能夠
+            優勢設計，確保您不只是學習理論，而是真正能夠
             <strong className="text-slate-900 dark:text-white">在 21 天內完成一個可收款的完整產品</strong>。
           </p>
         </InnerCard>
@@ -383,15 +320,19 @@ export function AcademyBrochure() {
             知名學府計算機科學學士 + 阿里巴巴集團技術專家 + 10年程序員經驗。朱Sir 不是純講師，而是真正在企業規模系統開發中實踐過的工程師。他將自己在大型互聯網平台的架構設計經驗，轉化為適合初學者的教學方法。
           </p>
         </InnerCard>
-        <InnerCard>
-          <h3 className="mb-3 font-semibold">🚀 核心教學方法</h3>
-          <ul className="space-y-2 text-[15px] text-slate-600 dark:text-slate-300">
-            <li>• <strong className="text-slate-900 dark:text-white">項目導向：</strong>每週一個完整項目，從零開始到能運營</li>
-            <li>• <strong className="text-slate-900 dark:text-white">實戰導向：</strong>不講廢話，只講你需要的技能</li>
-            <li>• <strong className="text-slate-900 dark:text-white">可複製：</strong>學完能立即應用到自己的項目</li>
-            <li>• <strong className="text-slate-900 dark:text-white">持續支援：</strong>導師不只在課堂，還在社群中持續解答問題</li>
-          </ul>
-        </InnerCard>
+      </Section>
+
+      <MembershipSyllabus />
+
+      <Section title="課程形式">
+        <ol className="space-y-5">
+          {FORMAT.map((item, index) => (
+            <li key={item} className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">{index + 1}. </strong>
+              {item}
+            </li>
+          ))}
+        </ol>
       </Section>
 
       <Section title="教學團隊">
@@ -456,41 +397,13 @@ export function AcademyBrochure() {
         </div>
       </Section>
 
-      <MembershipSyllabus />
-
-      <Section title="課程形式">
-        <ol className="space-y-5">
-          {FORMAT.map((item, index) => (
-            <li key={item.zh} className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
-              <p>
-                <strong className="text-slate-900 dark:text-white">{index + 1}. </strong>
-                {item.zh}
-              </p>
-              <p className="mt-1 text-slate-500">{item.en}</p>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
       <section className="mt-14 rounded-3xl border border-slate-200 bg-slate-950 px-6 py-10 text-center text-white dark:border-slate-800">
         <p className="text-xl font-semibold">立即加入 Lifetime 會員</p>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
           一次加入，永久享用所有核心主修課、高階實戰 Workshop、AI 專案規劃工具與導師社群支援。
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link
-            href={JOIN_HREF}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-slate-950 hover:bg-white/90"
-          >
-            立即加入 Lifetime 會員
-            <ArrowUpRight className="ml-1.5 h-4 w-4" />
-          </Link>
-          <Link
-            href="#outline"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-white/25 px-6 text-sm font-semibold text-white"
-          >
-            查看課程詳細大綱
-          </Link>
+          <JoinLifetimeButton variant="dark">立即加入 Lifetime 會員</JoinLifetimeButton>
           <WebinarSignupButton variant="dark" />
         </div>
       </section>

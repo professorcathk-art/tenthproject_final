@@ -4,7 +4,7 @@ export const enterpriseCopy = {
       badge: "✨ Enterprise AI Transformation & Workflow Automation",
       headline: "強大、精準、可量化的企業級 AI 轉型解決方案",
       subheadline:
-        "結合前阿里巴巴技術專家的大型系統架構經驗，與前國際投行高管的數位轉型視野。我們不講空言，專注於深入評估業務流程，為企業量身打造並 100% 落地部署 AI Agent 與自動化工作流，實質提升營運效益。",
+        "結合前阿里巴巴技術專家的大型系統架構經驗，與前國際投行高管的數位轉型視野。我們專注於深入評估業務流程，為企業量身打造並 100% 落地部署 AI Agent 與自動化工作流，實質提升營運效益。",
       ctaPrimary: "預約 1-on-1 專家免費諮詢",
       ctaSecondary: "查看企業成功案例",
       metrics: [
@@ -172,7 +172,7 @@ export const enterpriseCopy = {
       badge: "✨ Enterprise AI Transformation & Workflow Automation",
       headline: "Powerful, precise, measurable enterprise AI transformation",
       subheadline:
-        "Combining large-scale systems architecture from former Alibaba technical specialists with the digital-transformation perspective of former international investment-banking executives. We skip empty talk. We assess operating workflows in depth, then design and fully deploy custom AI agents and automation — live in production — to raise real operating performance.",
+        "Combining large-scale systems architecture from former Alibaba technical specialists with the digital-transformation perspective of former international investment-banking executives. We assess operating workflows in depth, then design and fully deploy custom AI agents and automation — live in production — to raise real operating performance.",
       ctaPrimary: "Book a free 1-on-1 expert consultation",
       ctaSecondary: "See enterprise case studies",
       metrics: [

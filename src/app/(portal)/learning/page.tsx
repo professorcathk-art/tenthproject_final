@@ -10,6 +10,7 @@ import { classroomFileSrc } from "@/lib/classroom/media";
 import { getDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 import { MembershipSyllabus } from "@/components/marketing/academy-brochure";
+import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 
 export default async function LearningHomePage() {
   const { isAuthenticated, user } = await getSession();
@@ -42,12 +43,7 @@ export default async function LearningHomePage() {
         <h1 className="text-2xl font-bold tracking-tight">{dict.courses.title}</h1>
         <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">{dict.courses.subtitle}</p>
         {!access.paid ? (
-          <Link
-            href="/signup?redirect=/dashboard"
-            className="mt-4 inline-flex h-11 items-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white"
-          >
-            {dict.courses.enroll}
-          </Link>
+          <JoinLifetimeButton className="mt-4">{dict.courses.enroll}</JoinLifetimeButton>
         ) : null}
         {!access.paid ? (
           <p className="mt-3 text-sm text-amber-700">{dict.courses.upgradeToWatch}</p>

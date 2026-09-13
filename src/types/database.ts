@@ -18,6 +18,10 @@ export interface Database {
           default_ai_model: string;
           default_tool: string;
           created_at: string;
+          is_lifetime_member: boolean;
+          whatsapp: string | null;
+          stripe_customer_id: string | null;
+          stripe_session_id: string | null;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {
           id: string;

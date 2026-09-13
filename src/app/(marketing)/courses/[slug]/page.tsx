@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, ArrowLeft, Lock } from "lucide-react";
 import { getCourseBySlug, getLessonProgress } from "@/lib/db/platform-store";
@@ -91,9 +91,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
         {!isAuthenticated && (
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Link href={`/login?redirect=/learning/${slug}`}>
-              <Button size="lg" className="h-11 px-6 font-semibold">{dict.courses.enroll}</Button>
-            </Link>
+            <JoinLifetimeButton>{dict.courses.enroll}</JoinLifetimeButton>
           </div>
         )}
       </div>

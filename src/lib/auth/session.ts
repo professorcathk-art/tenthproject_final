@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/auth/admin";
 
 export const AUTH_COOKIE = "tenth_project_session";
@@ -18,12 +19,21 @@ export interface SessionUser {
 interface SessionPayload {
   email: string;
   name: string;
+  id?: string;
 }
 
-export function buildUser(email: string, name?: string): SessionUser {
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 60 * 60 * 24 * 30,
+  path: "/",
+};
+
+export function buildUser(email: string, name?: string, id?: string): SessionUser {
   const admin = isAdminEmail(email);
   return {
-    id: DEMO_USER_ID,
+    id: id || DEMO_USER_ID,
     email: email.trim().toLowerCase(),
     name: name?.trim() || (admin ? "Professor Cat" : "Member"),
     avatar_url: null,
@@ -32,6 +42,14 @@ export function buildUser(email: string, name?: string): SessionUser {
     created_at: new Date().toISOString(),
     isAdmin: admin,
   };
+}
+
+export function writeSessionCookie(
+  response: NextResponse,
+  payload: { email: string; name: string; id?: string },
+) {
+  response.cookies.set(AUTH_COOKIE, JSON.stringify(payload), SESSION_COOKIE_OPTIONS);
+  return response;
 }
 
 export const DEMO_USER = buildUser("demo@tenthproject.app", "Demo User");
@@ -60,7 +78,7 @@ export async function getSession() {
   const cookieStore = await cookies();
   const payload = parsePayload(cookieStore.get(AUTH_COOKIE)?.value);
   if (!payload) return { user: null, isAuthenticated: false as const };
-  const user = buildUser(payload.email, payload.name);
+  const user = buildUser(payload.email, payload.name, payload.id);
   return { user, isAuthenticated: true as const };
 }
 

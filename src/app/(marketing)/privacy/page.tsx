@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getDict, getLocale } from "@/lib/i18n/server";
+import { PUBLIC_CONTACT_EMAIL } from "@/lib/contact";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -37,7 +38,7 @@ export default async function PrivacyPage() {
             <h2>Cookie</h2>
             <p>我們使用必要 Cookie 維持登入與語言設定（繁體中文為預設，可切換 English）。</p>
             <h2>你的權利</h2>
-            <p>你可要求查閱、更正或刪除個人資料。請以電郵聯絡管理員：professor.cat.hk@gmail.com。</p>
+            <p>你可要求查閱、更正或刪除個人資料。請以電郵聯絡管理員：{PUBLIC_CONTACT_EMAIL}。</p>
             <h2>政策更新</h2>
             <p>我們可能更新本政策，並在本頁顯示最新日期。</p>
           </>
@@ -61,7 +62,7 @@ export default async function PrivacyPage() {
             <h2>Cookies</h2>
             <p>We use essential cookies for sign-in and language (Traditional Chinese by default; English optional).</p>
             <h2>Your rights</h2>
-            <p>You may request access, correction, or deletion by emailing professor.cat.hk@gmail.com.</p>
+            <p>You may request access, correction, or deletion by emailing {PUBLIC_CONTACT_EMAIL}.</p>
             <h2>Updates</h2>
             <p>We may update this policy and will post the latest date on this page.</p>
           </>

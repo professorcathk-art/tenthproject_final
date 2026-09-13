@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getMemberByEmail, upsertMember } from "@/lib/db/platform-store";
+import { createServiceClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { isPaidPlan, type Member } from "@/types/platform";
 
 export interface MembershipAccess {
@@ -40,8 +41,19 @@ export async function getMembershipAccess(email: string | null | undefined, isAd
   if (admin) {
     return { paid: true, plan: member.plan, status: member.status, member };
   }
+  const paid = member.status === "active" && isPaidPlan(member.plan);
+  if (!paid && isSupabaseConfigured()) {
+    const { data } = await createServiceClient()
+      .from("profiles")
+      .select("is_lifetime_member")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
+    if (data?.is_lifetime_member) {
+      return { paid: true, plan: member.plan === "enterprise" ? "enterprise" : "academy", status: "active", member };
+    }
+  }
   return {
-    paid: member.status === "active" && isPaidPlan(member.plan),
+    paid,
     plan: member.plan,
     status: member.status,
     member,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_TC, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/components/i18n/provider";
+import { JoinLifetimeProvider } from "@/components/membership/join-lifetime-provider";
 import { ThemeProvider } from "@/components/theme/provider";
 import { getLocale, getDict } from "@/lib/i18n/server";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
@@ -79,7 +80,9 @@ export default async function RootLayout({
     >
       <body className={`${notoSans.className} min-h-full flex flex-col font-sans`}>
         <ThemeProvider>
-          <I18nProvider initialLocale={locale}>{children}</I18nProvider>
+          <I18nProvider initialLocale={locale}>
+            <JoinLifetimeProvider>{children}</JoinLifetimeProvider>
+          </I18nProvider>
           <Toaster position="top-right" />
         </ThemeProvider>
       </body>

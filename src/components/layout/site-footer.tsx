@@ -59,7 +59,9 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between gap-2 text-xs text-slate-400">
-          <span>© {year} {dict.footer.copyright}</span>
+          <span>
+            © {year} {dict.footer.copyright} {dict.footer.affiliation}
+          </span>
           <span>Hong Kong</span>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE, buildUser } from "@/lib/auth/session";
+import { AUTH_COOKIE, buildUser, writeSessionCookie } from "@/lib/auth/session";
 import { ensureMemberRecord, getMembershipAccess } from "@/lib/auth/membership";
 
 export async function GET() {
@@ -56,17 +56,7 @@ export async function POST(request: NextRequest) {
     plan,
     paid,
   });
-  response.cookies.set(
-    AUTH_COOKIE,
-    JSON.stringify({ email: user.email, name: user.name }),
-    {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-    }
-  );
+  writeSessionCookie(response, { email: user.email, name: user.name, id: user.id });
   return response;
 }
 
