@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getMemberByEmail, upsertMember } from "@/lib/db/platform-store";
@@ -73,7 +74,7 @@ export async function captureFreeCheckoutLead(email: string, name: string, whats
   return next;
 }
 
-export async function getMembershipAccess(email: string | null | undefined, isAdmin = false): Promise<MembershipAccess> {
+export const getMembershipAccess = cache(async function getMembershipAccess(email: string | null | undefined, isAdmin = false): Promise<MembershipAccess> {
   if (!email) return { paid: false, plan: "free", status: "active", member: null };
   const admin = isAdmin || isAdminEmail(email);
   const member = await ensureMemberRecord(email, undefined, admin);
@@ -97,4 +98,4 @@ export async function getMembershipAccess(email: string | null | undefined, isAd
     status: member.status,
     member,
   };
-}
+});

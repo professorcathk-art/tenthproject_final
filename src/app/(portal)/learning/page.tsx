@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { getUserCertificates } from "@/lib/db/platform-store";
-import { ensurePlatformSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
 import { getMembershipAccess } from "@/lib/auth/membership";
 import { getDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
-import { MembershipSyllabus } from "@/components/marketing/academy-brochure";
+import { MembershipSyllabus } from "@/components/membership/membership-syllabus";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 import { VipSkoolWelcome } from "@/components/membership/vip-skool-welcome";
 
@@ -14,7 +13,6 @@ export default async function LearningHomePage() {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) redirect("/login?redirect=/learning");
 
-  await ensurePlatformSeeded();
   const [dict, access] = await Promise.all([
     getDict(),
     getMembershipAccess(user.email, user.isAdmin),

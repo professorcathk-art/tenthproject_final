@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { useI18n } from "@/components/i18n/provider";
 
 interface AuthFormProps {
@@ -21,6 +22,12 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
   const { dict } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [recoveryFromHash] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.hash.replace(/^#/, "")).get("type") === "recovery";
+  });
+  const recovery = mode === "reset" && (recoveryFromHash || searchParams.get("type") === "recovery" || Boolean(searchParams.get("code")));
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const split = variant === "split" && mode !== "reset";
@@ -36,9 +43,58 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
     e.preventDefault();
     setError("");
     if (mode === "reset") {
-      const message = "請聯絡 chris.lau@professor-cat.com 重設密碼。";
-      setError(message);
-      window.alert(message);
+      setLoading(true);
+      const form = new FormData(e.currentTarget);
+      const submittedEmail = String(form.get("email") ?? email).trim();
+      const submittedPassword = String(form.get("password") ?? "").trim();
+      try {
+        if (recovery) {
+          const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+          if (!url || !key) {
+            setError("重設密碼服務尚未設定，請稍後再試。");
+            return;
+          }
+          const supabase = createClient(url, key, { auth: { persistSession: true, detectSessionInUrl: true } });
+          const { error: updateError } = await supabase.auth.updateUser({ password: submittedPassword });
+          if (updateError) {
+            setError(updateError.message);
+            window.alert(updateError.message);
+            return;
+          }
+          const login = await fetch("/api/auth/demo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: submittedEmail, password: submittedPassword, mode: "login" }),
+          });
+          if (!login.ok) {
+            router.push("/login");
+            return;
+          }
+          router.push("/dashboard");
+          router.refresh();
+          return;
+        }
+        const res = await fetch("/api/auth/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: submittedEmail }),
+        });
+        const data = (await res.json().catch(() => ({}))) as { message?: string };
+        if (!res.ok) {
+          const message = data.message || "無法寄出重設連結，請再試一次。";
+          setError(message);
+          window.alert(message);
+          return;
+        }
+        setNotice(data.message || dict.auth.resetSent);
+      } catch {
+        const message = "連線失敗，請再試一次。";
+        setError(message);
+        window.alert(message);
+      } finally {
+        setLoading(false);
+      }
       return;
     }
     setLoading(true);
@@ -93,6 +149,11 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
               {error}
             </p>
           ) : null}
+          {notice ? (
+            <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+              {notice}
+            </p>
+          ) : null}
           {mode === "signup" || (!split && mode !== "reset") ? (
             <div className="space-y-2">
               <Label htmlFor="name">{split ? "姓名 (Full Name)" : dict.auth.name}</Label>
@@ -120,9 +181,9 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
               placeholder="you@example.com"
             />
           </div>
-          {mode !== "reset" ? (
+          {mode !== "reset" || recovery ? (
             <div className="space-y-2">
-              <Label htmlFor="password">{split ? "密碼 (Password)" : dict.auth.password}</Label>
+              <Label htmlFor="password">{recovery ? dict.auth.newPassword : split ? "密碼 (Password)" : dict.auth.password}</Label>
               <Input
                 id="password"
                 name="password"
@@ -135,7 +196,11 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
           ) : null}
           <Button type="submit" className="h-11 w-full font-semibold" disabled={loading}>
             {loading
-              ? dict.auth.signingIn
+              ? mode === "reset"
+                ? recovery
+                  ? dict.auth.savePassword
+                  : dict.auth.sendingReset
+                : dict.auth.signingIn
               : split
                 ? mode === "login"
                   ? "登入專案中心 ➔"
@@ -144,7 +209,9 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                   ? dict.auth.signIn
                   : mode === "signup"
                     ? dict.auth.createAccount
-                    : dict.auth.sendReset}
+                    : recovery
+                      ? dict.auth.savePassword
+                      : dict.auth.sendReset}
           </Button>
         </form>
         {split ? (
@@ -156,6 +223,10 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                   還沒有帳號？{" "}
                   <Link href="/signup?redirect=/dashboard" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
                     免費註冊
+                  </Link>
+                  {" · "}
+                  <Link href="/reset-password" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
+                    {dict.auth.forgot}
                   </Link>
                 </>
               ) : (

@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { notifyAdmin } from "@/lib/email/notify-admin";
 import { grantLifetimeMembership } from "@/lib/membership/grant-lifetime";
 import { getStripe } from "@/lib/stripe";
 
@@ -37,19 +38,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
+  if (event.type === "checkout.session.completed" || event.type === "checkout.session.expired") {
     const session = event.data.object as Stripe.Checkout.Session;
     const email = sessionEmail(session);
+    const name = session.metadata?.name || "VIP Member";
+    const whatsapp = session.metadata?.whatsapp || "";
+
+    if (event.type === "checkout.session.expired") {
+      after(() =>
+        notifyAdmin(
+          `未完成付款｜${name} — ${email || "未知電郵"}`,
+          ["Lifetime Checkout 逾時未付款。", "", `姓名：${name}`, `電郵：${email || "—"}`, `WhatsApp：${whatsapp || "—"}`, `Stripe session：${session.id}`].join("\n"),
+        ).catch((error) => console.error("abandoned checkout email:", error)),
+      );
+      return NextResponse.json({ received: true });
+    }
+
     if (email) {
       try {
         await grantLifetimeMembership({
           email,
-          name: session.metadata?.name || "VIP Member",
-          whatsapp: session.metadata?.whatsapp || "",
+          name,
+          whatsapp,
           stripeCustomerId: sessionCustomerId(session),
           stripeSessionId: session.id,
           existingUserId: session.metadata?.user_id || null,
         });
+        after(() =>
+          notifyAdmin(
+            `新付款｜${name} — ${email}`,
+            ["Lifetime 付款成功。", "", `姓名：${name}`, `電郵：${email}`, `WhatsApp：${whatsapp || "—"}`, `Stripe session：${session.id}`].join("\n"),
+          ).catch((error) => console.error("sale email:", error)),
+        );
       } catch (error) {
         console.error("grantLifetimeMembership:", error);
         return NextResponse.json({ error: "Failed to grant membership" }, { status: 500 });

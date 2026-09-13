@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createAnonClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { ensureMemberRecord } from "@/lib/auth/membership";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { getCheckoutBaseUrl } from "@/lib/stripe";
 
 export type AuthResult =
   | { ok: true; userId: string; email: string; name: string; isAdmin: boolean }
@@ -180,4 +181,26 @@ export async function signupWithPassword(emailRaw: string, password: string, nam
 
   const user = await ensureAuthUser(email, name, { password });
   return finishAuthenticatedSession(user, name);
+}
+
+export async function requestPasswordReset(emailRaw: string): Promise<{ ok: true; message: string } | { ok: false; message: string }> {
+  const email = normalizeEmail(emailRaw);
+  if (!validEmail(email)) {
+    return { ok: false, message: "請輸入有效電郵。" };
+  }
+  if (!isSupabaseConfigured()) {
+    return { ok: false, message: "重設密碼服務尚未設定，請稍後再試。" };
+  }
+
+  const existing = await findAuthUserByEmail(email);
+  if (existing) {
+    const { error } = await createAnonClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${getCheckoutBaseUrl()}/reset-password`,
+    });
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+  }
+
+  return { ok: true, message: "若此電郵已註冊，重設連結已寄出。請查看收件匣。" };
 }

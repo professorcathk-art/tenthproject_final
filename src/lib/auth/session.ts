@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/auth/admin";
@@ -74,13 +75,13 @@ function parsePayload(raw: string | undefined): SessionPayload | null {
   return null;
 }
 
-export async function getSession() {
+export const getSession = cache(async function getSession() {
   const cookieStore = await cookies();
   const payload = parsePayload(cookieStore.get(AUTH_COOKIE)?.value);
   if (!payload) return { user: null, isAuthenticated: false as const };
   const user = buildUser(payload.email, payload.name, payload.id);
   return { user, isAuthenticated: true as const };
-}
+});
 
 export async function requireAuth() {
   const session = await getSession();
