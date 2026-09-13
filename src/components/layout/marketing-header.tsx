@@ -16,8 +16,9 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [heroScroll, setHeroScroll] = useState(true);
-  const [navOpen, setNavOpen] = useState(false);
+  const [navPath, setNavPath] = useState<string | null>(null);
   const overHero = isHome && heroScroll;
+  const navOpen = navPath === pathname;
 
   useEffect(() => {
     if (!isHome) return;
@@ -127,7 +128,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
             </>
           )}
 
-          <Sheet open={navOpen} onOpenChange={setNavOpen}>
+          <Sheet open={navOpen} onOpenChange={(open) => setNavPath(open ? pathname : null)}>
             <SheetTrigger
               className={cn(
                 "inline-flex h-9 w-9 items-center justify-center rounded-md lg:hidden",
@@ -144,7 +145,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => setNavOpen(false)}
+                      onClick={() => setNavPath(null)}
                       className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100"
                     >
                       <Icon className="h-4 w-4" />
@@ -153,15 +154,15 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                   );
                 })}
                 {loggedIn ? (
-                  <Link href="/dashboard" onClick={() => setNavOpen(false)} className="mt-3 px-3 py-2 text-sm font-semibold">
+                  <Link href="/dashboard" onClick={() => setNavPath(null)} className="mt-3 px-3 py-2 text-sm font-semibold">
                     {dict.nav.enterPortal}
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login?redirect=/dashboard" onClick={() => setNavOpen(false)} className="mt-3 px-3 py-2 text-sm font-semibold">
+                    <Link href="/login?redirect=/dashboard" onClick={() => setNavPath(null)} className="mt-3 px-3 py-2 text-sm font-semibold">
                       {dict.nav.login}
                     </Link>
-                    <Link href="/enterprise#booking" onClick={() => setNavOpen(false)} className="px-3 py-2 text-sm font-semibold">
+                    <Link href="/enterprise#booking" onClick={() => setNavPath(null)} className="px-3 py-2 text-sm font-semibold">
                       {dict.nav.bookConsult}
                     </Link>
                   </>

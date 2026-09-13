@@ -86,8 +86,9 @@ export function PortalShell({
   const pathname = usePathname();
   const router = useRouter();
   const [commandOpen, setCommandOpen] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
+  const [navPath, setNavPath] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const navOpen = navPath === pathname;
 
   const nav = useMemo(
     () => [
@@ -162,13 +163,13 @@ export function PortalShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 dark:border-slate-800 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <Sheet open={navOpen} onOpenChange={setNavOpen}>
+            <Sheet open={navOpen} onOpenChange={(open) => setNavPath(open ? pathname : null)}>
               <SheetTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800">
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
                 <div className="mt-10">
-                  <PortalNavLinks items={nav} pathname={pathname} onNavigate={() => setNavOpen(false)} />
+                  <PortalNavLinks items={nav} pathname={pathname} onNavigate={() => setNavPath(null)} />
                 </div>
               </SheetContent>
             </Sheet>

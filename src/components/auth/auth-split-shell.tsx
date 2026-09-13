@@ -2,8 +2,11 @@ import Link from "next/link";
 
 export function AuthSplitShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-12">
-      <aside className="flex flex-col justify-between bg-slate-900 p-8 text-white lg:col-span-6 lg:p-12">
+    <div className="grid min-h-[100svh] grid-cols-1 lg:grid-cols-12">
+      <section className="order-1 flex items-start justify-center bg-slate-50 px-4 pt-6 pb-10 dark:bg-slate-950 sm:items-center sm:p-6 lg:order-2 lg:col-span-6 lg:p-12">
+        {children}
+      </section>
+      <aside className="order-2 hidden flex-col justify-between bg-slate-900 p-8 text-white lg:order-1 lg:col-span-6 lg:flex lg:p-12">
         <div>
           <Link href="/" className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold">
             ✨ Tenth Project 免費會員專屬
@@ -34,9 +37,6 @@ export function AuthSplitShell({ children }: { children: React.ReactNode }) {
           <footer className="mt-3 text-xs text-slate-400">— Felix Zhu & Chris Lau (Tenth Project 創辦團隊)</footer>
         </blockquote>
       </aside>
-      <section className="flex items-center justify-center bg-slate-50 p-6 dark:bg-slate-950 lg:col-span-6 lg:p-12">
-        {children}
-      </section>
     </div>
   );
 }

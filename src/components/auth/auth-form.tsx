@@ -216,17 +216,13 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
         </form>
         {split ? (
           <>
-            <p className="mt-4 text-center text-xs text-slate-500">🔒 免信用卡 · 1 分鐘快速開通基礎功能</p>
+            <p className="mt-4 text-center text-xs text-slate-500">🔒 無需信用卡 · 1 分鐘快速開通基礎功能</p>
             <div className="mt-4 text-center text-sm text-slate-600">
               {mode === "login" ? (
                 <>
                   還沒有帳號？{" "}
                   <Link href="/signup?redirect=/dashboard" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
                     免費註冊
-                  </Link>
-                  {" · "}
-                  <Link href="/reset-password" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
-                    {dict.auth.forgot}
                   </Link>
                 </>
               ) : (
@@ -238,6 +234,13 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                 </>
               )}
             </div>
+            {mode === "login" ? (
+              <div className="mt-3 text-center text-sm">
+                <Link href="/reset-password" className="text-slate-500 underline-offset-4 hover:underline dark:text-slate-400">
+                  {dict.auth.forgot}
+                </Link>
+              </div>
+            ) : null}
           </>
         ) : (
           <>
@@ -248,10 +251,6 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                   {dict.auth.noAccount}{" "}
                   <Link href="/signup?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
                     {dict.auth.createAccount}
-                  </Link>
-                  {" · "}
-                  <Link href="/reset-password" className="font-medium text-slate-900 hover:underline">
-                    {dict.auth.forgot}
                   </Link>
                 </>
               )}
@@ -269,6 +268,13 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                 </Link>
               )}
             </div>
+            {mode === "login" ? (
+              <div className="mt-3 text-center text-sm">
+                <Link href="/reset-password" className="text-slate-500 hover:underline">
+                  {dict.auth.forgot}
+                </Link>
+              </div>
+            ) : null}
           </>
         )}
       </CardContent>
