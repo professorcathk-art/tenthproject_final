@@ -22,10 +22,12 @@ export function JoinLifetimeButton({
       onClick={openJoinLifetime}
       className={cn(
         "inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-semibold",
-        variant === "primary" && "bg-slate-950 text-white hover:bg-slate-800",
-        variant === "dark" && "bg-white text-slate-950 hover:bg-white/90",
+        variant === "primary" &&
+          "bg-slate-950 text-white hover:bg-slate-800 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200",
+        variant === "dark" &&
+          "bg-white text-slate-950 hover:bg-amber-100 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200",
         variant === "outline" &&
-          "border border-slate-200 bg-white text-slate-900 hover:border-slate-300 dark:border-slate-800 dark:bg-transparent dark:text-white",
+          "border border-slate-200 bg-white text-slate-900 hover:border-slate-300 dark:border-slate-700 dark:bg-amber-300 dark:text-slate-950",
         className,
       )}
     >

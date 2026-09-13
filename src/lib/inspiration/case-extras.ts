@@ -178,6 +178,61 @@ const poke = brief({
   avoidEn: "Official Apple Messages access, training a model, or an open-ended browser agent on day one.",
 });
 
+const raven = brief({
+  name: "Raven",
+  site: "https://www.withraven.ai/",
+  loopZh: "上傳一張沒有 GPS 的照片 → 視覺模型讀建築／植被／路牌 → 回傳地點候選與信心 → 免費次數用完再導向 App 或付費。",
+  loopEn: "Upload a photo with no GPS → vision model reads buildings/plants/signs → ranked places + confidence → free tries, then app or paid.",
+  screensZh: "- 拖放上傳\n- 地圖與候選地點\n- 信心與判讀依據\n- 升級／下載 App",
+  screensEn: "- Drag-and-drop upload\n- Map + candidates\n- Confidence + rationale\n- Upgrade / app",
+  avoidZh: "人臉辨識、大規模存圖、一開始就做執法後台。先做「一張圖 → 一個城市」。",
+  avoidEn: "Face ID, storing every photo, or an agency console on day one. Ship photo → city.",
+});
+
+const thetawave = brief({
+  name: "ThetaWave",
+  site: "https://thetawave.ai/",
+  loopZh: "上傳講義／錄音 → 抽出知識點 → 依錯題生成筆記與字卡 → 出一組測驗 → 記下盲點再複習。",
+  loopEn: "Upload notes or audio → extract concepts → notes and cards from wrong answers → a quiz → restudy the gaps.",
+  screensZh: "- 上傳教材\n- 筆記／字卡\n- 測驗\n- 錯題本",
+  screensEn: "- Upload\n- Notes / cards\n- Quiz\n- Missed-question list",
+  avoidZh: "一次做全校 LMS、直播課、學分認證。先打通一份 PDF → 十張字卡。",
+  avoidEn: "A campus LMS, live class, or credits. Ship one PDF → ten cards.",
+});
+
+const wokHei = brief({
+  name: "鑊氣",
+  site: "https://apps.apple.com/hk/app/%E9%91%8A%E6%B0%A3/id6766081667",
+  loopZh: "僱主用中文點一道家常菜 → 自動譯成外傭母語步驟 → 標清真／禁忌 → WhatsApp 傳一週菜單。",
+  loopEn: "Employer picks a home dish in Chinese → steps in the helper’s language → diet tags → WhatsApp the week’s menu.",
+  screensZh: "- 角色選擇（僱主／助理）\n- 菜式列表與過濾\n- 雙語步驟\n- 一週菜單分享",
+  screensEn: "- Role picker\n- Dish list + filters\n- Bilingual steps\n- Weekly share",
+  avoidZh: "外送、食材電商、完整社交網路。先做 50 道最高頻菜。",
+  avoidEn: "Delivery, grocery checkout, or a social network. Ship the 50 most-cooked dishes.",
+});
+
+const hideOrDie = brief({
+  name: "Hide or Die",
+  site: "https://www.roblox.com/games/18799085098",
+  loopZh: "配對進房 → 隨機分工躲藏或追捕 → 5–8 分鐘一局 → 解鎖外觀／再來一局。",
+  loopEn: "Match into a room → random hider or seeker → 5–8 minutes → unlock a skin / queue again.",
+  screensZh: "- 大廳／好友\n- 一局遊玩\n- 結算與外觀店",
+  screensEn: "- Lobby / friends\n- One match\n- Results + shop",
+  avoidZh: "自建全球伺服器、複雜天賦樹、3A 畫面。先在現成 UGC 平台做最小規則。",
+  avoidEn: "Your own global netcode, perk trees, or AAA art. Smallest rules on an existing UGC platform.",
+});
+
+const nasCom = brief({
+  name: "Nas.com",
+  site: "https://nas.com/",
+  loopZh: "拍一張產品照 → AI 生成落地頁與文案 → 可選投放廣告 → WhatsApp／Telegram 收款。",
+  loopEn: "Photograph a product → AI landing page and copy → optional ads → checkout in WhatsApp/Telegram.",
+  screensZh: "- 上傳相片\n- 生成的店鋪預覽\n- 廣告草稿\n- 社群／結帳連結",
+  screensEn: "- Photo upload\n- Generated store preview\n- Ad draft\n- Community / checkout link",
+  avoidZh: "一次接齊全球物流與自建廣告平台。先做「相片 → 一頁能收款」。",
+  avoidEn: "Global logistics and a custom ad network. Ship photo → one page that can take money.",
+});
+
 const gojiberry = brief({
   name: "Gojiberry",
   site: "https://www.gojiberry.ai/",
@@ -205,4 +260,9 @@ export const CASE_EXTRAS: Record<string, CaseExtra> = {
   },
   poke: { difficulty: 4, clonePromptZh: poke.zh, clonePromptEn: poke.en },
   "gojiberry-ai": { difficulty: 4, clonePromptZh: gojiberry.zh, clonePromptEn: gojiberry.en },
+  "raven-geospy": { difficulty: 4, clonePromptZh: raven.zh, clonePromptEn: raven.en },
+  "thetawave-ai": { difficulty: 3, clonePromptZh: thetawave.zh, clonePromptEn: thetawave.en },
+  "wok-hei": { difficulty: 2, clonePromptZh: wokHei.zh, clonePromptEn: wokHei.en },
+  "hide-or-die": { difficulty: 3, clonePromptZh: hideOrDie.zh, clonePromptEn: hideOrDie.en },
+  "nas-com": { difficulty: 4, clonePromptZh: nasCom.zh, clonePromptEn: nasCom.en },
 };

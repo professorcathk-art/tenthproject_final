@@ -2,6 +2,7 @@ import type { CaseStudy } from "@/types/platform";
 import { CASE_SEED_MARKER, CASE_LOCALE_SPLIT } from "@/lib/inspiration/constants";
 import { CASE_EXTRAS } from "@/lib/inspiration/case-extras";
 import { BATCH2_CASES, type SeedCase } from "@/lib/seed/case-studies-batch2";
+import { BATCH3_CASES } from "@/lib/seed/case-studies-batch3";
 
 export { CASE_SEED_MARKER, CASE_LOCALE_SPLIT };
 
@@ -580,6 +581,7 @@ The warning is equal: demos lie, production slaps. Too many tools and the model 
 `,
   },
   ...BATCH2_CASES,
+  ...BATCH3_CASES,
 ];
 
 export function getSeedCaseStudies(): CaseStudy[] {
