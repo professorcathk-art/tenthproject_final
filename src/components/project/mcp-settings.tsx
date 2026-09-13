@@ -30,7 +30,7 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
   const [copied, setCopied] = useState<string | null>(null);
   const [endpointOk, setEndpointOk] = useState<boolean | null>(null);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://tenthproject-final.vercel.app";
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://www.tenthproject.com";
   const mcpConfig = JSON.stringify(
     {
       mcpServers: {

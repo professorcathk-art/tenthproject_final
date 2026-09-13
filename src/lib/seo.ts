@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
 
-export const SITE_URL = (
+export function canonicalizeSiteUrl(raw: string) {
+  const trimmed = raw.replace(/\/$/, "");
+  try {
+    const parsed = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
+    if (parsed.hostname === "tenthproject.com") {
+      parsed.hostname = "www.tenthproject.com";
+    }
+    return parsed.origin;
+  } catch {
+    return trimmed;
+  }
+}
+
+export const SITE_URL = canonicalizeSiteUrl(
   process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "https://tenthproject-final.vercel.app")
-).replace(/\/$/, "");
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "https://www.tenthproject.com"),
+);
 
 export const SITE_NAME = "Tenth Project";
 

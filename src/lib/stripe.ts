@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { SITE_URL } from "@/lib/seo";
+import { canonicalizeSiteUrl, SITE_URL } from "@/lib/seo";
 
 export function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -10,11 +10,9 @@ export function getStripe() {
 }
 
 export function getCheckoutBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    SITE_URL
-  ).replace(/\/$/, "");
+  return canonicalizeSiteUrl(
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || SITE_URL,
+  );
 }
 
 export function getLifetimePriceId() {
