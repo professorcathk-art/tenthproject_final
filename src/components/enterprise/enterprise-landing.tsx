@@ -12,9 +12,8 @@ import {
 } from "lucide-react";
 import { FadeIn } from "@/components/motion/fade-in";
 import { EnterpriseBookingSection } from "@/components/enterprise/enterprise-booking-section";
+import { useI18n } from "@/components/i18n/provider";
 import { enterpriseCopy } from "@/lib/enterprise/copy";
-
-const copy = enterpriseCopy.zh;
 const valueIcons = [UserCheck, Bot, ShieldCheck, CheckCircle2];
 const serviceIcons = [Bot, Workflow, Building2, Sparkles];
 const caseImages = [
@@ -24,6 +23,9 @@ const caseImages = [
 ];
 
 export function EnterpriseLanding() {
+  const { locale } = useI18n();
+  const copy = locale === "en" ? enterpriseCopy.en : enterpriseCopy.zh;
+
   return (
     <div className="bg-[#f4f4f1] dark:bg-slate-950">
       <section className="relative w-full overflow-hidden border-b border-slate-200/70 py-12 dark:border-slate-800/50 lg:py-20">

@@ -4,7 +4,7 @@ export const enterpriseCopy = {
       badge: "✨ Enterprise AI Transformation & Workflow Automation",
       headline: "強大、精準、可量化的企業級 AI 轉型解決方案",
       subheadline:
-        "結合前阿里巴巴技術專家硬核架構，與前國際投資銀行高管數位轉型經驗。我們拒絕空談理論，專注於從商業痛點審計，到 100% 落地部署客製化 AI Agent 與自動化工作流，協助企業實現 60% 以上的降本增效。",
+        "結合前阿里巴巴技術專家的大型系統架構經驗，與前國際投行高管的數位轉型視野。我們不講空言，專注於深入評估業務流程，為企業量身打造並 100% 落地部署 AI Agent 與自動化工作流，實質提升營運效益。",
       ctaPrimary: "預約 1-on-1 專家免費諮詢",
       ctaSecondary: "查看企業成功案例",
       metrics: [
@@ -15,7 +15,7 @@ export const enterpriseCopy = {
       ],
     },
     value: {
-      title: "打破傳統 IT 外包痛點：大廠架構 × 投行視野 × 敏捷落地",
+      title: "突破傳統 IT 外包局限：頂尖技術架構 × 國際投行視野 × 高效敏捷落地",
       items: [
         {
           title: "頂尖雙領域專家親自帶隊 (Executive Leadership)",
@@ -165,11 +165,174 @@ export const enterpriseCopy = {
       successTitle: "已收到你的諮詢申請",
       successBody: "我們會在 24 小時內與你聯絡，並提供初步技術評估。",
       noService: "請至少選擇一項服務需求",
-      calendarTitle: "或直接選擇諮詢時段",
-      calendarSubtitle: "點擊下方日曆，挑選適合您的 30 分鐘 Zoom 專家諮詢會議",
-      pickDate: "選擇日期",
-      pickTime: "選擇 30 分鐘時段",
-      tz: "香港時間 HKT",
+    },
+  },
+  en: {
+    hero: {
+      badge: "✨ Enterprise AI Transformation & Workflow Automation",
+      headline: "Powerful, precise, measurable enterprise AI transformation",
+      subheadline:
+        "Combining large-scale systems architecture from former Alibaba technical specialists with the digital-transformation perspective of former international investment-banking executives. We skip empty talk. We assess operating workflows in depth, then design and fully deploy custom AI agents and automation — live in production — to raise real operating performance.",
+      ctaPrimary: "Book a free 1-on-1 expert consultation",
+      ctaSecondary: "See enterprise case studies",
+      metrics: [
+        { value: "60%+", label: "Average time saved on repetitive work" },
+        { value: "100+", label: "Enterprise automation and AI programmes shipped" },
+        { value: "Zero Data Leak", label: "Private data isolation and finance-grade security" },
+        { value: "3-4 weeks", label: "From POC to a production system" },
+      ],
+    },
+    value: {
+      title: "Beyond traditional IT outsourcing: elite architecture × global IB perspective × fast, disciplined delivery",
+      items: [
+        {
+          title: "Led by dual-domain specialists (Executive Leadership)",
+          body: "Former Alibaba specialist Felix Zhu leads system architecture; former investment-banking executive director Chris Lau leads process redesign. No layered outsourcing — technical and commercial operators work directly with your core team.",
+        },
+        {
+          title: "100% custom agents and API integration (Custom Tailored, No Templates)",
+          body: "Not a generic SaaS wrapper. We go into your ERP, CRM, databases, and collaboration tools (Slack / Teams / WhatsApp) and build dedicated AI agent workflows.",
+        },
+        {
+          title: "Finance-grade security and private data isolation (Enterprise Data Security)",
+          body: "We follow enterprise privacy rules. Enterprise RAG on private data, on-premises deployment, or a dedicated VPC — core data and prompts never go into public-model training.",
+        },
+        {
+          title: "Quantifiable ROI you can track (Quantifiable ROI Focus)",
+          body: "Every programme includes a clear ROI report. We accept work against hours saved, error-rate reduction, and conversion lift.",
+        },
+      ],
+    },
+    servicesTitle: "Four core services",
+    services: [
+      {
+        title: "Custom AI agent systems (Custom Autonomous AI Agents)",
+        intro: "Agents that understand complex commercial logic, call tools, and execute work across systems.",
+        scenesLabel: "Where it fits",
+        scenes: "24/7 sales and support agents, internal knowledge assistants (RAG), invoice-review agents, and compliance assistants.",
+        techLabel: "Technical notes",
+        tech: "Multi-agent collaboration, LLM fine-tuning with hybrid RAG, and Model Context Protocol (MCP) for local API access.",
+      },
+      {
+        title: "RPA and hyper-automation (RPA & Hyper-Automation)",
+        intro: "Remove pointless data-moving and cross-page clicking so the process runs end to end.",
+        scenesLabel: "Where it fits",
+        scenes: "Multi-platform order intake and dispatch, cross-system API sync, cross-border supply-chain reconciliation, and automated PDF / Excel reporting.",
+        techLabel: "Technical notes",
+        tech: "Python / Playwright headless automation, plus Make / n8n / Zapier and legacy system connections.",
+      },
+      {
+        title: "Digital transformation and AI architecture (Digital Transformation & Advisory)",
+        intro: "For companies that want AI but lack a route map: technical audit, ROI, and security planning.",
+        scenesLabel: "Where it fits",
+        scenes: "AI-readiness of the current IT stack, tool-chain and cost control, security and privacy audit, and a transformation roadmap.",
+        techLabel: "Deliverables",
+        tech: "A full AI feasibility report, system-architecture blueprint, and ROI estimate.",
+      },
+      {
+        title: "Team vibe-coding and AI enablement workshops (Corporate AI Enablement Workshops)",
+        intro: "Raise internal AI capability so vibe coding and agents become part of daily operations.",
+        scenesLabel: "Where it fits",
+        scenes: "Non-technical teams (HR / Marketing / Sales) on automation workflows; IT teams on Cursor / Claude delivery.",
+        techLabel: "Workshop notes",
+        tech: "Exercises on your real work, exclusive SOP manuals, and 30 days of mentor Q&A after class.",
+      },
+    ],
+    process: {
+      title: "A clear 5-step delivery path so the programme ships on time and at quality",
+      steps: [
+        {
+          num: "01",
+          title: "Business-pain diagnosis and workflow audit (Audit & Discovery)",
+          body: "We map current operations, find the most expensive and error-prone bottlenecks, and judge whether AI belongs there.",
+        },
+        {
+          num: "02",
+          title: "POC and ROI architecture (POC & Architecture Design)",
+          body: "A prototype in 1–2 weeks to test accuracy and feasibility, plus a precise architecture plan and ROI budget.",
+        },
+        {
+          num: "03",
+          title: "Custom build and API / agent integration (Custom Engineering)",
+          body: "Production-grade code, prompt tuning, RAG stores, and connections into your CRM / ERP / databases.",
+        },
+        {
+          num: "04",
+          title: "UAT and private deployment (UAT & Secure Deployment)",
+          body: "Cross-scenario and stress tests, then deploy into your private cloud or designated VPC.",
+        },
+        {
+          num: "05",
+          title: "Team training and ongoing operations (Enablement & Continuous Optimization)",
+          body: "Internal workshops, usage notes and API docs, plus maintenance and model-optimization support.",
+        },
+      ],
+    },
+    cases: {
+      title: "Live transformation work: how we help clients grow from their own data",
+      items: [
+        {
+          title: "Mid-size firm (~100 people) — HR and recruiting agents",
+          backgroundLabel: "Client",
+          background: "A Hong Kong-capital mid-size services firm handling thousands of CVs and frequent onboarding each month.",
+          painLabel: "Pain",
+          pain: "HR spent more than four hours a day screening CVs, booking interviews, and filling the internal HR system.",
+          solutionLabel: "What we built",
+          solutions: [
+            "A dedicated recruiting agent that parses multi-platform PDF CVs and scores them against the role.",
+            "Outlook / Google Calendar and WhatsApp API so the agent can screen candidates and book interviews.",
+            "Supabase plus the internal HR system so offer letters and onboarding packs assemble automatically.",
+          ],
+          resultLabel: "Result",
+          result: "Screening time down 80%, 120+ HR hours saved each month, candidate reply speed up 5×.",
+        },
+        {
+          title: "Cross-border e-commerce (tens of millions in GMV) — dispatch, invoices, after-sales",
+          backgroundLabel: "Client",
+          background: "A known cross-border brand on Amazon, Shopify, and several Southeast Asian platforms.",
+          painLabel: "Pain",
+          pain: "Thousands of daily orders split across platforms, cross-border reconciliation errors, and slow support that raised refunds.",
+          solutionLabel: "What we built",
+          solutions: [
+            "An operations workflow that pulls platform APIs into one database.",
+            "An RPA invoice agent that reads supplier PDFs and matches them to bank lines.",
+            "A multilingual support agent for order queries, tracking, and simple returns.",
+          ],
+          resultLabel: "Result",
+          result: "Zero reconciliation errors, support cost down 65%, order handling up 300%, hundreds of thousands of HKD saved per year.",
+        },
+        {
+          title: "Financial advisory firm — compliance review and automated reports",
+          backgroundLabel: "Client",
+          background: "A professional advisory firm focused on M&A and asset management.",
+          painLabel: "Pain",
+          pain: "Analysts read hundreds of pages of legal and financial documents; due-diligence reports were slow and high-risk.",
+          solutionLabel: "What we built",
+          solutions: [
+            "An enterprise RAG store of historical files and regulations, encrypted and vectorised.",
+            "A due-diligence assistant that extracts key clauses, legal risk, and financial anomalies in about 30 seconds.",
+            "First-draft reports to regulatory standard, with source citations for analyst review.",
+          ],
+          resultLabel: "Result",
+          result: "Document review 10× faster; DD drafts from 3 days to 2 hours; higher deal throughput.",
+        },
+      ],
+    },
+    booking: {
+      formTitle: "Book a free 1-on-1 AI transformation consultation",
+      formSubtitle: "Tell us the brief. Our team will contact you within 24 hours with an initial technical assessment.",
+      company: "Company Name",
+      contact: "Contact Name",
+      email: "Business Email",
+      phone: "Phone Number",
+      service: "Service Required",
+      budget: "Estimated Budget",
+      brief: "Project Brief",
+      submit: "Submit enquiry",
+      submitting: "Submitting…",
+      successTitle: "We received your enquiry",
+      successBody: "We will contact you within 24 hours with an initial technical assessment.",
+      noService: "Please choose at least one service.",
     },
   },
 } as const;

@@ -232,8 +232,8 @@ export const dictionaries = {
       },
     },
     courses: {
-      badge: "🔥 限時優惠｜Lifetime Plan 終身會員",
-      title: "Tenth Project VIP 會員：Vibe Coding 與 AI Agent 從零到高手全攻略",
+      badge: "🔥 限時Lifetime 終身會員優惠",
+      title: "Tenth Project 會員：Vibe Coding 與 AI Agent 從零到高手全攻略",
       subtitle: "一次加入，永久享用所有核心主修課、高階實戰 Workshop、AI 專案規劃工具與導師社群支援。",
       philosophy: "項目導向學習（PBL）× AI 技術。不背語法，先做出能收款的產品。",
       scheduleTitle: "課程與 Workshop 時程",
@@ -933,8 +933,8 @@ export const dictionaries = {
       },
     },
     courses: {
-      badge: "Lifetime membership academy",
-      title: "Tenth Project vibe coding + limited Lifetime community plan",
+      badge: "🔥 Limited-time Lifetime membership offer",
+      title: "Tenth Project membership: Vibe Coding and AI Agent from zero to advanced",
       subtitle: "Project-based learning × AI. In 21 days, ship a monetisable overseas tool — a StealthWriter-class product with Stripe, even if you start from zero.",
       philosophy: "Project-based learning × AI. Skip grammar drills. Build something that can take payment.",
       scheduleTitle: "Course & workshop schedule",
@@ -1027,9 +1027,9 @@ export const dictionaries = {
     },
     enterprise: {
       badge: "Enterprise AI",
-      title: "AI transformation and automation, designed for the operating company",
+      title: "Powerful, precise, measurable enterprise AI transformation",
       subtitle:
-        "Custom agents, RPA redesign, advisory, and team enablement — led by former banking and big-tech operators who measure ROI, then ship.",
+        "Combining large-scale systems architecture from former Alibaba technical specialists with the digital-transformation perspective of former international investment-banking executives. We skip empty talk and deploy custom AI agents and automation that actually go live.",
       book: "Book a free consultation",
       company: "Company name",
       contact: "Contact name",
