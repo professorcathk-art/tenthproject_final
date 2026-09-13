@@ -79,11 +79,15 @@ export function JoinModal({
         if (!next) setError("");
       }}
     >
-      <DialogContent className="sm:max-w-md border-white/20 bg-white/80 backdrop-blur-xl dark:bg-slate-950/80">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md border-white/20 bg-white/80 backdrop-blur-xl dark:bg-slate-950/80">
         <DialogHeader>
           <DialogTitle>{copy.title}</DialogTitle>
           <DialogDescription>{copy.subtitle}</DialogDescription>
         </DialogHeader>
+        <div className="mb-6 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:border-amber-800 dark:from-amber-950/30 dark:to-orange-950/30">
+          <div className="flex items-center gap-2 font-semibold text-amber-900 dark:text-amber-400 mb-1.5">🔥 限時優惠：Lifetime Plan 終身買斷方案</div>
+          <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">原價包含全套核心課程、專案規劃工具、VIP 社群與雙導師支援，總價值達 <span className="line-through opacity-70">HK$12,600 / 年</span>。現在加入即可享一次性付費，<span className="font-bold">終身買斷所有權限及未來更新！</span></p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="lifetime-name">{copy.name} *</Label>
