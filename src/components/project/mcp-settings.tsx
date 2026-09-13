@@ -29,6 +29,7 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [endpointOk, setEndpointOk] = useState<boolean | null>(null);
+  const [error, setError] = useState("");
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://www.tenthproject.com";
   const mcpConfig = JSON.stringify(
@@ -55,17 +56,25 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
 
   async function generateKey() {
     setLoading(true);
-    const res = await fetch("/api/mcp-keys", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId, label: "Cursor MCP" }),
-    });
-    const data = await res.json();
-    if (data.key) {
+    setError("");
+    try {
+      const res = await fetch("/api/mcp-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, label: "Cursor MCP" }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { key?: string; record?: KeyRecord; error?: string };
+      if (!res.ok || !data.key || !data.record) {
+        setError(data.error || "無法產生金鑰，請再試一次。");
+        return;
+      }
       setNewKey(data.key);
-      setKeys((k) => [data.record, ...k]);
+      setKeys((k) => [data.record as KeyRecord, ...k]);
+    } catch {
+      setError("連線失敗，請再試一次。");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function revokeKey(keyId: string) {
@@ -86,6 +95,7 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
   const steps = [dict.mcp.step1, dict.mcp.step2, dict.mcp.step3];
   const tools = [
     { name: "get_active_roadmap", desc: dict.mcp.toolRoadmap },
+    { name: "get_sprint_prompt", desc: dict.mcp.toolSprint },
     { name: "fetch_uat_status", desc: dict.mcp.toolUat },
     { name: "update_uat_item", desc: dict.mcp.toolUpdate },
     { name: "log_bug", desc: dict.mcp.toolBug },
@@ -109,6 +119,7 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
           <Key className="h-4 w-4 mr-1" /> {dict.mcp.generate}
         </Button>
       </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       {newKey && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">

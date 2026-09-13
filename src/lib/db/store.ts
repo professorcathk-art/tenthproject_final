@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { promises as fs } from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -125,7 +126,7 @@ export async function logActivity(
   return entry;
 }
 
-export async function getProjects(userId: string): Promise<Project[]> {
+export const getProjects = cache(async function getProjects(userId: string): Promise<Project[]> {
   if (isSupabaseConfigured()) {
     const supabase = createServiceClient();
     const { data } = await supabase
@@ -141,7 +142,7 @@ export async function getProjects(userId: string): Promise<Project[]> {
   return store.projects
     .filter((p) => p.user_id === userId && p.status !== "archived")
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-}
+});
 
 export async function getProject(projectId: string, userId: string) {
   if (isSupabaseConfigured()) {

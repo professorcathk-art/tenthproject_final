@@ -16,6 +16,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [heroScroll, setHeroScroll] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
   const overHero = isHome && heroScroll;
 
   useEffect(() => {
@@ -44,8 +45,8 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
         "z-50 transition-colors duration-300",
         isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
         overHero
-          ? "border-b border-white/10 bg-slate-950/80 text-white backdrop-blur-md"
-          : "border-b border-slate-200/60 bg-white/65 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/55",
+          ? "border-b border-white/10 bg-slate-950/90 text-white lg:bg-slate-950/80 lg:backdrop-blur-md"
+          : "border-b border-slate-200/60 bg-white dark:border-slate-800/50 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70",
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -126,7 +127,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
             </>
           )}
 
-          <Sheet>
+          <Sheet open={navOpen} onOpenChange={setNavOpen}>
             <SheetTrigger
               className={cn(
                 "inline-flex h-9 w-9 items-center justify-center rounded-md lg:hidden",
@@ -143,6 +144,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => setNavOpen(false)}
                       className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100"
                     >
                       <Icon className="h-4 w-4" />
@@ -151,15 +153,15 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                   );
                 })}
                 {loggedIn ? (
-                  <Link href="/dashboard" className="mt-3 px-3 py-2 text-sm font-semibold">
+                  <Link href="/dashboard" onClick={() => setNavOpen(false)} className="mt-3 px-3 py-2 text-sm font-semibold">
                     {dict.nav.enterPortal}
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login?redirect=/dashboard" className="mt-3 px-3 py-2 text-sm font-semibold">
+                    <Link href="/login?redirect=/dashboard" onClick={() => setNavOpen(false)} className="mt-3 px-3 py-2 text-sm font-semibold">
                       {dict.nav.login}
                     </Link>
-                    <Link href="/enterprise#booking" className="px-3 py-2 text-sm font-semibold">
+                    <Link href="/enterprise#booking" onClick={() => setNavOpen(false)} className="px-3 py-2 text-sm font-semibold">
                       {dict.nav.bookConsult}
                     </Link>
                   </>

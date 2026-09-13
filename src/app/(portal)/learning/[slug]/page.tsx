@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, ArrowLeft, Lock } from "lucide-react";
 import { getCourseBySlug, getLessonProgress } from "@/lib/db/platform-store";
-import { ensurePlatformSeeded } from "@/lib/seed/init";
+import { ensureCoursesSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
 import { getMembershipAccess } from "@/lib/auth/membership";
 import { getDict } from "@/lib/i18n/server";
@@ -17,7 +17,7 @@ export default async function LearningCoursePage({ params }: { params: Promise<{
   const { slug } = await params;
   if (!isAuthenticated || !user) redirect(`/login?redirect=/learning/${slug}`);
 
-  await ensurePlatformSeeded();
+  await ensureCoursesSeeded();
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
   const dict = await getDict();

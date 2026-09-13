@@ -61,7 +61,7 @@ export function EnterpriseLanding() {
             <div className="relative lg:col-span-5">
               <div className="relative min-h-[320px] overflow-hidden rounded-3xl lg:min-h-[520px]">
                 <Image
-                  src="/images/enterprise-consulting.jpg"
+                  src="/images/enterprise-consulting-web.jpg"
                   alt="Tenth Project 顧問與企業客戶在香港進行一對一諮詢"
                   fill
                   priority

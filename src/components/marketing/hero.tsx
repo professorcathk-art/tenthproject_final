@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
@@ -9,22 +11,41 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 export function Hero() {
   const { dict } = useI18n();
+  const [playVideo, setPlayVideo] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px) and (prefers-reduced-motion: no-preference)");
+    const update = () => setPlayVideo(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden bg-slate-950 text-white">
       <div className="absolute inset-0 overflow-hidden">
-        <video
-          className="hero-video absolute inset-x-0 top-0 h-[124%] w-full object-cover object-[center_12%]"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/images/vibe-coding-creator.jpg"
-          aria-hidden
-        >
-          <source src="/videos/hero.mp4" type="video/mp4" />
-        </video>
+        <Image
+          src="/images/hero-poster.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_12%]"
+        />
+        {playVideo ? (
+          <video
+            className="hero-video absolute inset-x-0 top-0 h-[124%] w-full object-cover object-[center_12%]"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            poster="/images/hero-poster.jpg"
+            aria-hidden
+          >
+            <source src="/videos/hero.mp4" type="video/mp4" />
+          </video>
+        ) : null}
         <div className="absolute inset-0 bg-slate-950/30" />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/25 to-transparent" />
         <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-slate-950/55 to-transparent" />

@@ -86,6 +86,7 @@ export function PortalShell({
   const pathname = usePathname();
   const router = useRouter();
   const [commandOpen, setCommandOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const nav = useMemo(
@@ -137,7 +138,7 @@ export function PortalShell({
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white/80 px-4 py-5 backdrop-blur-xl lg:flex dark:border-slate-800 dark:bg-slate-950/70">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white px-4 py-5 lg:flex dark:border-slate-800 dark:bg-slate-950">
         <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2 font-semibold">
           <Image src="/logo.jpg" alt="Tenth Project" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
           <span className="tracking-tight">{dict.portal.brand}</span>
@@ -159,15 +160,15 @@ export function PortalShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 dark:border-slate-800 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <Sheet>
+            <Sheet open={navOpen} onOpenChange={setNavOpen}>
               <SheetTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800">
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
                 <div className="mt-10">
-                  <PortalNavLinks items={nav} pathname={pathname} />
+                  <PortalNavLinks items={nav} pathname={pathname} onNavigate={() => setNavOpen(false)} />
                 </div>
               </SheetContent>
             </Sheet>

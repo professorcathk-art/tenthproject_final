@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { LessonClient } from "@/components/courses/lesson-client";
 import { getLesson, getLessonProgress } from "@/lib/db/platform-store";
-import { ensurePlatformSeeded } from "@/lib/seed/init";
+import { ensureCoursesSeeded } from "@/lib/seed/init";
 import { getSession } from "@/lib/auth/session";
 import { getMembershipAccess } from "@/lib/auth/membership";
 
@@ -10,7 +10,7 @@ export default async function LessonPage({
 }: {
   params: Promise<{ slug: string; lessonId: string }>;
 }) {
-  await ensurePlatformSeeded();
+  await ensureCoursesSeeded();
   const { slug, lessonId } = await params;
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated) redirect(`/login?redirect=/learning/${slug}/lessons/${lessonId}`);

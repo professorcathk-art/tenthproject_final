@@ -21,6 +21,7 @@ export default async function McpHubPage() {
   ];
   const tools = [
     { name: "get_active_roadmap", desc: dict.mcp.toolRoadmap },
+    { name: "get_sprint_prompt", desc: dict.mcp.toolSprint },
     { name: "fetch_uat_status", desc: dict.mcp.toolUat },
     { name: "update_uat_item", desc: dict.mcp.toolUpdate },
     { name: "log_bug", desc: dict.mcp.toolBug },

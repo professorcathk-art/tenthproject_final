@@ -10,7 +10,7 @@ import "./globals.css";
 
 const notoSans = Noto_Sans_TC({
   variable: "--font-noto",
-  weight: ["400", "500", "700"],
+  weight: ["400", "700"],
   display: "swap",
   preload: true,
 });
