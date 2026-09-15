@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { getCaseMarksForUser, getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
+import { getCaseMarkStateForUser, getCaseStudyBySlug, getCaseStudyCards } from "@/lib/db/platform-store";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getSession } from "@/lib/auth/session";
 import { caseCategories, type CaseMarkStatus } from "@/types/platform";
@@ -14,16 +14,18 @@ import { CaseMarkBar } from "@/components/inspiration/case-mark-bar";
 export default async function VaultCasePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { user } = await getSession();
-  const [study, studies, dict, locale, marks] = await Promise.all([
+  const emptyState = { marks: {} as Record<string, CaseMarkStatus>, reads: [] as string[] };
+  const [study, studies, dict, locale, markState] = await Promise.all([
     getCaseStudyBySlug(slug),
     getCaseStudyCards(),
     getDict(),
     getLocale(),
-    user ? getCaseMarksForUser(user.id) : Promise.resolve({} as Record<string, CaseMarkStatus>),
+    user ? getCaseMarkStateForUser(user.id) : Promise.resolve(emptyState),
   ]);
   if (!study) notFound();
   const article = localizedCaseText(study.breakdown_md, locale);
   const related = studies.filter((item) => item.slug !== study.slug).slice(0, 3);
+  const marks = markState.marks;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -66,7 +68,11 @@ export default async function VaultCasePage({ params }: { params: Promise<{ slug
       <article className="rounded-3xl glass-panel px-5 py-6 sm:px-8">
         <CaseArticle markdown={article} />
       </article>
-      <CaseMarkBar slug={study.slug} initialStatus={marks[study.slug] ?? null} />
+      <CaseMarkBar
+        slug={study.slug}
+        initialStatus={marks[study.slug] ?? null}
+        initialRead={markState.reads.includes(study.slug)}
+      />
       <CaseClonePrompt study={study} />
       {related.length > 0 ? (
         <section className="mt-12">

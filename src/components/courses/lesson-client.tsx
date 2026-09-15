@@ -53,7 +53,7 @@ export function LessonClient({ course, lesson, prevLesson, nextLesson, isComplet
           <ArrowLeft className="mr-1 h-4 w-4" /> {course.title}
         </Link>
         <h1 className="text-2xl font-bold">{lesson.title}</h1>
-        <PaidGate title={dict.courses.paidOnly} body={dict.courses.upgradeToWatch} cta={dict.courses.enroll} />
+        <PaidGate title={dict.courses.paidOnly} body={dict.courses.upgradeToWatch} cta={dict.courses.unlockFull} />
       </div>
     );
   }

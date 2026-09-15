@@ -30,10 +30,14 @@ export const BATCH2_CASES: SeedCase[] = [
       { zh: "外部融資", en: "Outside funding", value: "$0" },
     ],
     summaryZh:
-      "白天工程師、晚上記玩具：父親為幫女兒搜集盲盒，寫出這張「麥當勞玩具地圖」。10 天湧入 12.7 萬用戶，幫全美玩家省下逾 1,600 萬美金與 60 萬小時。",
+      "白天當工程師、晚上幫女兒查玩具：一位爸爸做了「麥當勞玩具地圖」。10 天湧入 12.7 萬人，創辦人估算幫美國玩家省下超過 1,600 萬美元和 60 萬小時。",
     summaryEn:
       "A software engineer spent nights mapping Happy Meal toys for his daughters. In 10 days the free map pulled in 127,000 users and, by the founder’s model, saved U.S. collectors more than $16M and 600,000 hours.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+麥當勞出聯名玩具時，官方 App 往往不告訴你「這家店還有沒有這一款」。一位工程師爸爸晚上自己做了地圖，10 天內 12.7 萬人來用。創辦人估算，幫美國收集者省下超過 1,600 萬美元和 60 萬小時。
+
 ## 這間公司做什麼
 
 [Happy Toy Scout](https://happytoyscout.com/) 是 2026 年 8 月上線的免費獨立地圖。創辦人 Brian 白天是正職軟體工程師，晚上則是為了幫兩個女兒蒐集美國麥當勞熱門聯名「Hello Kitty & Friends × Godzilla」Happy Meal 玩具的父親。他發現官方 App 完全不提供各分店具體的玩具款式庫存，資訊極度碎片化，散落在 Reddit、Facebook 與聊天群組裡。
@@ -158,10 +162,14 @@ VCs often skip pop-up tools for short LTV. Indie hackers should see time-to-mark
       { zh: "節省切換時間", en: "Switching saved", value: "~15 分鐘／小時" },
     ],
     summaryZh:
-      "首創「Brainrot 爛網頁」AI 寫程式編輯器：舊金山兩人團隊解決等 AI 時的微破裂注意力，拿下 YC 50 萬美元，幫工程師每小時省下約 15 分鐘的切換消耗。",
+      "等 AI 寫程式時，人很容易滑走、回來就忘了自己在幹嘛。舊金山兩人團隊把短影片放進編輯器裡，YC 投了 50 萬美元；早期使用者說每小時大約省 15 分鐘。",
     summaryEn:
       "A two-person San Francisco team built Chad, the “brainrot IDE”: keep short video inside the editor during the 1–5 minutes an agent is thinking, then snap you back. YC put in $500K; early testers said they saved about 15 minutes an hour.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+請 AI 寫程式時，常常要空等 1 到 5 分鐘。這段空檔一滑手機，回來就忘了自己在做什麼。Chad 把短影片放進寫程式的畫面裡，AI 想完再把你拉回來。YC 投資 50 萬美元；早期測試者說每小時大約省 15 分鐘。
+
 ## 這間公司做什麼
 
 [Clad Labs](https://www.cladlabs.ai/)（cladlabs.ai / useclad.ai）由 Richard Wang（Caltech 電腦科學、前 AI 研究員）與 Kevin Le（UIUC、前 Meta 工程師）於 2025 年在舊金山創立，入選 Y Combinator F25，拿到 50 萬美元種子輪。
@@ -277,10 +285,14 @@ Developers became agent supervisors. Chad competes for those three minutes of at
       { zh: "目前定價", en: "Pricing", value: "Beta 免費" },
     ],
     summaryZh:
-      "「家庭 AI 幕僚長」：Uber 前高管與 Instagram 工程師打造，Pre-Seed 拿到 350 萬美元，幫忙碌家長自動讀懂學校郵件與社群訊息。",
+      "給家庭用的 AI 助手：自動讀學校郵件和家長群組，再告訴你明天要做什麼。創辦人來自 Uber 與 Instagram，Pre-Seed 融資 350 萬美元。",
     summaryEn:
       "An AI chief of staff for families, built by an Uber transit lead and an Instagram engineer. A $3.5M pre-seed funds a product that reads school mail and parent chats, then texts tomorrow’s list.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+學校郵件、家長群組每天一堆，忙起來根本看不完。Fambot 想當家庭的小助手：幫你讀這些訊息，再整理成明天要做的事。創辦人來自 Uber 與 Instagram，Pre-Seed 融資 350 萬美元。
+
 ## 這間公司做什麼
 
 [Fambot](https://www.fambot.com/) 是 2026 年上線的「家庭 AI 幕僚長」。由前 Uber 公眾交通團隊負責人、三個孩子的父親 David Reich（CEO），攜手前 Instagram 工程師 Greg Karlin（CTO），以及來自 Google／LinkedIn 的 Jason Morrow 共同創立。
@@ -393,10 +405,14 @@ The round is a bet on household mental load plus dual-parent lock-in. The moat i
       { zh: "創辦團隊", en: "Founders", value: "耶魯大學" },
     ],
     summaryZh:
-      "「去動態牆」的 iMessage AI 社交網路：兩個耶魯學生創辦，兩週拿到 310 萬美元，用藍色簡訊框幫 Gen Z 做一個沒有表演焦慮的私密人脈圈。",
+      "做在 iMessage 裡的人脈工具：沒有動態牆、沒有粉絲數，雙方都同意才介紹。兩個耶魯學生兩週內融到 310 萬美元。",
     summaryEn:
       "Two Yale students put a social network inside iMessage: no feed, no follower counts, warm intros only after both sides say yes. They raised $3.1M in two weeks; later coverage puts total funding between $5.1M and $8.2M.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+不想再下載一個社交 App，也不想在動態牆上表演。Series 把人脈放進 iMessage：沒有粉絲數，雙方都點頭才介紹認識。兩個耶魯學生兩週內融到 310 萬美元。
+
 ## 這間公司做什麼
 
 [Series](https://series.so/) 由耶魯學生 Nathaneo Johnson（CEO）與 Sean Hargrow 於 2024–2025 年創立。它完全甩掉「再下載一個 App、再刷一堵動態牆」的社交邏輯，把整套網路做進 Apple 內建的 iMessage。
@@ -508,10 +524,14 @@ The moat moved from “own the app” to trust and semantic brokerage inside iMe
       { zh: "創辦團隊", en: "Founders", value: "TUM / Tesla / MIT" },
     ],
     summaryZh:
-      "「不用下載 App 的 iMessage AI 助理」：慕尼黑工大團隊創辦，拿到 2,500 萬美元，成為首個登陸 Apple Messages 的 AI Agent；3 個月爆發 1 億筆對話，隨後被 Cognition 收購。",
+      "不用下載新 App，在 iMessage 或簡訊裡就能用的 AI 助理。團隊拿到 2,500 萬美元，三個月超過 1 億則對話，後來被 Cognition 收購。",
     summaryEn:
       "TUM alumni put a personal agent in iMessage and SMS — no new app. They raised $25M at a $300M valuation, became the first third-party agent on Apple Messages, crossed 100M messages in three months, and were acquired by Cognition.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+不想再裝一個 App？Poke 讓你直接在 iMessage 或簡訊裡跟 AI 助理說話。團隊拿到 2,500 萬美元，公開說法是三個月超過 1 億則對話，後來被 Cognition 收購。
+
 ## 這間公司做什麼
 
 Poke（[poke.com](https://poke.com/)，由 The Interaction Company 開發）是慕尼黑工業大學校友 Marvin von Hagen（CEO，曾任職 Tesla 與 MIT 數據研究）與 Felix Schlegel（CTO）在 Palo Alto 創立的 AI 個人助理。
@@ -624,10 +644,14 @@ Cognition did not buy a model. It bought a personality and a distribution slot. 
       { zh: "外部融資", en: "Funding", value: "$500K (YC)" },
     ],
     summaryZh:
-      "「B2B 銷售的 AI GTM 幕僚腦」：三個法國連續創業者，9 個月把 MRR 從 0 做到 11.2 萬美元，入選 Y Combinator，用意圖訊號取代海量冷郵件。",
+      "幫公司業務找「現在真的有興趣」的客戶，而不是狂發陌生郵件。三個法國創辦人 9 個月把月收入從 0 做到 11.2 萬美元，並入選 Y Combinator。",
     summaryEn:
       "Three French repeat founders built an intent-first GTM agent. They went from $0 to $112K MRR in nine months, joined YC, and now state $2.5M ARR and 2,000+ paying teams.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+傳統業務常是狂發陌生郵件，回覆很少。Gojiberry 改成先找出「現在真的有興趣」的公司，再去聯絡。三個法國創辦人 9 個月把月經常收入從 0 做到 11.2 萬美元，並入選 Y Combinator。
+
 ## 這間公司做什麼
 
 [Gojiberry AI](https://gojiberry.ai/) 由三位都有成功 Exit 的法國連續創業家 Pierre-Eliott Lallemant（CEO）、Romàn Czerny（CMO）與 Dylan Teixeira（CTO）於 2025 年創立，並入選 Y Combinator Spring 2026。

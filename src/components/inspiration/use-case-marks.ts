@@ -3,13 +3,24 @@
 import { useCallback, useState } from "react";
 import type { CaseMarkStatus } from "@/types/platform";
 
-export function useCaseMarks(initialMarks: Record<string, CaseMarkStatus> = {}) {
+type MarkState = {
+  marks: Record<string, CaseMarkStatus>;
+  reads: string[];
+};
+
+export function useCaseMarks(initialMarks: Record<string, CaseMarkStatus> = {}, initialReads: string[] = []) {
   const [marks, setMarks] = useState<Record<string, CaseMarkStatus>>(initialMarks);
+  const [reads, setReads] = useState<string[]>(initialReads);
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+
+  const applyState = useCallback((state: MarkState) => {
+    setMarks(state.marks);
+    setReads(state.reads);
+  }, []);
 
   const toggle = useCallback(async (slug: string, status: CaseMarkStatus) => {
     const next = marks[slug] === status ? null : status;
-    const previous = marks;
+    const previousMarks = marks;
     setMarks((current) => {
       const copy = { ...current };
       if (!next) delete copy[slug];
@@ -21,20 +32,36 @@ export function useCaseMarks(initialMarks: Record<string, CaseMarkStatus> = {}) 
       const res = await fetch("/api/inspiration/marks", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, status: next }),
+        body: JSON.stringify({ slug, status: next, read: true }),
       });
-      const data = (await res.json()) as { marks?: Record<string, CaseMarkStatus> };
+      const data = (await res.json()) as Partial<MarkState> & { error?: string };
       if (!res.ok || !data.marks) {
-        setMarks(previous);
+        setMarks(previousMarks);
         return;
       }
-      setMarks(data.marks);
+      applyState({ marks: data.marks, reads: data.reads ?? reads });
     } catch {
-      setMarks(previous);
+      setMarks(previousMarks);
     } finally {
       setPendingSlug(null);
     }
-  }, [marks]);
+  }, [applyState, marks, reads]);
 
-  return { marks, toggle, pendingSlug };
+  const markRead = useCallback(async (slug: string) => {
+    if (reads.includes(slug)) return;
+    setReads((current) => (current.includes(slug) ? current : [...current, slug]));
+    try {
+      const res = await fetch("/api/inspiration/marks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, read: true }),
+      });
+      const data = (await res.json()) as Partial<MarkState>;
+      if (res.ok && data.marks && data.reads) applyState({ marks: data.marks, reads: data.reads });
+    } catch {
+      setReads((current) => current.filter((item) => item !== slug));
+    }
+  }, [applyState, reads]);
+
+  return { marks, reads, toggle, markRead, pendingSlug };
 }

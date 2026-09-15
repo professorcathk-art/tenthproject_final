@@ -36,7 +36,7 @@ export default async function LearningHomePage() {
         </div>
         <h1 className="text-2xl font-bold tracking-tight">{dict.courses.title}</h1>
         <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">{dict.courses.subtitle}</p>
-        <JoinLifetimeButton className="mt-4">{dict.courses.enroll}</JoinLifetimeButton>
+        <JoinLifetimeButton className="mt-4">{dict.courses.unlockFull}</JoinLifetimeButton>
       </div>
       <MembershipSyllabus />
 

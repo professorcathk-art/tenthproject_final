@@ -174,9 +174,35 @@
   animation: badge-shine 5s linear infinite;
 }
 
+@keyframes portal-bulb-glow {
+  0%,
+  100% {
+    color: #facc15;
+    fill: #fde047;
+    filter: drop-shadow(0 0 2px #fde047) drop-shadow(0 0 10px rgba(250, 204, 21, 0.9));
+  }
+  50% {
+    color: #fef9c3;
+    fill: #fffbeb;
+    filter: drop-shadow(0 0 6px #facc15) drop-shadow(0 0 16px rgba(253, 224, 71, 1));
+  }
+}
+
+.portal-bulb {
+  color: #eab308;
+  fill: #facc15;
+  animation: portal-bulb-glow 1.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-video {
     display: none;
+  }
+  .portal-bulb {
+    animation: none;
+    color: #eab308;
+    fill: #facc15;
+    filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.8));
   }
 }
 

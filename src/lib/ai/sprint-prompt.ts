@@ -1,4 +1,5 @@
 import type { AiSuggestion, Enhancement, ProjectWithRelations } from "@/types";
+import { keepCodingItems } from "@/lib/ai/coding-constraints";
 import { extractSpecFromSuggestion, inferTargetFile, specBlock, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/executable-spec";
 
 export { SPRINT_PROMPT_SYSTEM };
@@ -53,7 +54,8 @@ export function synthesizeSprintPrompt(
   approved: AiSuggestion[] = [],
   selectedEnhancements: Enhancement[] = [],
 ) {
-  const { openBugs, failedUat, todoTasks } = collectSprintBacklog(project, approved, selectedEnhancements);
+  const { openBugs, failedUat, todoTasks: rawTodoTasks } = collectSprintBacklog(project, approved, selectedEnhancements);
+  const todoTasks = keepCodingItems(rawTodoTasks, (task) => `${task.title} ${task.description ?? ""}`);
   const url = project.website_url ?? "（尚未填寫）";
   const github = project.github_url ?? "（尚未填寫）";
   const tool = project.selected_tool || "cursor";
@@ -185,5 +187,6 @@ npm run build
 
 ## 8. Out of scope
 付款、多租戶、重做設計系統、與本輪無關的重構。
+市場調查、用戶訪談、撰寫報告、UI/UX mockups（非程式實作）。
 `;
 }

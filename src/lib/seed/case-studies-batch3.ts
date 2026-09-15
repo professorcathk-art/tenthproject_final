@@ -16,10 +16,14 @@ export const BATCH3_CASES: SeedCase[] = [
       { zh: "母公司", en: "Company", value: "Graylark" },
     ],
     summaryZh:
-      "上傳一張沒有 GPS 的照片，AI 靠建築、植被與路牌推算座標。GeoSpy 團隊把它升級成 Raven，從極簡網頁體驗接到執法與企業調查。",
+      "丟一張沒有定位的照片，AI 看建築、植物、路牌，估這張照片在哪裡拍。GeoSpy 團隊把它做成 Raven，從網頁試用做到給調查單位用。",
     summaryEn:
       "Upload a photo with no GPS and the model infers a location from buildings, vegetation, and street clues. The GeoSpy team rebranded the stack as Raven, spanning a light web trial and agency-grade investigations.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+照片被清掉定位之後，通常很難知道在哪裡拍。Raven 看的是畫面本身：房子、路牌、植物、路面。GeoSpy 團隊把它升級並改名，從網頁試用做到給執法與企業調查用。
+
 ## 這間公司做什麼
 
 [Raven](https://www.withraven.ai/) 是波士頓 AI 公司 [Graylark Technologies](https://graylark.com/) 的視覺情報產品。團隊最早以 [GeoSpy](https://geospy.ai/) 打出名號：使用者把一張沒有 EXIF／GPS 的照片丟進去，模型只靠畫面裡的建築、路牌、植被、地貌與道路標線，在數秒內估出城市、地區與國家，並給出信心分數。2026 年 4–5 月，Graylark 公開把 GeoSpy **升級並更名為 Raven**，官網改走 [withraven.ai](https://www.withraven.ai/)（舊稱 withraven.net 已不再是主站）。
@@ -129,10 +133,14 @@ Vertical spatial models still beat a general chat box on street furniture and mi
       { zh: "共同創辦", en: "Founders", value: "李文軒 / Elena" },
     ],
     summaryZh:
-      "高中同學把講義、錄音與影片變成筆記、字卡與測驗。Forbes 2026 亞洲 30 歲以下上榜，公開融資逾 700 萬美元，定位是「個人化學習過濾器」。",
+      "把上課的講義、錄音、影片，整理成筆記、字卡和測驗。兩位高中同學創辦，入選 Forbes 2026 亞洲 30 歲以下，公開融資超過 700 萬美元。",
     summaryEn:
       "Two high-school classmates turn lectures, PDFs, and videos into notes, flashcards, and quizzes. Forbes 30 Under 30 Asia 2026; more than $7M disclosed funding. They call it a personal knowledge filter.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+上課錄音、講義、影片堆一堆，事後整理很累。ThetaWave 幫你變成筆記、字卡和測驗。兩位高中同學創辦，入選 Forbes 2026 亞洲 30 歲以下，公開融資超過 700 萬美元。
+
 ## 這間公司做什麼
 
 [ThetaWave AI](https://thetawave.ai/)（亦寫 Thetawave）讓學生把課堂錄音、PDF、講義或影片丟進去，系統整理成結構化筆記、Flashcards、測驗與心智圖。官網一句話是：Drop in any lecture, file, or video。創辦人是[李文軒（Wenxuan "Peter" Li）](https://thetawave.ai/blog/author/wenxuan-peter-li)與 Elena Zhong——Forbes 寫明兩人是高中同學，2023 年一起做這件事。
@@ -230,10 +238,14 @@ The moat is the path, not the summary. Switching cost rises only after the app h
       { zh: "融資", en: "Funding", value: "$0" },
     ],
     summaryZh:
-      "香港爸爸交代「Cook rice」，外傭真的只煮了白飯。他把這個笑話做成多語煮餸 App，Threads 傳開後衝上 App Store 美食榜。",
+      "香港爸爸傳「Cook rice」，外傭真的只煮了白飯。他把這個笑話做成廣東話／英文煮餸 App，Threads 傳開後衝上 App Store 美食榜。",
     summaryEn:
       "A Hong Kong dad texted “cook rice” and came home to plain rice. He turned the mishap into a bilingual recipe app; a Threads story pushed it up the App Store food chart.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+僱主用英文說 cook rice，外傭按字面只煮了白飯。一位香港爸爸把這個笑話做成 App：你用中文或英文點菜，外傭看到自己懂的語言步驟。Threads 傳開後，它衝上過 App Store 美食榜。
+
 ## 這間公司做什麼
 
 [鑊氣](https://apps.apple.com/hk/app/%E9%91%8A%E6%B0%A3/id6766081667)（Wok Hei）是香港獨立開發者做的家常菜與一週菜單工具，專為請了印傭、菲傭的雙職家庭而寫。僱主用中文或英文點蒸水蛋、豉汁蒸魚、番茄炒蛋，App 即時換成印尼文或菲律賓文步驟，調味料用雙方都看得懂的寫法，再經 WhatsApp 把連結或一週菜單傳給外傭。
@@ -320,10 +332,14 @@ A two-sided communication gap. Launch with the story, not the feature list. Fift
       { zh: "融資", en: "Funding", value: "$0" },
     ],
     summaryZh:
-      "獨立團隊 0 CCU Games 把黎明死線收成 8 分鐘貓鼠局。Roblox 上線兩年，第三方統計造訪已逾七億，峰值同時在線逾萬。",
+      "獨立團隊把「黎明死線」收成 8 分鐘捉迷藏。Roblox 上線兩年，第三方統計造訪超過七億，最多同時上萬人在玩。",
     summaryEn:
       "Indie studio 0 CCU Games boiled Dead by Daylight down to an 8-minute hide-and-seek. Two years on Roblox, third-party trackers count 770M+ visits and a 14k+ CCU peak.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+規則很短：一方躲、一方抓，八分鐘一局。獨立團隊 0 CCU Games 把它做成 Roblox 遊戲。上線兩年，第三方統計造訪超過七億，最多同時上萬人在玩。
+
 ## 這間公司／專案做什麼
 
 [Hide or Die!](https://www.roblox.com/games/18799085098) 是獨立團隊 **0 CCU Games** 在 2024 年 8 月 4 日於 Roblox 發行的非對稱生存遊戲。規則只有兩句：你是躲藏者就活到時間結束，你是追捕者就在時限內抓光所有人。靈感來自鬼捉人與 *Dead by Daylight*，但拿掉修電機、血網與天賦盤。
@@ -403,10 +419,14 @@ Shrink a hardcore genre. Cap a match at ten minutes. Design the screenshot peopl
       { zh: "月費", en: "Price", value: "$29" },
     ],
     summaryZh:
-      "Nas Daily 把「拍一張產品照」做成開店、文案、廣告與社群收款。2026 年 Khosla 領投 2,700 萬美元，官網寫 350 萬名成員、月費 29 美元。",
+      "Nas Daily 團隊：拍一張產品照，就能開店、寫文案、做廣告、向社群收費。2026 年 Khosla 領投 2,700 萬美元；官網寫有 350 萬名成員、月費 29 美元。",
     summaryEn:
       "Nas Daily’s team turns one product photo into a store, copy, ads, and community checkout. Khosla led a $27M Series A in 2026; the site cites 3.5M members at $29 a month.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+有產品、有粉絲，但不懂架網站、寫文案、跑廣告。Nas.com 的說法是：拍一張產品照，後面開店、文案、廣告、向社群收費都能接上。2026 年 Khosla 領投 2,700 萬美元；官網寫有 350 萬名成員、月費 29 美元。
+
 ## 這間公司做什麼
 
 [Nas.com](https://nas.com/)（前身社群產品線見 [nas.io](https://nas.io/)）由短影音創作者 **Nas Daily（Nuseir Yassin）** 創辦。他是哈佛經濟與電腦科學畢業、前 Venmo 工程師，全球帳號累計數十億次觀看。

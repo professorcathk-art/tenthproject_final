@@ -21,10 +21,14 @@ const CASES: SeedCase[] = [
       { zh: "外部融資", en: "Funding", value: "$0" },
     ],
     summaryZh:
-      "17 歲創辦人用「拍一張就能記熱量」打進擁擠的飲食追蹤市場，五個月做到首個 $100 萬銷售，七個月逼近 $100 萬月經常性收入。",
+      "17 歲創辦人做了一個「拍張食物照，就告訴你熱量」的 App。沒有對外融資，五個月賣破 100 萬美元，七個月月收入逼近 100 萬美元。",
     summaryEn:
       "A 17-year-old founder turned “snap a photo, log the meal” into a calorie app that hit $1M in sales in five months and approached $1M MRR by month seven.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+拍張食物照片，App 就告訴你這餐大概多少卡路里。17 歲團隊自己賺錢、沒有外面投資；公開數字是五個月賣破 100 萬美元，後來月收入逼近 100 萬美元。下面是公開報導與訪談整理，不是公司審計財報。
+
 ## 這間公司做什麼
 
 [Cal AI](https://www.calai.app/)（亦稱 CalAI）是 2024 年 5 月上線的手機飲食追蹤 App：使用者拍一張餐點、掃條碼或用文字描述，系統即回傳熱量與蛋白質／碳水／脂肪。官方網站是 [calai.app](https://www.calai.app/)，App Store／Google Play 均可下載。共同創辦人為 Zach Yadegari（CEO）、Henry Langmack（CTO）與 Blake Anderson；首行程式碼約在 2024 年 3 月寫下，全程自籌、未對外融資。
@@ -173,10 +177,14 @@ Paul Graham would call this *schlep blindness*: everyone hates logging calories;
       { zh: "公開 MRR", en: "Public MRR", value: "未披露" },
     ],
     summaryZh:
-      "2023 年在杜拜起步的 AI 文本 Humanizer：把 ChatGPT／Claude／Gemini 的草稿改寫得像人寫的，並內建檢測。官方未公布 MRR，但第三方流量已到數百萬月訪。",
+      "把 ChatGPT、Claude、Gemini 寫出來的文章，改得比較像人寫的，還能檢測像不像 AI。公司沒公布月收入；第三方估計網站一個月有數百萬人造訪。",
     summaryEn:
       "A 2023 Dubai-born AI humanizer that rewrites ChatGPT / Claude / Gemini drafts to read human and scores them with a built-in detector. Official MRR is undisclosed; third-party traffic is in the millions of monthly visits.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+很多人用 AI 寫完文章，會被學校、客戶或平台覺得「太像機器人」。StealthWriter 做的就是把這些草稿改得比較像人寫的，還能打分數告訴你像不像 AI。公司沒有公布每月收入；第三方流量工具顯示一個月有數百萬人造訪。
+
 ## 這間公司做什麼
 
 [StealthWriter](https://stealthwriter.ai/)（stealthwriter.ai）由 Maher Mansour 於 2023 年在杜拜創立，營運主體公開資料寫為 AiVantage LLC，Tracxn／GetLatka 皆標為未融資、自籌。產品極窄：把生成式模型的草稿**改寫成更像人寫的文本**，並用內建 Detector（含 V2、Deep Scan）給出「像不像 AI」的分數。官網定價截至公開頁面為：免費檔每日 10 次改寫／10 次掃描、每次最多 1,000 字；付費從 Starter **$20／月**、Plus **$50**、Pro **$100** 到 Scale **$400／月**（另有年繳）。另有 30% 經常性聯盟分潤，以 USDC（Solana）結算。
@@ -309,10 +317,14 @@ YC would call this *hair on fire*. LTV can be high (weekly deadlines) and the et
       { zh: "變現", en: "Monetization", value: "Freemium" },
     ],
     summaryZh:
-      "imageprompt.org 不是另一個社群牆，而是吃下「image to prompt」搜尋意圖的工具站：圖轉提示詞、提示詞生成、再送到 Flux／Midjourney／SD。月訪落在約 74 萬至 115 萬。",
+      "不會寫 AI 畫圖提示詞也沒關係：把一張圖丟進去，網站會反推提示詞，或幫你寫一則更好的，再送到 Flux、Midjourney。月訪大約 74 萬到 115 萬。",
     summaryEn:
       "imageprompt.org is not another social wall. It owns the “image to prompt” query: reverse-prompt an image, generate a better prompt, send it to Flux / Midjourney / SD. Third-party traffic sits around 740k–1.15M monthly visits.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+想用 AI 畫圖，但不會寫「提示詞」？這個網站主打兩件事：看一張圖，反推出該怎麼寫；或直接幫你寫一則更好的提示詞，再送到 Flux、Midjourney、Stable Diffusion。它不是論壇，是工具站。第三方統計月訪大約 74 萬到 115 萬。
+
 ## 這間公司做什麼
 
 [ImagePrompt.org](https://imageprompt.org/) 公開定位是「把想法變成可用的圖像提示詞」。主功能不是論壇，而是三件工具：
@@ -454,10 +466,14 @@ Platform investors want UGC flywheels. ImagePrompt.org is *indie SEO*. Ben Thomp
       { zh: "公開 MRR", en: "Public MRR", value: "未披露" },
     ],
     summaryZh:
-      "對照真實公司 HumanAI（usehumanai.com）：一邊賣「會做事的客製 Agent」，一邊用 Hope 把 AI 記憶與真人教練綁在同一週節奏。這是聊天機器人之後的產品形狀。",
+      "對照的是已上線公司 HumanAI：不只聊天，還要幫你把事情做完。一邊是會執行工作的客製 Agent，一邊是每週有真人教練的 Hope。公開收入未披露。",
     summaryEn:
       "The live counterpart is HumanAI (usehumanai.com): custom agents that execute work, plus Hope — an AI that remembers you, paired with weekly human coaches. That is the shape after chatbots.",
     bodyZh: `${CASE_SEED_MARKER}
+## 先講人話
+
+靈感庫這則不是空殼域名，對照的是田納西已上線的 HumanAI。它不只要陪你聊天，還想變成「真的會把工作做完」的助手：一條線是客製 Agent，一條線是 Hope——AI 記得你的狀況，每週再配真人教練。公開收入未披露。
+
 ## 這間公司做什麼
 
 靈感庫裡的「HumanAIAgent」對應的是已上線公司 **[HumanAI](https://usehumanai.com/)**（田納西 Knoxville），不是再一個空殼域名。它同時走兩條產品線：

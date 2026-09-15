@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, FolderOpen } from "lucide-react";
 import { ProjectHubGrid } from "@/components/project/project-hub-grid";
+import { ProjectHubTips } from "@/components/project/project-hub-tips";
 import { SkoolClassroomBanner } from "@/components/membership/skool-classroom-banner";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 import { getSession } from "@/lib/auth/session";
@@ -38,7 +39,10 @@ export default async function DashboardPage() {
       )}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{dict.dashboard.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">{dict.dashboard.title}</h1>
+            <ProjectHubTips />
+          </div>
           <p className="mt-1 text-slate-600 dark:text-slate-400">{dict.dashboard.subtitle}</p>
         </div>
         <Link href="/projects/new">

@@ -1,8 +1,11 @@
 import type { AiSuggestion, UATItem } from "@/types";
+import { MASTER_PROMPT_CODING_CONSTRAINTS } from "@/lib/ai/coding-constraints";
 
 export const SPRINT_PROMPT_SYSTEM = `
 You are a Technical Lead creating a Cursor Master Prompt for a Vibe Coder.
 STRICT RULE: NEVER output vague descriptions like "improve UI", "optimize UX", or "conduct UAT".
+
+${MASTER_PROMPT_CODING_CONSTRAINTS}
 
 Every suggestion and task MUST follow this strict technical template:
 1. Target Component / File Route (e.g., \`components/stock-chart.tsx\` or \`app/analysis/page.tsx\`)

@@ -37,8 +37,12 @@ export async function ensureCasesSeeded() {
   if (casesReady) return;
   try {
     const slugs = await listPublishedCaseSlugs();
+    const sample = await getCaseStudyBySlug("calai");
+    const stale = !sample?.breakdown_md.includes(CASE_SEED_MARKER);
     if (slugs.length < 4) {
       await replaceCaseStudies(getSeedCaseStudies());
+    } else if (stale) {
+      await Promise.all(getSeedCaseStudies().map((seed) => upsertCaseStudy(seed)));
     } else {
       await upsertMissingSeedCases(new Set(slugs));
     }

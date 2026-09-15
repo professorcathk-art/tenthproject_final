@@ -46,7 +46,7 @@ export default async function LearningCoursePage({ params }: { params: Promise<{
       </div>
       {!access.paid ? (
         <div className="mt-6">
-          <PaidGate title={dict.courses.paidOnly} body={dict.courses.upgradeToWatch} cta={dict.courses.enroll} />
+          <PaidGate title={dict.courses.paidOnly} body={dict.courses.upgradeToWatch} cta={dict.courses.unlockFull} />
         </div>
       ) : (
         <div className="mt-6">

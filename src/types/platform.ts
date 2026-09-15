@@ -137,7 +137,8 @@ export type CaseMarkStatus = "saved" | "passed";
 export interface CaseStudyMark {
   user_id: string;
   case_slug: string;
-  status: CaseMarkStatus;
+  status: CaseMarkStatus | null;
+  read_at: string | null;
   updated_at: string;
 }
 

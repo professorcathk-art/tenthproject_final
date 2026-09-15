@@ -72,9 +72,11 @@ export function Hero() {
             className="mt-6 text-[1.85rem] font-semibold tracking-[-0.045em] leading-[1.12] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-[3.55rem]"
           >
             {dict.hero.title}
-            <span className="mt-3 block text-[1.05rem] font-medium tracking-[-0.03em] leading-relaxed text-white/65 sm:text-[1.45rem] lg:text-[1.7rem]">
-              {dict.hero.titleAccent}
-            </span>
+            {dict.hero.titleAccent ? (
+              <span className="mt-3 block text-[1.05rem] font-medium tracking-[-0.03em] leading-relaxed text-white/65 sm:text-[1.45rem] lg:text-[1.7rem]">
+                {dict.hero.titleAccent}
+              </span>
+            ) : null}
           </motion.h1>
 
           <motion.p

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { EyeOff, Heart } from "lucide-react";
 import { useI18n } from "@/components/i18n/provider";
 import { useCaseMarks } from "@/components/inspiration/use-case-marks";
@@ -8,20 +9,38 @@ import type { CaseMarkStatus } from "@/types/platform";
 export function CaseMarkBar({
   slug,
   initialStatus,
+  initialRead = false,
 }: {
   slug: string;
   initialStatus?: CaseMarkStatus | null;
+  initialRead?: boolean;
 }) {
   const { dict } = useI18n();
   const initial = initialStatus ? { [slug]: initialStatus } : {};
-  const { marks, toggle, pendingSlug } = useCaseMarks(initial);
+  const { marks, toggle, markRead, pendingSlug } = useCaseMarks(initial, initialRead ? [slug] : []);
   const status = marks[slug] ?? null;
   const busy = pendingSlug === slug;
+  const sentinel = useRef<HTMLElement | null>(null);
+  const sent = useRef(initialRead);
+
+  useEffect(() => {
+    const node = sentinel.current;
+    if (!node || sent.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting) || sent.current) return;
+        sent.current = true;
+        void markRead(slug);
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [markRead, slug]);
 
   return (
-    <section className="mt-8 rounded-2xl border border-slate-200 bg-white/80 px-5 py-5 dark:border-slate-800 dark:bg-slate-950/40">
-      <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{dict.inspiration.markHint}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
+    <section ref={sentinel} className="mt-8 rounded-2xl border border-slate-200 bg-white/80 px-5 py-5 dark:border-slate-800 dark:bg-slate-950/40">
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           disabled={busy}

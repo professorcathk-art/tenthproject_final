@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, EyeOff, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { useI18n } from "@/components/i18n/provider";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { DifficultyStars } from "@/components/inspiration/difficulty-stars";
 import { useCaseMarks } from "@/components/inspiration/use-case-marks";
+import { isPublicInspirationSlug, sortInspirationCases } from "@/lib/inspiration/public-cases";
 
 const FILTERS = ["all", ...CASE_CATEGORIES.map((c) => c.value)] as const;
 const MARK_FILTERS = ["all", "saved", "passed"] as const;
@@ -41,17 +42,19 @@ export function CaseStudyGrid({
   studies,
   basePath = "/inspiration",
   initialMarks,
+  initialReads,
   personal = false,
 }: {
   studies: CaseCard[];
   basePath?: string;
   initialMarks?: Record<string, CaseMarkStatus>;
+  initialReads?: string[];
   personal?: boolean;
 }) {
   const { dict, locale } = useI18n();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
   const [markFilter, setMarkFilter] = useState<MarkFilter>("all");
-  const { marks, toggle, pendingSlug } = useCaseMarks(initialMarks ?? {});
+  const { marks, reads, toggle, pendingSlug } = useCaseMarks(initialMarks ?? {}, initialReads ?? []);
   const cats = dict.inspiration.cats;
 
   function label(key: string) {
@@ -60,10 +63,14 @@ export function CaseStudyGrid({
 
   const categoryFiltered =
     filter === "all" ? studies : studies.filter((s) => caseCategories(s).includes(filter as CaseStudyCategory));
-  const filtered =
+  const markFiltered =
     !personal || markFilter === "all"
       ? categoryFiltered
       : categoryFiltered.filter((s) => marks[s.slug] === markFilter);
+  const filtered = useMemo(
+    () => sortInspirationCases(markFiltered, { readSlugs: personal ? reads : [] }),
+    [markFiltered, personal, reads],
+  );
 
   const savedCount = studies.filter((s) => marks[s.slug] === "saved").length;
   const passedCount = studies.filter((s) => marks[s.slug] === "passed").length;
@@ -127,14 +134,19 @@ export function CaseStudyGrid({
 
       {filtered.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-800">
-          {markFilter === "saved" ? dict.inspiration.noSaved : markFilter === "passed" ? dict.inspiration.noPassed : dict.inspiration.subtitle}
+          {markFilter === "saved" ? dict.inspiration.noSaved : markFilter === "passed" ? dict.inspiration.noPassed : dict.inspiration.noMatches}
         </p>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">
           {filtered.map((study) => {
             const status = marks[study.slug];
+            const read = reads.includes(study.slug);
+            const freePreview = isPublicInspirationSlug(study.slug);
             return (
-              <article key={study.id} className="relative h-full rounded-2xl glass-panel glow-card p-6">
+              <article
+                key={study.id}
+                className={`relative h-full rounded-2xl glass-panel glow-card p-6 ${read ? "opacity-80" : ""}`}
+              >
                 {personal ? (
                   <button
                     type="button"
@@ -149,6 +161,9 @@ export function CaseStudyGrid({
                 ) : null}
                 <Link href={`${basePath}/${study.slug}`} className="block pr-10">
                   <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                    {freePreview ? (
+                      <Badge variant="secondary">{dict.inspiration.freePreview}</Badge>
+                    ) : null}
                     {caseCategories(study).map((cat) => (
                       <Badge key={cat} variant="secondary">
                         {label(cat)}
@@ -160,6 +175,11 @@ export function CaseStudyGrid({
                         savedLabel={dict.inspiration.saved}
                         passedLabel={dict.inspiration.markedPassed}
                       />
+                    ) : null}
+                    {personal && read ? (
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        {dict.inspiration.read}
+                      </span>
                     ) : null}
                   </div>
                   <h2 className="text-lg font-semibold leading-snug">{study.title}</h2>

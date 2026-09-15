@@ -1,0 +1,2 @@
+ALTER TABLE case_study_marks ALTER COLUMN status DROP NOT NULL;
+ALTER TABLE case_study_marks ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;

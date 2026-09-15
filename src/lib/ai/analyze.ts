@@ -5,14 +5,23 @@ import {
   buildMasterPromptsFromTemplate,
   type PromptType,
 } from "@/lib/ai/master-prompt";
+import {
+  MASTER_PROMPT_CODING_CONSTRAINTS,
+  keepCodingItems,
+  looksLikeNonCodingWork,
+} from "@/lib/ai/coding-constraints";
 
 const SYSTEM_PROMPT = `You are a Technical Lead writing executable specs for Cursor (Next.js App Router, TypeScript, Tailwind, shadcn/ui).
 STRICT RULE: NEVER output vague cards like "improve UI", "optimize UX", or "conduct UAT".
+
+${MASTER_PROMPT_CODING_CONSTRAINTS}
 
 Every task, bug, enhancement, and UAT item MUST include:
 1. Target file or route (e.g. src/app/page.tsx, src/components/stock-chart.tsx)
 2. Concrete code action (Skeleton, next/dynamic, grid-cols-1 md:grid-cols-3, error.tsx for HTTP 500)
 3. Testable acceptance criteria (375px + desktop, npm run build)
+
+Phases and tasks must be engineering work only (routes, schemas, APIs, components). Never market research, interviews, or reports.
 
 Return ONLY valid JSON matching this schema:
 {
@@ -193,14 +202,14 @@ export async function analyzeProject(
   try {
     const typeInstruction =
       promptType === "next-step"
-        ? "Generate the NEXT SPRINT plan based on current progress. Focus on what's still incomplete."
+        ? "Generate the NEXT SPRINT plan based on current progress. Focus on incomplete coding work."
         : promptType === "bug-fix"
           ? "Focus on bug fixes and re-testing failed UAT items."
           : promptType === "re-test"
             ? "Focus on re-testing items marked as fixed. Update UAT statuses accordingly."
             : promptType === "enhancement"
-              ? "Focus on enhancement suggestions for post-launch improvement."
-              : "Generate the initial project plan and first development sprint.";
+              ? "Focus on code enhancement suggestions for post-launch improvement."
+              : "Generate the initial project plan and first development sprint. Tasks must be 100% coding implementations (routes, schemas, APIs, components) — never market research, interviews, reports, or mockups.";
 
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
@@ -217,6 +226,15 @@ export async function analyzeProject(
 
     const parsed = JSON.parse(content) as AIAnalysis;
     const fallback = generateFallbackAnalysis(project, promptType);
+    parsed.tasks = keepCodingItems(parsed.tasks, (t) => `${t.title} ${t.description ?? ""}`);
+    parsed.missingItems = keepCodingItems(parsed.missingItems, (s) => s);
+    parsed.enhancements = keepCodingItems(parsed.enhancements, (e) => `${e.title} ${e.description ?? ""}`);
+    parsed.phases = (parsed.phases ?? [])
+      .map((phase) => ({
+        ...phase,
+        tasks: keepCodingItems(phase.tasks, (task) => task),
+      }))
+      .filter((phase) => !looksLikeNonCodingWork(`${phase.name} ${phase.description}`));
     if (!parsed.prompts) parsed.prompts = fallback.prompts;
     if (!parsed.uatItems?.length) parsed.uatItems = fallback.uatItems;
     if (!parsed.tasks?.length) parsed.tasks = fallback.tasks;

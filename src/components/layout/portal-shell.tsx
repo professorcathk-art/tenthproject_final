@@ -62,7 +62,7 @@ function PortalNavLinks({
                 : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className={cn("h-4 w-4", item.href === "/vault" && "portal-bulb")} />
             {item.label}
           </Link>
         );

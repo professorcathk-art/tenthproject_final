@@ -1,5 +1,10 @@
 import OpenAI from "openai";
 import type { AIAnalysis, AITool, Project, ProjectArtifact } from "@/types";
+import {
+  MASTER_PROMPT_CODING_CONSTRAINTS,
+  keepCodingItems,
+  looksLikeNonCodingWork,
+} from "@/lib/ai/coding-constraints";
 
 export type PromptType = "initial" | "next-step" | "bug-fix" | "re-test" | "enhancement";
 
@@ -17,35 +22,37 @@ const MASTER_PROMPT_SYSTEM = `You are a Technical Lead writing a Cursor-ready ma
 STRICT RULE: NEVER say "improve UI", "optimize UX", or "conduct UAT".
 Every task must name a file (src/app/page.tsx, src/components/...), a concrete React/Next.js/Tailwind action, and acceptance criteria including npm run build.
 
+${MASTER_PROMPT_CODING_CONSTRAINTS}
+
 You are also an expert vibe-coding prompt architect. Transform a user's rough product idea into a COMPREHENSIVE MASTER PROMPT they can paste directly into AI coding tools (Cursor, Lovable, Gemini, Claude, ChatGPT).
 
 The master prompt must be LONG, DETAILED, and STRUCTURED — not a one-liner or short paragraph.
 
 Each tool-specific prompt MUST include ALL of these sections (use markdown headers):
 
-1. **Product Vision** — what we're building and why
-2. **Target Users & Problem** — who it's for, pain points solved
-3. **Tech Stack & Architecture** — recommend appropriate stack based on product type
+1. **Product Vision** — what code we are shipping and the technical outcome
+2. **Target Users & Problem** — who the product is for (context only; do not assign research tasks)
+3. **Tech Stack & Architecture** — Next.js / TypeScript / database / auth / payments as code work
 4. **Suggested File/Folder Structure** — concrete directory tree
-5. **This Sprint Scope** — exactly what to build NOW (not everything)
-6. **User Stories** — 3-5 "As a [user], I want [action], so that [benefit]"
-7. **Feature Requirements** — Must Have / Should Have / Nice to Have
-8. **Pages & Routes** — list every page/screen with purpose
-9. **Data Model** — key entities and fields
-10. **UI/UX Guidelines** — design direction, responsive, states
+5. **This Sprint Scope** — ONLY code implementations to build NOW (routes, schemas, APIs, components)
+6. **Implementation Tickets** — 3-5 tickets named as files + coding actions, never interviews or reports
+7. **Feature Requirements** — translate needs into technical features (PostgreSQL, Stripe, Tailwind layouts)
+8. **Pages & Routes** — App Router paths to implement
+9. **Data Model** — tables/collections and fields to code
+10. **UI Implementation Notes** — Tailwind/shadcn components to build, not mockup exploration
 11. **Acceptance Criteria** — testable checklist with routes + expected DOM
 12. **Exact Target Files** — concrete paths only
 13. **Step-by-Step Code Modifications** — file → action → acceptance
 14. **Build & Verification Command** — always include \`npm run build\`
-15. **Out of Scope** — what NOT to build yet
+15. **Out of Scope** — explicitly exclude market research, user interviews, reports, and mockup-only work
 16. **Quality Bar** — loading/error/empty states, 375px, accessibility
 
 Tool-specific formatting:
 - **cursor**: Include file paths, "read codebase first", incremental build steps, TypeScript/Tailwind conventions, "do not over-engineer"
-- **lovable**: Emphasize UI components, design system, visual polish, page-by-page build order
-- **gemini**: Numbered step-by-step execution plan
-- **claude**: Structured sections with constraints and reasoning
-- **general**: Tool-agnostic but equally comprehensive
+- **lovable**: Emphasize UI components to code, design system files, page-by-page build order
+- **gemini**: Numbered step-by-step coding execution plan
+- **claude**: Structured sections with coding constraints
+- **general**: Tool-agnostic but equally comprehensive and code-only
 
 Minimum length: each prompt must be at least 600 words. Be specific to the user's project — never generic boilerplate.
 
@@ -196,8 +203,13 @@ function buildTemplateMasterPrompt(tool: AITool, ctx: MasterPromptContext): stri
   const stage = project.stage ?? "idea";
   const { stack, structure } = recommendStack(project.product_type);
 
-  const phases = analysis.phases ?? [];
-  const tasks = analysis.tasks ?? [];
+  const phases = (analysis.phases ?? [])
+    .map((phase) => ({
+      ...phase,
+      tasks: keepCodingItems(phase.tasks, (task) => task),
+    }))
+    .filter((phase) => !looksLikeNonCodingWork(`${phase.name} ${phase.description}`));
+  const tasks = keepCodingItems(analysis.tasks, (t) => `${t.title} ${t.description ?? ""}`);
   const uatItems = analysis.uatItems ?? [];
   const acceptance = analysis.acceptanceCriteria ?? [];
   const sprintPhase = phases[0]?.name ?? "Foundation";
@@ -225,7 +237,8 @@ You are building inside Cursor IDE. Follow these rules:
 7. **Mobile responsive** — test at 375px viewport
 8. **Run \`npm run build\`** after changes to catch type errors
 9. **Do not over-engineer** — minimal scope, no premature abstractions
-10. **Do not skip steps** — complete acceptance criteria before moving on`,
+10. **Do not skip steps** — complete acceptance criteria before moving on
+11. **Do not invent research or interview tasks** — only write and wire code`,
     lovable: `## Implementation Instructions (Lovable)
 
 Build this visually in Lovable:
@@ -238,14 +251,14 @@ Build this visually in Lovable:
     gemini: `## Step-by-Step Execution Plan (Gemini)
 
 Execute in this exact order:
-1. Analyze requirements and confirm scope
+1. Inspect existing files and confirm the coding scope
 2. Set up project structure and dependencies
-3. Build layout and navigation
-4. Implement core user flow
+3. Build layout and navigation in App Router files
+4. Implement core user flow in components and API routes
 5. Add data layer and persistence
 6. Add feedback states (loading, error, success, empty)
 7. Test mobile responsiveness
-8. Verify all acceptance criteria`,
+8. Verify all acceptance criteria with \`npm run build\``,
     claude: `## Implementation Instructions (Claude)
 
 Approach this systematically:
@@ -338,19 +351,20 @@ ${sprintTasks.map((t, i) => `${i + 1}. **${t.title}** — ${t.description ?? ""}
 - Advanced admin panels
 - Multi-tenant enterprise features
 - Complex agent orchestration
+- Market research, user interviews, written reports, or mockup-only exploration
 
 ---
 
-## 6. User Stories
+## 6. Implementation Tickets
 
-${sprintTasks.slice(0, 4).map((t, i) => `${i + 1}. As **${audience}**, I want to **${t.title.toLowerCase()}**, so that **I can progress toward my goal**.`).join("\n")}
+${sprintTasks.slice(0, 4).map((t, i) => `${i + 1}. Implement **${t.title}** in code so ${audience} can use the working feature.`).join("\n")}
 
 ---
 
 ## 7. Feature Requirements
 
 ### Must Have (MVP)
-${sprintTasks.filter((t) => t.priority === "high").map((t) => `- ${t.title}`).join("\n") || `- Core user flow for ${name}\n- Responsive layout\n- Basic data persistence`}
+${sprintTasks.filter((t) => t.priority === "high").map((t) => `- ${t.title}`).join("\n") || `- Next.js App Router shell for ${name}\n- Tailwind layout for the primary flow\n- Persistence schema (Postgres / Mongo) if data is required`}
 
 ### Should Have
 ${sprintTasks.filter((t) => t.priority === "medium").map((t) => `- ${t.title}`).join("\n") || "- Loading and error states\n- Empty state guidance"}
@@ -380,15 +394,14 @@ Extend based on specific features needed for: ${goal}
 
 ---
 
-## 10. UI/UX Guidelines
+## 10. UI Implementation Notes
 
-- **Mode:** Light mode, professional (Linear / Notion / Slack aesthetic)
-- **Typography:** Clean sans-serif, clear hierarchy
-- **Spacing:** Generous whitespace, not cramped
-- **Mobile:** Fully responsive, tappable buttons (min 44px)
-- **States:** Every view needs loading, empty, error, and success states
-- **Copy:** Plain language — no IT jargon for end users
-- **Navigation:** Clear "next action" on every page
+- Implement light-mode layouts with Tailwind + shadcn/ui (Linear / Notion / Slack aesthetic)
+- Typography and spacing live in component classNames, not in a separate mockup
+- Mobile: fully responsive, tappable buttons (min 44px) in the real components
+- States: every view needs loading, empty, error, and success states in code
+- Copy: plain language in the shipped UI — no IT jargon for end users
+- Navigation: clear next-action controls on every page you implement
 
 ---
 
@@ -458,6 +471,7 @@ function inferPages(productType?: string, name?: string, goal?: string) {
 
 export function isPromptTooSimple(prompt: string): boolean {
   if (!prompt || prompt.length < MIN_MASTER_PROMPT_LENGTH) return true;
+  if (looksLikeNonCodingWork(prompt)) return true;
   const requiredSections = ["##", "Acceptance", "Tech Stack", "Scope"];
   const matchCount = requiredSections.filter((s) =>
     prompt.toLowerCase().includes(s.toLowerCase())
@@ -488,7 +502,7 @@ export async function generateMasterPrompts(ctx: MasterPromptContext): Promise<A
         { role: "system", content: MASTER_PROMPT_SYSTEM },
         {
           role: "user",
-          content: `Generate comprehensive master prompts for ALL tools based on this project context.\n\n${buildUserContext(ctx)}\n\nUse the project-specific details above. Each prompt must be 600+ words with all required sections.`,
+          content: `Generate comprehensive master prompts for ALL tools based on this project context.\n\n${buildUserContext(ctx)}\n\nUse the project-specific details above. Each prompt must be 600+ words with all required sections. This Sprint Scope and Feature Requirements must be 100% coding/implementation work — never market research, interviews, or reports.`,
         },
       ],
       response_format: { type: "json_object" },
