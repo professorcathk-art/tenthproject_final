@@ -20,6 +20,8 @@ const promptStripe = `我需要串接 Stripe Checkout 進行 [一次性買斷 / 
 1. 請幫我寫一個 API Route \`/api/stripe/create-checkout\` 負責產生付款連結。
 2. 請幫我寫一個 Webhook API \`/api/webhooks/stripe\`，當接收到 \`checkout.session.completed\` 事件時，自動將該用戶在 Supabase 資料庫中的 \`is_premium\` 欄位更新為 true。`;
 
+const promptGit = `這個功能測試正常！請幫我將目前的進度 Commit 到 Git，Commit message 請根據剛剛完成的代碼變更自動生成。`;
+
 const promptUi = `你是一位世界頂級的 SaaS UI/UX 設計師。
 我附上了目前網站的截圖以及它的 React / Tailwind 原始碼。
 請指出目前設計中 3 個視覺缺陷（例如：留白不足、顏色層級不明確、排版混亂），並直接給出修改後的 Tailwind 完整代碼。請讓整體風格看起來像 Vercel 或 Linear 那樣具備現代科技感與玻璃擬物化 (Glassmorphism)。`;
@@ -31,9 +33,6 @@ export function ProductionGuide({ locale = "zh" }: { locale?: "zh" | "en" }) {
       <h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
         SaaS 產品從 0 到 1 敏捷開發指南 (Web & Mobile)
       </h1>
-      <p className="mt-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-        拒絕無效開發！跟隨此 14 天標準化開發流程 (SOP)，利用 ChatGPT/Gemini 進行邏輯推演，並用 Cursor 完成高質量編程。
-      </p>
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Day 1-2: 商業需求規劃與架構設計 (Planning)</h2>
@@ -52,15 +51,40 @@ export function ProductionGuide({ locale = "zh" }: { locale?: "zh" | "en" }) {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Day 3-5: 核心功能開發 (Core Functions)</h2>
+        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
+          Day 3-5: 核心功能開發與版本控制 (Core Functions & Git)
+        </h2>
         <p className="mt-4 leading-relaxed text-slate-700 dark:text-slate-300">
-          帶著生成的 Master Prompt 進入 Cursor，開啟 Composer (Cmd+I) 進行開發。
+          帶著生成的{" "}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">Master Prompt</code>{" "}
+          進入 Cursor，開啟 Composer (
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">Cmd+I</code> 或{" "}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">Ctrl+I</code>
+          ) 進行開發。
         </p>
-        <h3 className="mt-6 font-semibold text-slate-950 dark:text-white">💡 實戰避坑指南：</h3>
+        <h3 className="mt-6 font-semibold text-slate-950 dark:text-white">💡 實戰避坑與開發節奏指南：</h3>
         <ul className="mt-3 list-disc space-y-3 pl-5 leading-relaxed text-slate-700 dark:text-slate-300">
-          <li>不要一次要求太多：一次只請 Cursor 實作一個組件（例如：「先幫我刻出首頁的 Hero Section」），確認無誤後再進行下一個。</li>
-          <li>隨時 Commit：每完成一個會動的功能，一定要在終端機 git commit，如果 AI 把代碼改壞了才能隨時還原。</li>
+          <li>
+            <strong>第一步：全局骨架生成 (Boilerplate)</strong>
+            <span className="mt-1 block">
+              第一次開發時，請<strong>直接把整份 Master Prompt 完整貼給 Cursor</strong>，請它一次性幫你建立好所有的資料夾結構、路由 (Routes) 與基礎頁面骨架 (UI Skeleton)。務求讓整個網站的「外觀形狀」先完整長出來。
+            </span>
+          </li>
+          <li>
+            <strong>第二步：切割任務，逐一擊破 (Iterative Build)</strong>
+            <span className="mt-1 block">
+              當基礎骨架出來後，進入細節邏輯開發時就<strong>不要一次要求太多</strong>。請切換成「一次只做一個模組」的節奏（例如：「現在請專注幫我把首頁的 Hero Section 刻好，並加上 RWD 響應式」），確認該模組運行無誤後，再進行下一個。
+            </span>
+          </li>
+          <li>
+            <strong>第三步：新手必學的 AI 備份法 (Git Commit)</strong>
+            <span className="mt-1 block">
+              新手不需要死背終端機的 Git 指令！每完成一個會動的功能，為了防止 AI 之後不小心把代碼改壞，你可以直接用白話文請 Cursor 幫你備份版本：
+            </span>
+          </li>
         </ul>
+        <h3 className="mt-6 font-semibold text-slate-950 dark:text-white">📝 Sample Prompt (餵給 Cursor - 自動備份代碼)：</h3>
+        <PromptBlock>{promptGit}</PromptBlock>
       </section>
 
       <section className="mt-10">

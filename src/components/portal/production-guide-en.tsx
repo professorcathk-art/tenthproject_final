@@ -29,9 +29,6 @@ export function ProductionGuideEn() {
       <h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
         Agile SaaS guide from 0 to 1 (Web & Mobile)
       </h1>
-      <p className="mt-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-        Stop building the wrong thing. Follow this 14-day standard process. Use ChatGPT or Gemini to think the logic through, then use Cursor to write high-quality code.
-      </p>
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Day 1–2: Business planning and architecture</h2>
