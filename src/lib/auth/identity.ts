@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createAnonClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { ensureMemberRecord } from "@/lib/auth/membership";
+import { applyPrepaidLifetime } from "@/lib/membership/lifetime-invites";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getCheckoutBaseUrl } from "@/lib/stripe";
 
@@ -135,6 +136,7 @@ async function finishAuthenticatedSession(user: User, name?: string): Promise<Ex
     });
     if (error) console.error("auth profile upsert:", error.message);
   }
+  await applyPrepaidLifetime(email, member.name);
   return { ok: true, userId: user.id, email, name: member.name, isAdmin: isAdminEmail(email) };
 }
 

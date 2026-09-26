@@ -4,6 +4,7 @@ import { isAdminEmail } from "@/lib/auth/admin";
 import { getMemberByEmail, upsertMember } from "@/lib/db/platform-store";
 import { createServiceClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { isPaidPlan, type Member } from "@/types/platform";
+import { applyPrepaidLifetime } from "@/lib/membership/lifetime-invites";
 
 export interface MembershipAccess {
   paid: boolean;
@@ -15,10 +16,16 @@ export interface MembershipAccess {
 export async function ensureMemberRecord(email: string, name?: string, admin = false): Promise<Member> {
   const existing = await getMemberByEmail(email);
   if (existing) {
+    const nextName = name?.trim();
     if (admin && existing.plan === "free") {
-      const upgraded = { ...existing, plan: "academy" as const, name: name?.trim() || existing.name };
+      const upgraded = { ...existing, plan: "academy" as const, name: nextName || existing.name };
       await upsertMember(upgraded);
       return upgraded;
+    }
+    if (nextName && nextName !== existing.name && existing.name === "Member") {
+      const renamed = { ...existing, name: nextName };
+      await upsertMember(renamed);
+      return renamed;
     }
     return existing;
   }
@@ -41,6 +48,7 @@ export async function isPaidEmail(email: string | null | undefined): Promise<boo
   if (isAdminEmail(normalized)) return true;
   const member = await getMemberByEmail(normalized);
   if (member && member.status === "active" && isPaidPlan(member.plan)) return true;
+  if (await applyPrepaidLifetime(normalized)) return true;
   if (isSupabaseConfigured()) {
     const { data } = await createServiceClient()
       .from("profiles")
@@ -82,6 +90,10 @@ export const getMembershipAccess = cache(async function getMembershipAccess(emai
     return { paid: true, plan: member.plan, status: member.status, member };
   }
   const paid = member.status === "active" && isPaidPlan(member.plan);
+  if (!paid && (await applyPrepaidLifetime(email, member.name))) {
+    const plan = member.plan === "enterprise" ? "enterprise" : "academy";
+    return { paid: true, plan, status: "active", member: { ...member, plan, status: "active" } };
+  }
   if (!paid && isSupabaseConfigured()) {
     const { data } = await createServiceClient()
       .from("profiles")
