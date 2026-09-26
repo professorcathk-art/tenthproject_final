@@ -5,10 +5,9 @@ import { Plus, FolderOpen } from "lucide-react";
 import { ProjectHubGrid } from "@/components/project/project-hub-grid";
 import { ProjectHubTips } from "@/components/project/project-hub-tips";
 import { SkoolClassroomBanner } from "@/components/membership/skool-classroom-banner";
-import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { paidMemberOrLock } from "@/components/portal/paid-feature-lock";
 import { getSession } from "@/lib/auth/session";
 import { getMemberHubSnapshot } from "@/lib/db/store";
-import { getProjectQuota } from "@/lib/membership/limits";
 import { redirect } from "next/navigation";
 import { getDict } from "@/lib/i18n/server";
 
@@ -16,27 +15,15 @@ export default async function DashboardPage() {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) redirect("/login?redirect=/dashboard");
 
+  const lock = await paidMemberOrLock("hub");
+  if (lock) return lock;
+
   const dict = await getDict();
-  const [{ projects, openUat, recentPrompts }, quota] = await Promise.all([
-    getMemberHubSnapshot(user.id),
-    getProjectQuota(user.email, user.id, user.isAdmin),
-  ]);
+  const { projects, openUat, recentPrompts } = await getMemberHubSnapshot(user.id);
 
   return (
     <div className="space-y-8">
-      {quota.paid ? (
-        <SkoolClassroomBanner />
-      ) : (
-        <section className="rounded-3xl glass-panel border border-emerald-500/20 bg-emerald-50/50 p-6 dark:border-emerald-500/30 dark:bg-slate-900/50 sm:flex sm:items-center sm:justify-between sm:gap-8 sm:p-8">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">您目前使用的是免費方案</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-              您已使用 {quota.count}/1 個免費專案額度。升級 VIP 終身會員即可解鎖 20 個專案、Skool 10小時大師課與 Cursor MCP 同步功能。
-            </p>
-          </div>
-          <JoinLifetimeButton className="mt-5 sm:mt-0">🚀 立即升級終身會員</JoinLifetimeButton>
-        </section>
-      )}
+      <SkoolClassroomBanner />
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">

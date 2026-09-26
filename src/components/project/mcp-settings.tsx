@@ -99,6 +99,8 @@ export function McpSettings({ projectId, projectName, compact = false }: McpSett
     { name: "fetch_uat_status", desc: dict.mcp.toolUat },
     { name: "update_uat_item", desc: dict.mcp.toolUpdate },
     { name: "log_bug", desc: dict.mcp.toolBug },
+    { name: "update_task_status", desc: dict.mcp.toolTask },
+    { name: "report_build_status", desc: dict.mcp.toolBuild },
   ];
   const examples = [dict.mcp.example1, dict.mcp.example2, dict.mcp.example3];
 

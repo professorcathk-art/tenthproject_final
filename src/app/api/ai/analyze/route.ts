@@ -22,14 +22,16 @@ import type {
   AITool,
   PromptType,
 } from "@/types";
+import { briefFromAnswers, normalizeBrief } from "@/lib/ai/product-brief";
 
 export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
     const body = await request.json();
-    const { projectId, promptType = "initial" } = body as {
+    const { projectId, promptType = "initial", brief: rawBrief } = body as {
       projectId: string;
       promptType?: PromptType;
+      brief?: unknown;
     };
 
     const project = await getProject(projectId, user.id);
@@ -66,11 +68,21 @@ export async function POST(request: NextRequest) {
         .map((item) => `${item.category}: ${item.title}`),
     };
 
+    const brief = rawBrief
+      ? normalizeBrief(rawBrief, briefFromAnswers({
+          name: project.name,
+          description: project.description,
+          goal: project.goal,
+          target_audience: project.target_audience,
+        }))
+      : null;
+
     const analysis = await analyzeProject(
       project,
       project.artifacts ?? [],
       existingState,
-      promptType
+      promptType,
+      brief,
     );
 
     const contextVersionId = uuidv4();

@@ -10,6 +10,7 @@ import {
   keepCodingItems,
   looksLikeNonCodingWork,
 } from "@/lib/ai/coding-constraints";
+import { applyConfirmedBrief, formatBriefForPrompt, type ProductBrief } from "@/lib/ai/product-brief";
 
 const SYSTEM_PROMPT = `You are a Technical Lead writing executable specs for Cursor (Next.js App Router, TypeScript, Tailwind, shadcn/ui).
 STRICT RULE: NEVER output vague cards like "improve UI", "optimize UX", or "conduct UAT".
@@ -52,7 +53,12 @@ If live inspection shows a slow TTFB/load time, emit a performance task that use
 If inspection shows HTTP 4xx/5xx, target src/app/error.tsx or the failing src/app/api/* route.
 Prefer Traditional Chinese when the project copy is Chinese.`;
 
-function buildContext(project: Partial<Project>, artifacts: ProjectArtifact[] = [], existingState?: Record<string, unknown>) {
+function buildContext(
+  project: Partial<Project>,
+  artifacts: ProjectArtifact[] = [],
+  existingState?: Record<string, unknown>,
+  brief?: ProductBrief | null,
+) {
   const artifactSummary = artifacts
     .map((a) => `- [${a.type}] ${a.title}${a.content_url ? `: ${a.content_url}` : ""}${a.summary ? ` — ${a.summary}` : ""}`)
     .join("\n");
@@ -72,6 +78,7 @@ Artifacts:
 ${artifactSummary || "None uploaded yet"}
 
 ${existingState ? `Current Progress:\n${JSON.stringify(existingState, null, 2)}` : ""}
+${brief ? `\n${formatBriefForPrompt(brief)}` : ""}
 `.trim();
 }
 
@@ -186,17 +193,26 @@ function generateFallbackAnalysis(
   };
 }
 
+function shapeAnalysis(analysis: AIAnalysis, brief?: ProductBrief | null) {
+  return brief ? applyConfirmedBrief(analysis, brief) : analysis;
+}
+
 export async function analyzeProject(
   project: Partial<Project>,
   artifacts: ProjectArtifact[] = [],
   existingState?: Record<string, unknown>,
-  promptType: "initial" | "next-step" | "bug-fix" | "re-test" | "enhancement" = "initial"
+  promptType: "initial" | "next-step" | "bug-fix" | "re-test" | "enhancement" = "initial",
+  brief?: ProductBrief | null,
 ): Promise<AIAnalysis> {
   const client = getClient();
-  const context = buildContext(project, artifacts, existingState);
+  const context = buildContext(project, artifacts, existingState, brief);
 
   if (!client) {
-    return generateFallbackAnalysis(project, promptType);
+    const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief);
+    if (brief) {
+      draft.prompts = buildMasterPromptsFromTemplate({ project, analysis: draft, promptType });
+    }
+    return draft;
   }
 
   try {
@@ -209,7 +225,7 @@ export async function analyzeProject(
             ? "Focus on re-testing items marked as fixed. Update UAT statuses accordingly."
             : promptType === "enhancement"
               ? "Focus on code enhancement suggestions for post-launch improvement."
-              : "Generate the initial project plan and first development sprint. Tasks must be 100% coding implementations (routes, schemas, APIs, components) — never market research, interviews, reports, or mockups.";
+              : `Generate the initial project plan and first development sprint. Tasks must be 100% coding implementations (routes, schemas, APIs, components) — never market research, interviews, reports, or mockups.${brief ? " The confirmed product brief is the spec. The first sprint must build only what that brief asks for." : ""}`;
 
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
@@ -222,7 +238,11 @@ export async function analyzeProject(
     });
 
     const content = response.choices[0]?.message?.content;
-    if (!content) return generateFallbackAnalysis(project, promptType);
+    if (!content) {
+      const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief);
+      if (brief) draft.prompts = buildMasterPromptsFromTemplate({ project, analysis: draft, promptType });
+      return draft;
+    }
 
     const parsed = JSON.parse(content) as AIAnalysis;
     const fallback = generateFallbackAnalysis(project, promptType);
@@ -241,19 +261,21 @@ export async function analyzeProject(
     if (!parsed.phases?.length) parsed.phases = fallback.phases;
     if (!parsed.enhancements?.length) parsed.enhancements = fallback.enhancements;
 
-    // Generate comprehensive master prompts (dedicated pass + template fallback)
-    parsed.prompts = await generateMasterPrompts({
+    const shaped = shapeAnalysis(parsed, brief);
+    shaped.prompts = await generateMasterPrompts({
       project,
-      analysis: parsed,
+      analysis: shaped,
       promptType,
       artifacts,
       existingState,
     });
 
-    return parsed;
+    return shaped;
   } catch (error) {
     console.error("AI analysis failed:", error);
-    return generateFallbackAnalysis(project, promptType);
+    const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief);
+    if (brief) draft.prompts = buildMasterPromptsFromTemplate({ project, analysis: draft, promptType });
+    return draft;
   }
 }
 

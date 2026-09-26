@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
 import { PRODUCT_TYPES, PROJECT_STAGES, AI_TOOLS, type ProductType, type ProjectStage, type AITool } from "@/types";
+import type { ProductBrief } from "@/lib/ai/product-brief";
 import { useI18n } from "@/components/i18n/provider";
 
 export function NewProjectWizard() {
@@ -19,8 +20,10 @@ export function NewProjectWizard() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState("");
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<Record<string, unknown> | null>(null);
+  const [brief, setBrief] = useState<ProductBrief | null>(null);
   const [promptText, setPromptText] = useState("");
 
   const [form, setForm] = useState({
@@ -43,68 +46,126 @@ export function NewProjectWizard() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function createProjectAndAnalyze() {
+  function updateBrief(key: keyof ProductBrief, value: string) {
+    setBrief((prev) => {
+      if (!prev) return prev;
+      if (key === "functions") return { ...prev, functions: value.split("\n") };
+      return { ...prev, [key]: value };
+    });
+  }
+
+  async function saveProjectFields(id: string) {
+    await fetch("/api/projects", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId: id,
+        name: form.name,
+        description: form.description,
+        goal: form.goal,
+        target_audience: form.target_audience,
+        product_type: form.product_type,
+        stage: form.stage,
+        selected_tool: form.selected_tool,
+        website_url: form.website_url || null,
+        github_url: form.github_url || null,
+      }),
+    });
+  }
+
+  async function createProjectAndPolish() {
     setAnalyzing(true);
+    setError("");
     try {
-      const res = await fetch("/api/projects", {
+      let id = projectId;
+      if (!id) {
+        const res = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+        const data = (await res.json()) as { project?: { id: string }; error?: string; message?: string };
+        if (!res.ok || !data.project) throw new Error(data.message || data.error || "Failed");
+        id = data.project.id;
+        setProjectId(id);
+
+        for (const file of files) {
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("projectId", id);
+          fd.append("type", file.type.startsWith("image/") ? "screenshot" : "doc");
+          fd.append("title", file.name);
+          await fetch("/api/upload", { method: "POST", body: fd });
+        }
+      } else {
+        await saveProjectFields(id);
+      }
+
+      const briefRes = await fetch("/api/ai/brief", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          projectId: id,
+          notes: form.notes,
+          fileNames: files.map((file) => file.name),
+        }),
       });
-      const data = (await res.json()) as { project?: { id: string }; error?: string; message?: string };
-      if (!res.ok || !data.project) {
-        throw new Error(data.message || data.error || "Failed");
-      }
-      const { project } = data;
-
-      setProjectId(project.id);
-
-      for (const file of files) {
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("projectId", project.id);
-        fd.append("type", file.type.startsWith("image/") ? "screenshot" : "doc");
-        fd.append("title", file.name);
-        await fetch("/api/upload", { method: "POST", body: fd });
-      }
-
-      if (form.website_url) {
-        await fetch("/api/projects", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId: project.id, website_url: form.website_url }),
-        });
-      }
-
-      if (form.github_url) {
-        await fetch("/api/projects", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId: project.id, github_url: form.github_url }),
-        });
-      }
-
-      const analyzeRes = await fetch("/api/ai/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: project.id, promptType: "initial" }),
-      });
-      const analyzeData = await analyzeRes.json();
-      if (analyzeData.error) throw new Error(analyzeData.error);
-
-      setAnalysis(analyzeData.analysis);
-      setPromptText(analyzeData.promptRun?.prompt_text ?? "");
+      const briefData = (await briefRes.json()) as { brief?: ProductBrief; error?: string };
+      if (!briefRes.ok || !briefData.brief) throw new Error(briefData.error || "Failed");
+      setBrief(briefData.brief);
       setStep(5);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setAnalyzing(false);
     }
   }
 
+  async function confirmBrief() {
+    if (!projectId || !brief) return;
+    const functions = brief.functions.map((item) => item.trim()).filter(Boolean);
+    if (!brief.vision.trim() || !brief.endGoal.trim() || !brief.firstSprint.trim()) {
+      setError(w.briefNeed);
+      return;
+    }
+    setConfirming(true);
+    setError("");
+    const confirmed = { ...brief, functions };
+    try {
+      const saved = await fetch("/api/projects", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          description: confirmed.vision,
+          goal: confirmed.endGoal,
+          target_audience: confirmed.audience,
+        }),
+      });
+      if (!saved.ok) {
+        const data = (await saved.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error || "Failed");
+      }
+
+      const analyzeRes = await fetch("/api/ai/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, promptType: "initial", brief: confirmed }),
+      });
+      const analyzeData = (await analyzeRes.json()) as { error?: string; promptRun?: { prompt_text?: string } };
+      if (!analyzeRes.ok || analyzeData.error) throw new Error(analyzeData.error || "Failed");
+      setPromptText(analyzeData.promptRun?.prompt_text ?? "");
+      setStep(6);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setConfirming(false);
+    }
+  }
+
   async function handleNext() {
     if (step === 4) {
-      await createProjectAndAnalyze();
+      await createProjectAndPolish();
       return;
     }
     if (step < STEPS.length - 1) setStep(step + 1);
@@ -130,7 +191,7 @@ export function NewProjectWizard() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto max-w-3xl">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-slate-600">
@@ -295,39 +356,53 @@ export function NewProjectWizard() {
             </div>
           )}
 
-          {step === 5 && analysis && (
+          {step === 5 && brief && (
             <div className="space-y-4">
-              <div className="rounded-lg bg-slate-50 p-4">
-                <h3 className="font-medium mb-2">{w.summary}</h3>
-                <p className="text-sm text-slate-600">{String(analysis.projectSummary)}</p>
-              </div>
-              <div className="rounded-lg bg-slate-50 p-4">
-                <h3 className="font-medium mb-2">{w.nextAction}</h3>
-                <p className="text-sm text-slate-600">{String(analysis.nextAction)}</p>
-              </div>
-              {Array.isArray(analysis.phases) && (
-                <div>
-                  <h3 className="font-medium mb-2">{w.phases}</h3>
-                  <div className="space-y-2">
-                    {(analysis.phases as Array<{ name: string; description: string }>).map((p, i) => (
-                      <div key={i} className="flex items-start gap-3 text-sm">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-medium">
-                          {i + 1}
-                        </span>
-                        <div>
-                          <div className="font-medium">{p.name}</div>
-                          <div className="text-slate-500">{p.description}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {(
+                [
+                  ["vision", w.briefVision, 4],
+                  ["endGoal", w.briefGoal, 3],
+                  ["audience", w.briefAudience, 2],
+                ] as const
+              ).map(([key, label, rows]) => (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={key}>{label}</Label>
+                  <Textarea
+                    id={key}
+                    rows={rows}
+                    value={brief[key]}
+                    onChange={(e) => updateBrief(key, e.target.value)}
+                  />
                 </div>
-              )}
-              {Array.isArray(analysis.uatItems) && (
-                <p className="text-sm text-slate-500">
-                  {(analysis.uatItems as unknown[]).length} {w.generated.replace("{tasks}", String(Array.isArray(analysis.tasks) ? (analysis.tasks as unknown[]).length : 0))}
-                </p>
-              )}
+              ))}
+              <div className="space-y-2">
+                <Label htmlFor="functions">{w.briefFunctions}</Label>
+                <Textarea
+                  id="functions"
+                  rows={5}
+                  placeholder={w.briefFunctionsPh}
+                  value={brief.functions.join("\n")}
+                  onChange={(e) => updateBrief("functions", e.target.value)}
+                />
+              </div>
+              {(
+                [
+                  ["uiStyle", w.briefUi, 2],
+                  ["expectedOutput", w.briefOutput, 3],
+                  ["outOfScope", w.briefOut, 2],
+                  ["firstSprint", w.briefSprint, 3],
+                ] as const
+              ).map(([key, label, rows]) => (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={key}>{label}</Label>
+                  <Textarea
+                    id={key}
+                    rows={rows}
+                    value={brief[key]}
+                    onChange={(e) => updateBrief(key, e.target.value)}
+                  />
+                </div>
+              ))}
             </div>
           )}
 
@@ -359,6 +434,8 @@ export function NewProjectWizard() {
             </div>
           )}
 
+          {error && step < 6 ? <p className="text-sm text-red-600">{error}</p> : null}
+
           {step < 5 && (
             <div className="flex justify-between pt-4 border-t">
               <Button variant="ghost" onClick={handleBack} disabled={step === 0 || analyzing}>
@@ -388,13 +465,22 @@ export function NewProjectWizard() {
 
           {step === 5 && (
             <div className="flex justify-between pt-4 border-t">
-              <Button variant="ghost" onClick={handleBack}>
+              <Button variant="ghost" onClick={handleBack} disabled={confirming}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 {w.back}
               </Button>
-              <Button onClick={() => setStep(6)}>
-                {w.viewPrompt}
-                <ArrowRight className="h-4 w-4 ml-1" />
+              <Button onClick={confirmBrief} disabled={confirming || !brief}>
+                {confirming ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {w.confirming}
+                  </>
+                ) : (
+                  <>
+                    {w.confirm}
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </>
+                )}
               </Button>
             </div>
           )}

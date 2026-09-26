@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, FileJson, Key, Plug, RefreshCw } from "lucide-react";
 import { McpSettings } from "@/components/project/mcp-settings";
+import { paidMemberOrLock } from "@/components/portal/paid-feature-lock";
 import { getDict } from "@/lib/i18n/server";
 import { getSession } from "@/lib/auth/session";
 import { getProjects } from "@/lib/db/store";
@@ -11,6 +12,9 @@ import { redirect } from "next/navigation";
 export default async function McpHubPage() {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) redirect("/login?redirect=/mcp");
+
+  const lock = await paidMemberOrLock("mcp");
+  if (lock) return lock;
 
   const dict = await getDict();
   const projects = await getProjects(user.id);
@@ -25,6 +29,8 @@ export default async function McpHubPage() {
     { name: "fetch_uat_status", desc: dict.mcp.toolUat },
     { name: "update_uat_item", desc: dict.mcp.toolUpdate },
     { name: "log_bug", desc: dict.mcp.toolBug },
+    { name: "update_task_status", desc: dict.mcp.toolTask },
+    { name: "report_build_status", desc: dict.mcp.toolBuild },
   ];
 
   return (

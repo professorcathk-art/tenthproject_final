@@ -1,5 +1,11 @@
-import { getProject, updateUATItem, logActivity } from "@/lib/db/store";
-import type { UATStatus } from "@/types";
+import { getProject, updateUATItem, updateTask, logActivity } from "@/lib/db/store";
+import type { Task, UATStatus } from "@/types";
+
+const MCP_TASK_STATUS = {
+  todo: "todo",
+  in_progress: "in_progress",
+  completed: "done",
+} as const;
 
 export const MCP_TOOLS = [
   {
@@ -49,7 +55,76 @@ export const MCP_TOOLS = [
       required: ["title", "description"],
     },
   },
+  {
+    name: "update_task_status",
+    description: "更新專案看板中特定任務的進度狀態（如將完成的功能標記為 completed）。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        task_id: { type: "string", description: "任務 ID" },
+        status: { type: "string", enum: ["todo", "in_progress", "completed"], description: "todo、in_progress 或 completed" },
+        commit_msg: { type: "string", description: "關聯的 Git Commit 訊息" },
+      },
+      required: ["task_id", "status"],
+    },
+  },
+  {
+    name: "report_build_status",
+    description: "回報本地或預覽環境的建置與編譯結果。若建置失敗，自動記錄錯誤日誌以供 AI 分析。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", enum: ["success", "failed"] },
+        error_log: { type: "string", description: "終端機輸出的錯誤訊息全文" },
+        environment: { type: "string", enum: ["local", "vercel"], description: "預設 local" },
+      },
+      required: ["status"],
+    },
+  },
 ];
+
+function mcpTaskStatus(stored: string) {
+  return stored === "done" ? "completed" : stored;
+}
+
+async function insertMcpBug(
+  projectId: string,
+  input: { title: string; description: string; severity?: string },
+) {
+  const { v4: uuidv4 } = await import("uuid");
+  const bug = {
+    id: uuidv4(),
+    project_id: projectId,
+    linked_uat_item_id: null,
+    title: input.title,
+    description: input.description,
+    severity: input.severity ?? "medium",
+    status: "open" as const,
+    fix_note: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { isSupabaseConfigured, createServiceClient } = await import("@/lib/supabase/server");
+  if (isSupabaseConfigured()) {
+    await createServiceClient().from("bugs").insert(bug);
+  } else {
+    const { promises: fs } = await import("fs");
+    const path = await import("path");
+    const storeFile = path.join(process.cwd(), ".data", "store.json");
+    try {
+      const store = JSON.parse(await fs.readFile(storeFile, "utf-8"));
+      store.bugs = store.bugs ?? [];
+      store.bugs.push(bug);
+      await fs.writeFile(storeFile, JSON.stringify(store, null, 2));
+    } catch {
+      /* store will sync on next read */
+    }
+  }
+
+  await logActivity(projectId, "bug_logged", `Bug logged via MCP: ${bug.title}`, { source: "cursor_mcp" });
+  return { id: bug.id, title: bug.title };
+}
 
 export async function executeMcpTool(
   toolName: string,
@@ -168,37 +243,68 @@ export async function executeMcpTool(
     }
 
     case "log_bug": {
-      const { v4: uuidv4 } = await import("uuid");
-      const bug = {
-        id: uuidv4(),
-        project_id: projectId,
-        linked_uat_item_id: null,
+      const bug = await insertMcpBug(projectId, {
         title: String(args.title),
         description: String(args.description),
-        severity: (args.severity as string) ?? "medium",
-        status: "open" as const,
-        fix_note: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+        severity: args.severity ? String(args.severity) : "medium",
+      });
+      return { success: true, bug };
+    }
 
-      const { isSupabaseConfigured, createServiceClient } = await import("@/lib/supabase/server");
-      if (isSupabaseConfigured()) {
-        await createServiceClient().from("bugs").insert(bug);
-      } else {
-        const { promises: fs } = await import("fs");
-        const path = await import("path");
-        const storeFile = path.join(process.cwd(), ".data", "store.json");
-        try {
-          const store = JSON.parse(await fs.readFile(storeFile, "utf-8"));
-          store.bugs = store.bugs ?? [];
-          store.bugs.push(bug);
-          await fs.writeFile(storeFile, JSON.stringify(store, null, 2));
-        } catch { /* store will sync on next read */ }
+    case "update_task_status": {
+      const taskId = String(args.task_id ?? "");
+      const requested = String(args.status ?? "");
+      if (!taskId) throw new Error("task_id is required");
+      if (!(requested in MCP_TASK_STATUS)) {
+        throw new Error("status must be todo, in_progress, or completed");
       }
+      const task = project.tasks?.find((item) => item.id === taskId);
+      if (!task) throw new Error("Task not found");
+      const stored = MCP_TASK_STATUS[requested as keyof typeof MCP_TASK_STATUS];
+      const updated = await updateTask(taskId, projectId, { status: stored as Task["status"] });
+      const commitMsg = args.commit_msg ? String(args.commit_msg).slice(0, 500) : null;
+      await logActivity(projectId, "task_updated", `Task marked ${requested} via MCP: ${task.title}`, {
+        source: "cursor_mcp",
+        task_id: taskId,
+        status: requested,
+        commit_msg: commitMsg,
+      });
+      return {
+        success: true,
+        task: { id: updated.id, title: updated.title, status: mcpTaskStatus(updated.status) },
+        commit_msg: commitMsg,
+      };
+    }
 
-      await logActivity(projectId, "bug_logged", `Bug logged via MCP: ${bug.title}`, { source: "cursor_mcp" });
-      return { success: true, bug: { id: bug.id, title: bug.title } };
+    case "report_build_status": {
+      const status = String(args.status ?? "");
+      if (status !== "success" && status !== "failed") {
+        throw new Error("status must be success or failed");
+      }
+      const environment = args.environment == null || args.environment === "" ? "local" : String(args.environment);
+      if (environment !== "local" && environment !== "vercel") {
+        throw new Error("environment must be local or vercel");
+      }
+      const errorLog = args.error_log ? String(args.error_log).slice(0, 20000) : "";
+      if (status === "success") {
+        await logActivity(projectId, "build_reported", `Build succeeded via MCP (${environment})`, {
+          source: "cursor_mcp",
+          status,
+          environment,
+        });
+        return { success: true, status, environment, bug: null };
+      }
+      const bug = await insertMcpBug(projectId, {
+        title: `Build Failed in ${environment}`,
+        description: errorLog || "Build failed without an error log.",
+        severity: "high",
+      });
+      await logActivity(projectId, "build_reported", `Build failed via MCP (${environment})`, {
+        source: "cursor_mcp",
+        status,
+        environment,
+      });
+      return { success: true, status, environment, bug };
     }
 
     default:

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isPaidUserId } from "@/lib/auth/membership";
 import { validateMcpApiKey } from "@/lib/db/platform-store";
 import { MCP_TOOLS, executeMcpTool } from "@/lib/mcp/tools";
 
@@ -13,6 +14,9 @@ export async function POST(request: NextRequest) {
   const keyRecord = await validateMcpApiKey(apiKey);
   if (!keyRecord) {
     return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+  }
+  if (!(await isPaidUserId(keyRecord.user_id))) {
+    return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
   }
 
   try {

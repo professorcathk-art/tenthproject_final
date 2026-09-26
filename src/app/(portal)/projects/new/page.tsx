@@ -1,5 +1,6 @@
 import { NewProjectWizard } from "@/components/project/new-project-wizard";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { paidMemberOrLock } from "@/components/portal/paid-feature-lock";
 import { getSession } from "@/lib/auth/session";
 import { getProjectQuota } from "@/lib/membership/limits";
 import { FREE_TIER_LIMIT_MESSAGE } from "@/lib/membership/constants";
@@ -9,6 +10,10 @@ import { redirect } from "next/navigation";
 export default async function NewProjectPage() {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) redirect("/login?redirect=/projects/new");
+
+  const lock = await paidMemberOrLock("hub");
+  if (lock) return lock;
+
   const dict = await getDict();
   const quota = await getProjectQuota(user.email, user.id, user.isAdmin);
 

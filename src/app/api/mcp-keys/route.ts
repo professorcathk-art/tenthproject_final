@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isPaidEmail } from "@/lib/auth/membership";
 import { requireAuth } from "@/lib/auth/session";
 import { createMcpApiKey, getMcpKeysForProject, revokeMcpApiKey } from "@/lib/db/platform-store";
 import { getProject } from "@/lib/db/store";
@@ -6,6 +7,7 @@ import { getProject } from "@/lib/db/store";
 export async function GET(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
     const projectId = request.nextUrl.searchParams.get("projectId");
     if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
@@ -23,6 +25,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
     const { projectId, label } = await request.json();
 
     const project = await getProject(projectId, user.id);
@@ -39,6 +42,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
     const { keyId } = await request.json();
     await revokeMcpApiKey(keyId, user.id);
     return NextResponse.json({ success: true });

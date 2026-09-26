@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isPaidEmail } from "@/lib/auth/membership";
 import { requireAuth } from "@/lib/auth/session";
 import { FREE_TIER_LIMIT_MESSAGE, getProjectQuota } from "@/lib/membership/limits";
 import {
@@ -29,9 +30,14 @@ import {
   saveAiSuggestions,
 } from "@/lib/db/store";
 
+function paidRequired() {
+  return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return paidRequired();
     const projectId = request.nextUrl.searchParams.get("id");
 
     if (projectId) {
@@ -51,6 +57,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return paidRequired();
     const quota = await getProjectQuota(user.email, user.id, user.isAdmin);
     if (quota.atLimit) {
       return NextResponse.json(
@@ -87,6 +94,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return paidRequired();
     const body = await request.json();
     const { projectId, action, ...updates } = body;
 
@@ -193,6 +201,7 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { user } = await requireAuth();
+    if (!(await isPaidEmail(user.email))) return paidRequired();
     const projectId = request.nextUrl.searchParams.get("id");
     if (!projectId) return NextResponse.json({ error: "Missing project id" }, { status: 400 });
     await deleteProject(projectId, user.id);

@@ -33,7 +33,6 @@ import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useI18n } from "@/components/i18n/provider";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
-import { FREE_PROJECT_LIMIT } from "@/lib/membership/constants";
 import { cn } from "@/lib/utils";
 
 type PortalUser = { email: string; name?: string; isAdmin: boolean };
@@ -161,10 +160,12 @@ export function PortalShell({
           <div className="rounded-2xl border border-slate-200/80 px-3 py-3 text-xs text-slate-500 dark:border-slate-800">
             <p className="font-semibold text-slate-900 dark:text-white">
               {paid
-                ? dict.portal.lifetime
+                ? locale === "en"
+                  ? `${dict.portal.lifetime} · ${projectCount} projects`
+                  : `${dict.portal.lifetime} · ${projectCount} 個專案`
                 : locale === "en"
-                  ? `Project quota: ${projectCount}/${FREE_PROJECT_LIMIT} (Free)`
-                  : `專案額度: ${projectCount}/${FREE_PROJECT_LIMIT} (免費版)`}
+                  ? "Free plan · hub and MCP are for members"
+                  : "免費方案 · 專案中心與 MCP 為會員專屬"}
             </p>
             <p className="mt-1 truncate">{user.email}</p>
           </div>
@@ -173,13 +174,14 @@ export function PortalShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 dark:border-slate-800 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2 lg:flex-1">
             <Link href="/dashboard" className="inline-flex shrink-0 lg:hidden" aria-label="Tenth Project">
               <Image src="/tp-logo.svg" alt="" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
             </Link>
             <Sheet open={navOpen} onOpenChange={(open) => setNavPath(open ? pathname : null)}>
-              <SheetTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800">
+              <SheetTrigger className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-900 px-4 text-sm font-semibold text-white lg:hidden dark:bg-white dark:text-slate-950">
                 <Menu className="h-5 w-5" />
+                {dict.portal.menu}
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
                 <Link href="/dashboard" onClick={() => setNavPath(null)} className="mt-8 flex items-center gap-2.5 px-2 font-semibold">
@@ -194,7 +196,7 @@ export function PortalShell({
             <button
               type="button"
               onClick={() => setCommandOpen(true)}
-              className="flex h-10 w-full max-w-md items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-left text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900"
+              className="hidden h-10 w-full max-w-md items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-left text-sm text-slate-500 lg:flex dark:border-slate-800 dark:bg-slate-900"
             >
               <Search className="h-4 w-4" />
               <span className="flex-1 truncate">{dict.portal.search}</span>

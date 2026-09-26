@@ -42,6 +42,18 @@ export async function ensureMemberRecord(email: string, name?: string, admin = f
   return member;
 }
 
+export async function isPaidUserId(userId: string | null | undefined): Promise<boolean> {
+  if (!userId) return false;
+  if (!isSupabaseConfigured()) return true;
+  const { data } = await createServiceClient()
+    .from("profiles")
+    .select("email, is_lifetime_member")
+    .eq("id", userId)
+    .maybeSingle();
+  if (data?.is_lifetime_member) return true;
+  return isPaidEmail(data?.email);
+}
+
 export async function isPaidEmail(email: string | null | undefined): Promise<boolean> {
   const normalized = email?.trim().toLowerCase() || "";
   if (!normalized) return false;
