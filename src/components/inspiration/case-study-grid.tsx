@@ -10,7 +10,7 @@ import { useI18n } from "@/components/i18n/provider";
 import { localizedCaseText } from "@/lib/inspiration/locale-text";
 import { DifficultyStars } from "@/components/inspiration/difficulty-stars";
 import { useCaseMarks } from "@/components/inspiration/use-case-marks";
-import { isPublicInspirationSlug, sortInspirationCases } from "@/lib/inspiration/public-cases";
+import { sortInspirationCases } from "@/lib/inspiration/public-cases";
 
 const FILTERS = ["all", ...CASE_CATEGORIES.map((c) => c.value)] as const;
 const MARK_FILTERS = ["all", "saved", "passed"] as const;
@@ -78,7 +78,7 @@ export function CaseStudyGrid({
   return (
     <div className="space-y-6">
       <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-background/80 backdrop-blur-md border-b border-slate-200/80 sm:mx-0 sm:px-0 sm:rounded-full sm:border sm:bg-white/70 dark:sm:bg-slate-950/40">
-        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap sm:justify-center">
+        <div className="flex flex-wrap gap-2 sm:justify-center">
           {FILTERS.map((value) => {
             const count =
               value === "all"
@@ -104,7 +104,7 @@ export function CaseStudyGrid({
       </div>
 
       {personal ? (
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex flex-wrap gap-2">
           {MARK_FILTERS.map((value) => {
             const count = value === "all" ? studies.length : value === "saved" ? savedCount : passedCount;
             const active = markFilter === value;
@@ -137,15 +137,14 @@ export function CaseStudyGrid({
           {markFilter === "saved" ? dict.inspiration.noSaved : markFilter === "passed" ? dict.inspiration.noPassed : dict.inspiration.noMatches}
         </p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-5 sm:grid-cols-2">
           {filtered.map((study) => {
             const status = marks[study.slug];
             const read = reads.includes(study.slug);
-            const freePreview = isPublicInspirationSlug(study.slug);
             return (
               <article
                 key={study.id}
-                className={`relative h-full rounded-2xl glass-panel glow-card p-6 ${read ? "opacity-80" : ""}`}
+                className={`relative h-full min-w-0 overflow-hidden rounded-2xl glass-panel glow-card p-6 ${read ? "opacity-80" : ""}`}
               >
                 {personal ? (
                   <button
@@ -159,11 +158,8 @@ export function CaseStudyGrid({
                     <Heart className={`h-4 w-4 ${status === "saved" ? "fill-rose-500 text-rose-500" : ""}`} />
                   </button>
                 ) : null}
-                <Link href={`${basePath}/${study.slug}`} className="block pr-10">
+                <Link href={`${basePath}/${study.slug}`} className="block min-w-0 pr-10">
                   <div className="mb-3 flex flex-wrap items-center gap-1.5">
-                    {freePreview ? (
-                      <Badge variant="secondary">{dict.inspiration.freePreview}</Badge>
-                    ) : null}
                     {caseCategories(study).map((cat) => (
                       <Badge key={cat} variant="secondary">
                         {label(cat)}

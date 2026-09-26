@@ -6,9 +6,9 @@ export const LOCALE_COOKIE = "tp_locale";
 export const dictionaries = {
   zh: {
     meta: {
-      title: "Tenth Project｜客製化 AI 系統與企業數位轉型",
+      title: "Tenth Project｜用 AI 重新定義企業流程與 Vibe Coding 實戰",
       description:
-        "用 AI 重新定義企業流程：企業流程優化與超自動化、創作者 AI 實戰培訓，以及 Lifetime 會員社群。",
+        "結合大廠架構與投行視野，提供企業 AI Agent 自動化工作流部署，以及 Vibe Coding 全方位從零到一實戰培訓。",
     },
     brand: "Tenth Project",
     nav: {
@@ -362,7 +362,6 @@ export const dictionaries = {
       noSaved: "尚未收藏任何案例。打開文章後點「收藏」即可。",
       noPassed: "尚未標記不感興趣的案例。",
       noMatches: "沒有符合條件的案例。",
-      freePreview: "免登入可看",
       read: "已讀",
       cats: {
         all: "全部",
@@ -767,9 +766,9 @@ export const dictionaries = {
   },
   en: {
     meta: {
-      title: "Tenth Project | Custom AI Systems & Enterprise Transformation",
+      title: "Tenth Project | Enterprise AI Workflows and Vibe Coding",
       description:
-        "Redefine enterprise operations with AI: process optimization, hyperautomation, creator training, and a Lifetime membership.",
+        "Custom AI agents and workflow automation for enterprises, plus hands-on Vibe Coding training from idea to a product that can charge.",
     },
     brand: "Tenth Project",
     nav: {
@@ -1123,7 +1122,6 @@ export const dictionaries = {
       noSaved: "No saved cases yet. Open an article and tap Save.",
       noPassed: "No cases marked not interesting yet.",
       noMatches: "No cases match these filters.",
-      freePreview: "Open without login",
       read: "Read",
       cats: {
         all: "All",

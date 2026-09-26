@@ -43,7 +43,7 @@ export async function grantLifetimeMembership(input: LifetimeGrantInput): Promis
       stripe_customer_id: input.stripeCustomerId,
       stripe_session_id: input.stripeSessionId,
     });
-    if (error) console.error("profiles upsert:", error.message);
+    if (error) throw new Error(`profiles upsert: ${error.message}`);
   }
 
   const existing = await getMemberByEmail(email);

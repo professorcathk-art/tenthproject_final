@@ -15,10 +15,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/login",
     "/signup",
   ].map((path) => ({
-    url: `${SITE_URL}${path || "/"}`,
+    url: path ? `${SITE_URL}${path}` : SITE_URL,
     lastModified: now,
     changeFrequency: path === "" || path === "/courses" || path === "/enterprise" ? "weekly" : "monthly",
-    priority: path === "" ? 1 : path === "/courses" || path === "/enterprise" ? 0.9 : 0.6,
+    priority: path === "" ? 1 : path === "/courses" || path === "/enterprise" ? 0.9 : path === "/inspiration" ? 0.8 : path === "/login" || path === "/signup" ? 0.4 : 0.6,
   }));
 
   let extra: MetadataRoute.Sitemap = [];

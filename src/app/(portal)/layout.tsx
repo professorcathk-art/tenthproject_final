@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PortalShell } from "@/components/layout/portal-shell";
 import { getSession } from "@/lib/auth/session";
 import { getProjectQuota } from "@/lib/membership/limits";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = await getSession();

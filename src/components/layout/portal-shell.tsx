@@ -8,9 +8,11 @@ import {
   BookOpen,
   FolderKanban,
   KeyRound,
+  Hammer,
   LifeBuoy,
   Lightbulb,
   LogOut,
+  Megaphone,
   Menu,
   Plus,
   Search,
@@ -49,7 +51,10 @@ function PortalNavLinks({
     <nav className="space-y-1">
       {items.map((item) => {
         const Icon = item.icon;
-        const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const current =
+          item.href === "/dashboard"
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}
@@ -94,6 +99,8 @@ export function PortalShell({
     () => [
       { href: "/dashboard", label: dict.portal.hub, icon: FolderKanban },
       { href: "/learning", label: dict.portal.learning, icon: BookOpen },
+      { href: "/dashboard/production-guide", label: "SaaS 製作攻略", icon: Hammer },
+      { href: "/dashboard/marketing-guide", label: "SaaS 宣傳攻略", icon: Megaphone },
       { href: "/mcp", label: dict.portal.mcp, icon: KeyRound },
       { href: "/vault", label: dict.portal.vault, icon: Lightbulb },
       { href: "/settings", label: dict.portal.settings, icon: Settings },
@@ -222,7 +229,7 @@ export function PortalShell({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
       </div>
 
       {commandOpen ? (

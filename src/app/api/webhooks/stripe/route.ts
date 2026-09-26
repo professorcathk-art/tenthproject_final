@@ -54,6 +54,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true });
     }
 
+    if (session.payment_status !== "paid") {
+      return NextResponse.json({ received: true });
+    }
+
     if (email) {
       try {
         await grantLifetimeMembership({

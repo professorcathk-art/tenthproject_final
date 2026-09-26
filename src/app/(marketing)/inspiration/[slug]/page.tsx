@@ -13,6 +13,7 @@ import { teaserMarkdown } from "@/lib/inspiration/teaser";
 import { CaseArticle } from "@/components/inspiration/case-article";
 import { CaseClonePrompt, CaseStudyMeta } from "@/components/inspiration/case-study-extras";
 import { GuestUnlockModal } from "@/components/inspiration/guest-unlock-modal";
+import { CaseConversionCta } from "@/components/inspiration/case-conversion-cta";
 import { isPublicInspirationSlug } from "@/lib/inspiration/public-cases";
 
 export async function generateStaticParams() {
@@ -107,6 +108,8 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
             {canReadFull ? <CaseClonePrompt study={study} /> : null}
           </>
         )}
+
+        <CaseConversionCta />
 
         {related.length > 0 ? (
           <section className="mt-14">
