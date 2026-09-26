@@ -531,7 +531,13 @@ export async function updateBug(bugId: string, projectId: string, updates: Parti
 
 export async function createTask(
   projectId: string,
-  data: { title: string; description?: string | null; priority?: Task["priority"]; source?: Task["source"] },
+  data: {
+    title: string;
+    description?: string | null;
+    technical_checklist?: string[];
+    priority?: Task["priority"];
+    source?: Task["source"];
+  },
 ) {
   const now = new Date().toISOString();
   const task: Task = {
@@ -540,6 +546,7 @@ export async function createTask(
     phase_id: null,
     title: data.title.trim(),
     description: data.description?.trim() || null,
+    technical_checklist: (data.technical_checklist ?? []).map((item) => item.trim()).filter(Boolean),
     status: "todo",
     priority: data.priority ?? "medium",
     source: data.source ?? "manual",

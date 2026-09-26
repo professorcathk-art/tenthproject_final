@@ -1,3 +1,4 @@
+import { ensureFeatureTasks } from "@/lib/ai/feature-tasks";
 import type { AIAnalysis, Project } from "@/types";
 
 export interface ProductBrief {
@@ -119,10 +120,23 @@ export function applyConfirmedBrief(analysis: AIAnalysis, brief: ProductBrief): 
   const phase = analysis.phases?.[0]?.name ?? (zh ? "第一版" : "First version");
   const title = brief.firstSprint.trim().slice(0, 140);
   const sprintTask = {
-    title,
+    title: /^\p{Extended_Pictographic}/u.test(title) ? title : `🚀 ${title}`,
     description: zh
-      ? `Target: src/app/page.tsx。這輪只做：${brief.firstSprint}。一定要有：${functions.join("；")}。畫面：${brief.uiStyle}。做完要看到：${brief.expectedOutput}。不要做：${brief.outOfScope}。`
-      : `Target: src/app/page.tsx. This sprint only: ${brief.firstSprint}. Must include: ${functions.join("; ")}. UI: ${brief.uiStyle}. Done when: ${brief.expectedOutput}. Do not build: ${brief.outOfScope}.`,
+      ? `這一輪只做：${brief.firstSprint}。畫面依照：${brief.uiStyle}。做完要看到：${brief.expectedOutput}。`
+      : `This round only builds: ${brief.firstSprint}. UI: ${brief.uiStyle}. Done when the user can see: ${brief.expectedOutput}.`,
+    technical_checklist: zh
+      ? [
+          `在 src/app/page.tsx 做出：${brief.firstSprint}`,
+          ...functions.map((item) => `實作：${item}`),
+          `畫面依照：${brief.uiStyle}`,
+          `不要做：${brief.outOfScope}`,
+        ]
+      : [
+          `In src/app/page.tsx, build: ${brief.firstSprint}`,
+          ...functions.map((item) => `Implement: ${item}`),
+          `UI: ${brief.uiStyle}`,
+          `Do not build: ${brief.outOfScope}`,
+        ],
     priority: "high",
     phase,
   };
@@ -150,7 +164,7 @@ export function applyConfirmedBrief(analysis: AIAnalysis, brief: ProductBrief): 
     productGoal: goal,
     nextAction: brief.firstSprint.trim(),
     acceptanceCriteria: [brief.expectedOutput.trim(), ...functions].filter(Boolean),
-    tasks: [sprintTask, ...(analysis.tasks ?? []).filter((task) => task.title !== title)].slice(0, 8),
+    tasks: ensureFeatureTasks([sprintTask, ...(analysis.tasks ?? []).filter((task) => task.title !== title && task.title !== sprintTask.title)]),
   };
 }
 

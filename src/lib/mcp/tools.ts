@@ -10,7 +10,8 @@ const MCP_TASK_STATUS = {
 export const MCP_TOOLS = [
   {
     name: "get_active_roadmap",
-    description: "Fetch current sprint tasks, phases, and next action for the project",
+    description:
+      "取得目前衝刺的功能任務、階段與下一步。每張任務的 title 是給創辦人看的功能名稱，technical_checklist 才是給 Cursor 的實作步驟。請依照 checklist 寫程式，不要把 checklist 拆成新的看板卡片。",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
@@ -145,9 +146,10 @@ export async function executeMcpTool(
         tasks: (project.tasks ?? []).map((t) => ({
           id: t.id,
           title: t.title,
-          status: t.status,
+          status: mcpTaskStatus(t.status),
           priority: t.priority,
           description: t.description,
+          technical_checklist: t.technical_checklist ?? [],
         })),
         nextAction: project.context_versions?.[0]?.analysis_json?.nextAction ?? "Complete highest priority task",
         openBugs: (project.bugs ?? []).filter((b) => b.status === "open").length,

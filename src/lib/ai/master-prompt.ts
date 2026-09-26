@@ -179,7 +179,11 @@ Risks: ${(analysis.risks ?? []).join("; ")}
 ${(analysis.phases ?? []).map((p) => `- ${p.name}: ${p.description} → ${p.tasks?.join(", ")}`).join("\n")}
 
 === TASKS (this sprint) ===
-${(analysis.tasks ?? []).map((t) => `- [${t.priority}] ${t.title}: ${t.description}`).join("\n")}
+${(analysis.tasks ?? []).map((t) => {
+  const steps = (t.technical_checklist ?? []).map((step) => `    - ${step}`).join("\n");
+  const line = `- [${t.priority}] ${t.title}: ${t.description}`;
+  return steps ? `${line}\n  Cursor checklist:\n${steps}` : line;
+}).join("\n")}
 
 === UAT CHECKLIST ===
 ${(analysis.uatItems ?? []).map((u) => `- ${u.title} → Expected: ${u.expectedResult}`).join("\n")}
@@ -209,7 +213,7 @@ function buildTemplateMasterPrompt(tool: AITool, ctx: MasterPromptContext): stri
       tasks: keepCodingItems(phase.tasks, (task) => task),
     }))
     .filter((phase) => !looksLikeNonCodingWork(`${phase.name} ${phase.description}`));
-  const tasks = keepCodingItems(analysis.tasks, (t) => `${t.title} ${t.description ?? ""}`);
+  const tasks = keepCodingItems(analysis.tasks, (t) => `${t.title} ${t.description ?? ""} ${(t.technical_checklist ?? []).join(" ")}`);
   const uatItems = analysis.uatItems ?? [];
   const acceptance = analysis.acceptanceCriteria ?? [];
   const sprintPhase = phases[0]?.name ?? "Foundation";
@@ -341,10 +345,17 @@ ${structure}
 **Phase focus:** ${sprintPhase}
 
 **Touch only these files unless a missing import requires a sibling:**
-${sprintTasks.map((t) => `- \`${(t.description ?? t.title).match(/(?:src\/|app\/|components\/)[\w./[\]-]+\.(?:tsx|ts)/)?.[0] ?? "src/app/page.tsx"}\` — ${t.title}`).join("\n")}
+${sprintTasks.map((t) => {
+  const blob = `${t.description ?? ""} ${(t.technical_checklist ?? []).join(" ")} ${t.title}`;
+  const file = blob.match(/(?:src\/|app\/|components\/)[\w./[\]-]+\.(?:tsx|ts)/)?.[0] ?? "src/app/page.tsx";
+  return `- \`${file}\` — ${t.title}`;
+}).join("\n")}
 
 **Build NOW (this sprint):**
-${sprintTasks.map((t, i) => `${i + 1}. **${t.title}** — ${t.description ?? ""}`).join("\n")}
+${sprintTasks.map((t, i) => {
+  const steps = (t.technical_checklist ?? []).map((step) => `   - ${step}`).join("\n");
+  return `${i + 1}. **${t.title}** — ${t.description ?? ""}${steps ? `\n${steps}` : ""}`;
+}).join("\n")}
 
 **Do NOT build yet:**
 - Payment/billing (unless core to MVP)

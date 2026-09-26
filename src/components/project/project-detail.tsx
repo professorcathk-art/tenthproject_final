@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { UAT_STATUSES, AI_TOOLS, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
 import { McpSettings } from "@/components/project/mcp-settings";
 import { AiSuggestionsModal } from "@/components/project/ai-suggestions-modal";
@@ -70,6 +71,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const [githubUrl, setGithubUrl] = useState(project.github_url ?? "");
   const [uatFilter, setUatFilter] = useState<string>("all");
   const [taskDraft, setTaskDraft] = useState({ title: "", description: "" });
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [uatDraft, setUatDraft] = useState({
     title: "",
     test_path: "",
@@ -599,7 +601,9 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                     <div className="text-xs font-semibold text-slate-500">
                       {column === "todo" ? p.todo : column === "in_progress" ? p.inProgress : column === "done" ? p.done : p.blocked}
                     </div>
-                    {tasks.filter((task) => task.status === column).map((task) => (
+                    {tasks.filter((task) => task.status === column).map((task) => {
+                      const steps = task.technical_checklist ?? [];
+                      return (
                       <div key={task.id} className="rounded-lg border bg-card p-3 space-y-2">
                         {editing === `task:${task.id}` ? (
                           <div className="space-y-2">
@@ -611,10 +615,13 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                             }}>{p.save}</Button>
                           </div>
                         ) : (
-                          <>
+                          <button type="button" className="w-full space-y-1 text-left" onClick={() => setOpenTaskId(task.id)}>
                             <div className="font-medium text-sm">{task.title}</div>
-                            <div className="text-xs text-slate-500">{task.description}</div>
-                          </>
+                            {task.description ? <div className="line-clamp-3 text-xs text-slate-500">{task.description}</div> : null}
+                            {steps.length > 0 ? (
+                              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">{p.techSteps.replace("{n}", String(steps.length))}</div>
+                            ) : null}
+                          </button>
                         )}
                         <div className="flex items-center gap-1">
                           <Select value={task.status} onValueChange={(v) => v && updateTaskStatus(task.id, v)}>
@@ -630,11 +637,41 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                           <Button size="icon-sm" variant="ghost" onClick={() => removeItem("delete_task", { taskId: task.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ))}
               </div>
             )}
+            <Sheet open={Boolean(openTaskId)} onOpenChange={(open) => { if (!open) setOpenTaskId(null); }}>
+              <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+                {(() => {
+                  const task = tasks.find((item) => item.id === openTaskId);
+                  const steps = task?.technical_checklist ?? [];
+                  if (!task) return null;
+                  return (
+                    <>
+                      <SheetHeader>
+                        <SheetTitle>{task.title}</SheetTitle>
+                        {task.description ? <SheetDescription>{task.description}</SheetDescription> : null}
+                      </SheetHeader>
+                      <div className="px-4 pb-6">
+                        <h2 className="text-sm font-semibold">{p.checklistHeading}</h2>
+                        {steps.length === 0 ? (
+                          <p className="mt-2 text-sm text-slate-500">{p.checklistEmpty}</p>
+                        ) : (
+                          <ul className="mt-3 space-y-2">
+                            {steps.map((step, index) => (
+                              <li key={`${index}-${step}`} className="rounded-lg border px-3 py-2 text-sm leading-relaxed">{step}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </SheetContent>
+            </Sheet>
           </TabsContent>
 
           <TabsContent value="uat" className="mt-4 space-y-4">

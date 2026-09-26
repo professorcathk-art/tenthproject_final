@@ -11,18 +11,26 @@ import {
   looksLikeNonCodingWork,
 } from "@/lib/ai/coding-constraints";
 import { applyConfirmedBrief, formatBriefForPrompt, type ProductBrief } from "@/lib/ai/product-brief";
+import { ensureFeatureTasks, fallbackFeatureTasks } from "@/lib/ai/feature-tasks";
 
 const SYSTEM_PROMPT = `You are a Technical Lead writing executable specs for Cursor (Next.js App Router, TypeScript, Tailwind, shadcn/ui).
 STRICT RULE: NEVER output vague cards like "improve UI", "optimize UX", or "conduct UAT".
 
 ${MASTER_PROMPT_CODING_CONSTRAINTS}
 
-Every task, bug, enhancement, and UAT item MUST include:
-1. Target file or route (e.g. src/app/page.tsx, src/components/stock-chart.tsx)
-2. Concrete code action (Skeleton, next/dynamic, grid-cols-1 md:grid-cols-3, error.tsx for HTTP 500)
-3. Testable acceptance criteria (375px + desktop, npm run build)
+CRITICAL TASK GENERATION RULES:
+1. USER-CENTRIC TITLES: Task titles MUST be easily understood by non-technical founders. Group technical setups into high-level features (e.g., "基礎建設與外觀系統", "用戶登入與會員系統", "核心業務：行程表單介面").
+2. DO NOT output overly granular technical steps as top-level tasks (e.g., NEVER output "Install Tailwind" or "Create PostgreSQL connection" as individual cards).
+3. NESTED TECHNICAL CHECKLIST: For every top-level user-centric task, provide a technical_checklist array containing the specific coding steps meant for Cursor (e.g., "Initialize Next.js App Router", "Configure shadcn/ui", "Set up Supabase Auth").
+4. EMOJI PREFIX: Prefix every task title with a relevant emoji (e.g., 🚀, 🔐, 🎨, 💳).
+5. Return 3 to 5 tasks. Never more than 5. Put file paths, schemas, and commands inside technical_checklist, not in the title.
+6. Titles follow the language of the project. If the project is written in Traditional Chinese, titles and descriptions are Traditional Chinese. Do not translate those titles into English.
+7. A title says what a person can do. It must not be a technology name. Forbidden in titles: 路由, API, 資料庫, 前端, 組件, 基礎設置, Tailwind, Schema, PostgreSQL, Next.js, Supabase, Install, Setup. Those words go only in technical_checklist.
+   Good: "🚀 排出今天的行程", "🔐 註冊登入，資料只給本人看", "🎨 手機打開也不會擠在一起".
+   Bad: "🔗 路由與 API", "🗄️ 資料庫設計", "🎨 前端組件", "Install Tailwind".
 
-Phases and tasks must be engineering work only (routes, schemas, APIs, components). Never market research, interviews, or reports.
+Bugs, enhancements, and UAT items still need a target file or route, a concrete code action, and a testable result (375px + desktop, npm run build).
+Phases and tasks must be engineering work only. Never market research, interviews, or reports.
 
 Return ONLY valid JSON matching this schema:
 {
@@ -37,7 +45,7 @@ Return ONLY valid JSON matching this schema:
   "uatItems": [{"title": "string", "testPath": "src/app/page.tsx or /route", "expectedResult": "step -> expected DOM/API outcome", "severity": "low|medium|high", "phase": "string"}],
   "enhancements": [{"title": "string", "description": "string", "priority": "low|medium|high"}],
   "phases": [{"name": "string", "description": "string", "tasks": ["string"]}],
-  "tasks": [{"title": "string", "description": "string", "priority": "low|medium|high", "phase": "string"}],
+  "tasks": [{"title": "string", "description": "string", "technical_checklist": ["string"], "priority": "low|medium|high", "phase": "string"}],
   "nextAction": "string",
   "acceptanceCriteria": ["string"],
   "prompts": {
@@ -148,31 +156,16 @@ function generateFallbackAnalysis(
         priority: "high",
       },
     ],
-    phases: [
-      { name: "Foundation", description: "App Router shell, layout.tsx, globals.css", tasks: ["src/app/layout.tsx", "src/app/page.tsx hero + CTA", "src/app/error.tsx"] },
-      { name: "Core Features", description: "Primary route + API", tasks: ["Form + server action", "Result renderer", "Typed fetch errors"] },
-      { name: "Polish & Launch", description: "375px + build", tasks: ["Tailwind responsive grid", "Skeleton/empty", "npm run build"] },
-    ],
-    tasks: [
-      {
-        title: "Wire primary flow in src/app/page.tsx",
-        description: "Target: src/app/page.tsx. Action: form → server action/API → result panel. Acceptance: happy path + empty + error; npm run build.",
-        priority: "high",
-        phase: "Core Features",
-      },
-      {
-        title: "Responsive grid on first paint",
-        description: "Target: src/app/page.tsx. Action: grid grid-cols-1 md:grid-cols-3 gap-4; w-full min-w-0. Acceptance: 375px no overflow.",
-        priority: "high",
-        phase: "Polish & Launch",
-      },
-      {
-        title: "Dynamic-import heavy widgets",
-        description: "Target: src/app/page.tsx. Action: next/dynamic for charts/maps with Skeleton. Acceptance: first paint not blocked; npm run build.",
-        priority: "medium",
-        phase: "Polish & Launch",
-      },
-    ],
+    phases: /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`)
+      ? [
+          { name: "第一版", description: "網站骨架、主畫面、資料", tasks: ["版面", "主流程", "儲存"] },
+          { name: "上線前", description: "手機與錯誤畫面", tasks: ["375px", "error.tsx"] },
+        ]
+      : [
+          { name: "Foundation", description: "App shell, main screen, and saved data", tasks: ["layout", "primary flow", "storage"] },
+          { name: "Polish", description: "Phone layout and error screen", tasks: ["375px", "error.tsx"] },
+        ],
+    tasks: fallbackFeatureTasks(/[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`)),
     nextAction: promptType === "next-step"
       ? "Open the highest-priority target file, apply the listed Tailwind/React change, then re-run the failed UAT step and npm run build"
       : "Create src/app/page.tsx + src/app/error.tsx with a working primary CTA, then npm run build",
@@ -234,7 +227,7 @@ export async function analyzeProject(
         { role: "user", content: `${typeInstruction}\n\n${context}` },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
+      temperature: 0.3,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -246,7 +239,9 @@ export async function analyzeProject(
 
     const parsed = JSON.parse(content) as AIAnalysis;
     const fallback = generateFallbackAnalysis(project, promptType);
-    parsed.tasks = keepCodingItems(parsed.tasks, (t) => `${t.title} ${t.description ?? ""}`);
+    parsed.tasks = ensureFeatureTasks(
+      keepCodingItems(parsed.tasks, (t) => `${t.title} ${t.description ?? ""} ${(t.technical_checklist ?? []).join(" ")}`),
+    );
     parsed.missingItems = keepCodingItems(parsed.missingItems, (s) => s);
     parsed.enhancements = keepCodingItems(parsed.enhancements, (e) => `${e.title} ${e.description ?? ""}`);
     parsed.phases = (parsed.phases ?? [])

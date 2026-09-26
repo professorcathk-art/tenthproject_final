@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
       phase_id: t.phase ? phaseMap.get(t.phase) ?? null : null,
       title: t.title,
       description: t.description,
+      technical_checklist: Array.isArray(t.technical_checklist) ? t.technical_checklist : [],
       status: "todo",
       priority: (t.priority as Task["priority"]) || "medium",
       source: "ai",

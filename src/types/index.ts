@@ -94,6 +94,7 @@ export interface Task {
   phase_id: string | null;
   title: string;
   description: string | null;
+  technical_checklist: string[];
   status: "todo" | "in_progress" | "done" | "blocked";
   priority: "low" | "medium" | "high";
   source: "ai" | "manual" | "imported";
@@ -236,6 +237,7 @@ export interface AIAnalysis {
   tasks: Array<{
     title: string;
     description: string;
+    technical_checklist?: string[];
     priority: string;
     phase?: string;
   }>;
