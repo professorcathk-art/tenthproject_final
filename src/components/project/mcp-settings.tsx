@@ -131,35 +131,41 @@ export function McpSettings({
       <Card>
         <CardHeader>
           <CardTitle>{m.title}</CardTitle>
-          <CardDescription className="text-sm leading-relaxed">{m.subtitle}</CardDescription>
+          <CardDescription className="max-w-2xl text-sm leading-relaxed">{m.subtitle}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {multiple ? (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">{m.pickProject}</p>
-              <Select value={projectId} onValueChange={(value) => value && chooseProject(value)}>
-                <SelectTrigger className="w-full max-w-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.pickHint}</p>
-            </div>
-          ) : project ? (
-            <p className="text-sm leading-relaxed text-slate-600">{m.boundTo.replace("{name}", project.name)}</p>
-          ) : null}
+        <CardContent className="space-y-8">
+          <p className="text-sm font-semibold">{m.stepsTitle}</p>
 
           <section className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>Step 1</Badge>
+              <Badge>1</Badge>
               <h2 className="text-sm font-semibold">{m.step1}</h2>
             </div>
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
+              {lockedProjectId && project
+                ? m.step1Locked.replace("{name}", project.name)
+                : multiple || !project
+                  ? m.step1Body
+                  : m.step1Only.replace("{name}", project.name)}
+            </p>
+            {multiple ? (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">{m.pickProject}</p>
+                <Select value={projectId} onValueChange={(value) => value && chooseProject(value)}>
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.pickHint}</p>
+              </div>
+            ) : null}
             {latest ? (
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="font-mono">
@@ -174,42 +180,55 @@ export function McpSettings({
             </Button>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             {newKey ? <p className="max-w-2xl text-sm leading-relaxed text-amber-900">{m.saveOnce}</p> : null}
-            {newKey && replaced ? <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.rotateHint}</p> : null}
+            {newKey && replaced ? <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.rotateHint}</p> : null}
             {!newKey && latest ? (
               <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.oldKey.replace("{prefix}", latest.key_prefix)}</p>
             ) : null}
           </section>
 
-          {newKey ? (
-            <>
-              <section className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge>Step 2</Badge>
-                  <h2 className="text-sm font-semibold">{m.step2}</h2>
-                </div>
-                <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.step2Body}</p>
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>2</Badge>
+              <h2 className="text-sm font-semibold">{m.step2}</h2>
+            </div>
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.step2Body}</p>
+            <p className="max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-950">{m.gitignore}</p>
+            {newKey ? (
+              <>
                 <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">{config}</pre>
                 <Button type="button" variant="outline" onClick={() => copy(config, "cfg")}>
                   {copied === "cfg" ? <CheckCircle2 className="mr-1 h-4 w-4 text-green-600" /> : <Copy className="mr-1 h-4 w-4" />}
                   {copied === "cfg" ? m.copied : m.copyConfig}
                 </Button>
-              </section>
+              </>
+            ) : (
+              <p className="text-sm leading-relaxed text-slate-500">{m.waiting}</p>
+            )}
+          </section>
 
-              <section className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge>Step 3</Badge>
-                  <h2 className="text-sm font-semibold">{m.step3}</h2>
-                </div>
-                <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.step3Body}</p>
-                <div className="rounded-xl border bg-slate-50 p-4 text-sm leading-relaxed dark:bg-slate-900">{m.example1}</div>
-                <Button type="button" variant="outline" onClick={() => copy(m.example1, "prompt")}>
-                  {copied === "prompt" ? <CheckCircle2 className="mr-1 h-4 w-4 text-green-600" /> : <Copy className="mr-1 h-4 w-4" />}
-                  {copied === "prompt" ? m.copied : m.copyPrompt}
-                </Button>
-                <p className="text-sm leading-relaxed text-emerald-800">{m.success}</p>
-              </section>
-            </>
-          ) : null}
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>3</Badge>
+              <h2 className="text-sm font-semibold">{m.step3}</h2>
+            </div>
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.step3Body}</p>
+            <div className="rounded-xl border bg-slate-50 p-4 text-sm leading-relaxed dark:bg-slate-900">{m.example1}</div>
+            <Button type="button" variant="outline" onClick={() => copy(m.example1, "prompt")}>
+              {copied === "prompt" ? <CheckCircle2 className="mr-1 h-4 w-4 text-green-600" /> : <Copy className="mr-1 h-4 w-4" />}
+              {copied === "prompt" ? m.copied : m.copyPrompt}
+            </Button>
+            <p className="text-sm leading-relaxed text-emerald-800">{m.success}</p>
+          </section>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{m.notesTitle}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm leading-relaxed text-slate-600">
+          <p>{lockedProjectId ? m.switchElsewhere : multiple ? m.switchHere : m.switchLater}</p>
+          <p>{m.rotateHint}</p>
         </CardContent>
       </Card>
 
