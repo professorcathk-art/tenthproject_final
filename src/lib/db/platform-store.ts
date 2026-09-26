@@ -726,7 +726,8 @@ export async function getMcpKeysForProject(userId: string, projectId: string): P
       .from("mcp_api_keys")
       .select("id, user_id, project_id, key_prefix, label, last_used_at, created_at")
       .eq("user_id", userId)
-      .eq("project_id", projectId);
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false });
     return (data ?? []) as McpApiKey[];
   }
   const store = await ensurePlatformStore();

@@ -7,6 +7,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/i18n/provider";
 import { generateCursorSetupPrompt } from "@/lib/mcp/cursor-setup-prompt";
@@ -45,6 +47,8 @@ export function McpSettings({
   const [copyFailed, setCopyFailed] = useState(false);
   const [error, setError] = useState("");
   const [replaced, setReplaced] = useState(false);
+  const [keyName, setKeyName] = useState(projects.find((item) => item.id === initialId)?.name || "");
+  const [nameEdited, setNameEdited] = useState(false);
 
   const project = projects.find((item) => item.id === projectId) ?? projects[0];
   const multiple = !lockedProjectId && projects.length > 1;
@@ -81,8 +85,18 @@ export function McpSettings({
     };
   }, [projectId]);
 
+  useEffect(() => {
+    if (nameEdited) return;
+    const stored = keys[0]?.label?.trim();
+    setKeyName(stored || project?.name || "");
+  }, [nameEdited, keys, project?.name]);
+
   function chooseProject(nextId: string) {
+    const next = projects.find((item) => item.id === nextId);
     setProjectId(nextId);
+    setNameEdited(false);
+    setKeyName(next?.name || "");
+    setKeys([]);
     setNewKey(null);
     setSetupPrompt(null);
     setCopyFailed(false);
@@ -90,10 +104,11 @@ export function McpSettings({
     setReplaced(false);
   }
 
-  function promptFor(apiKey: string) {
+  function promptFor(apiKey: string, label: string) {
     return generateCursorSetupPrompt(apiKey, {
       mcpUrl,
       projectName: project?.name || m.project,
+      keyName: label,
       testPrompt: m.example1,
     });
   }
@@ -114,12 +129,17 @@ export function McpSettings({
 
   async function issueKey() {
     if (!projectId || !project) return null;
+    const label = keyName.replace(/\s+/g, " ").trim().slice(0, 40);
+    if (!label) {
+      setError(m.nameRequired);
+      return null;
+    }
     const listed = await fetch(`/api/mcp-keys?projectId=${projectId}`).then((response) => response.json().catch(() => ({})));
     const previous = (listed as { keys?: KeyRecord[] }).keys ?? keys;
     const response = await fetch("/api/mcp-keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId, label: "Cursor MCP" }),
+      body: JSON.stringify({ projectId, label }),
     });
     const data = (await response.json().catch(() => ({}))) as { key?: string; record?: KeyRecord; error?: string };
     if (!response.ok || !data.key || !data.record) {
@@ -135,7 +155,7 @@ export function McpSettings({
         }),
       ),
     );
-    const prompt = promptFor(data.key);
+    const prompt = promptFor(data.key, data.record.label || label);
     setNewKey(data.key);
     setSetupPrompt(prompt);
     setKeys([{ ...data.record, last_used_at: data.record.last_used_at ?? null }]);
@@ -204,8 +224,23 @@ export function McpSettings({
                 <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.pickHint}</p>
               </div>
             ) : null}
+            <div className="max-w-md space-y-2">
+              <Label htmlFor="mcp-key-name">{m.keyName}</Label>
+              <Input
+                id="mcp-key-name"
+                value={keyName}
+                maxLength={40}
+                placeholder={m.keyNamePlaceholder}
+                onChange={(event) => {
+                  setNameEdited(true);
+                  setKeyName(event.target.value);
+                }}
+              />
+              <p className="text-sm leading-relaxed text-slate-500">{m.keyNameHint}</p>
+            </div>
             {latest ? (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex max-w-md flex-wrap items-center gap-2 rounded-xl border px-3 py-2">
+                <span className="text-sm font-medium">{latest.label}</span>
                 <Badge variant="secondary" className="font-mono">
                   {latest.key_prefix}…
                 </Badge>
@@ -213,20 +248,22 @@ export function McpSettings({
               </div>
             ) : null}
             {!setupPrompt && latest ? (
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.oldKey.replace("{prefix}", latest.key_prefix)}</p>
+              <p className="max-w-2xl text-sm leading-relaxed text-slate-500">
+                {m.oldKey.replace("{label}", latest.label).replace("{prefix}", latest.key_prefix)}
+              </p>
             ) : null}
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap">
               <Button
                 size="lg"
                 className="h-auto whitespace-normal px-4 py-3 text-left"
                 onClick={() => copySetup(false)}
-                disabled={loading || !projectId}
+                disabled={loading || !projectId || !keyName.trim()}
               >
                 {copied === "setup" ? <CheckCircle2 className="mr-1 h-4 w-4" /> : null}
                 {copied === "setup" ? m.copied : primaryLabel}
               </Button>
               {setupPrompt ? (
-                <Button type="button" variant="outline" onClick={() => copySetup(true)} disabled={loading}>
+                <Button type="button" variant="outline" onClick={() => copySetup(true)} disabled={loading || !keyName.trim()}>
                   {m.regenerate}
                 </Button>
               ) : null}

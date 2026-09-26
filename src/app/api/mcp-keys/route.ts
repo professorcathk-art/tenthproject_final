@@ -4,6 +4,15 @@ import { requireAuth } from "@/lib/auth/session";
 import { createMcpApiKey, getMcpKeysForProject, revokeMcpApiKey } from "@/lib/db/platform-store";
 import { getProject } from "@/lib/db/store";
 
+function normalizeMcpKeyLabel(raw: unknown) {
+  const text = String(raw ?? "")
+    .replace(/[\u0000-\u001F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+  return text || "Cursor MCP";
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { user } = await requireAuth();
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest) {
     const project = await getProject(projectId, user.id);
     if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const { key, record } = await createMcpApiKey(user.id, projectId, label);
+    const { key, record } = await createMcpApiKey(user.id, projectId, normalizeMcpKeyLabel(label));
     return NextResponse.json({ key, record: { id: record.id, key_prefix: record.key_prefix, label: record.label, created_at: record.created_at } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed";

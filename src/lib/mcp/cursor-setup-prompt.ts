@@ -1,8 +1,9 @@
 export function generateCursorSetupPrompt(
   apiKey: string,
-  options: { mcpUrl: string; projectName: string; testPrompt: string },
+  options: { mcpUrl: string; projectName: string; keyName: string; testPrompt: string },
 ) {
   const projectName = options.projectName.replace(/[`\r\n]/g, " ").trim() || "這個專案";
+  const keyName = options.keyName.replace(/[`\r\n]/g, " ").trim() || projectName;
   const config = JSON.stringify(
     {
       mcpServers: {
@@ -16,7 +17,7 @@ export function generateCursorSetupPrompt(
     2,
   );
 
-  return `請在我目前打開的這個產品專案根目錄，幫我接上 Tenth Project。這把金鑰只連接專案「${projectName}」。請在這個資料夾裡做，不要改到別的專案。
+  return `請在我目前打開的這個產品專案根目錄，幫我接上 Tenth Project。這把金鑰的名字是「${keyName}」，只連接專案「${projectName}」。請在這個資料夾裡做，不要改到別的專案。
 
 1. 建立檔案 \`.cursor/mcp.json\`。檔案內容必須正好是下面這段 JSON，不要改網址，也不要把網址包成連結：
 
