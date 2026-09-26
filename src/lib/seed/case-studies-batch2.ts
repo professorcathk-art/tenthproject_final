@@ -34,7 +34,7 @@ export const BATCH2_CASES: SeedCase[] = [
     summaryEn:
       "A software engineer spent nights mapping Happy Meal toys for his daughters. In 10 days the free map pulled in 127,000 users and, by the founder’s model, saved U.S. collectors more than $16M and 600,000 hours.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 麥當勞出聯名玩具時，官方 App 往往不告訴你「這家店還有沒有這一款」。一位工程師爸爸晚上自己做了地圖，10 天內 12.7 萬人來用。創辦人估算，幫美國收集者省下超過 1,600 萬美元和 60 萬小時。
 
@@ -166,7 +166,7 @@ VCs often skip pop-up tools for short LTV. Indie hackers should see time-to-mark
     summaryEn:
       "A two-person San Francisco team built Chad, the “brainrot IDE”: keep short video inside the editor during the 1–5 minutes an agent is thinking, then snap you back. YC put in $500K; early testers said they saved about 15 minutes an hour.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 請 AI 寫程式時，常常要空等 1 到 5 分鐘。這段空檔一滑手機，回來就忘了自己在做什麼。Chad 把短影片放進寫程式的畫面裡，AI 想完再把你拉回來。YC 投資 50 萬美元；早期測試者說每小時大約省 15 分鐘。
 
@@ -289,7 +289,7 @@ Developers became agent supervisors. Chad competes for those three minutes of at
     summaryEn:
       "An AI chief of staff for families, built by an Uber transit lead and an Instagram engineer. A $3.5M pre-seed funds a product that reads school mail and parent chats, then texts tomorrow’s list.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 學校郵件、家長群組每天一堆，忙起來根本看不完。Fambot 想當家庭的小助手：幫你讀這些訊息，再整理成明天要做的事。創辦人來自 Uber 與 Instagram，Pre-Seed 融資 350 萬美元。
 
@@ -409,7 +409,7 @@ The round is a bet on household mental load plus dual-parent lock-in. The moat i
     summaryEn:
       "Two Yale students put a social network inside iMessage: no feed, no follower counts, warm intros only after both sides say yes. They raised $3.1M in two weeks; later coverage puts total funding between $5.1M and $8.2M.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 不想再下載一個社交 App，也不想在動態牆上表演。Series 把人脈放進 iMessage：沒有粉絲數，雙方都點頭才介紹認識。兩個耶魯學生兩週內融到 310 萬美元。
 
@@ -528,7 +528,7 @@ The moat moved from “own the app” to trust and semantic brokerage inside iMe
     summaryEn:
       "TUM alumni put a personal agent in iMessage and SMS — no new app. They raised $25M at a $300M valuation, became the first third-party agent on Apple Messages, crossed 100M messages in three months, and were acquired by Cognition.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 不想再裝一個 App？Poke 讓你直接在 iMessage 或簡訊裡跟 AI 助理說話。團隊拿到 2,500 萬美元，公開說法是三個月超過 1 億則對話，後來被 Cognition 收購。
 
@@ -648,7 +648,7 @@ Cognition did not buy a model. It bought a personality and a distribution slot. 
     summaryEn:
       "Three French repeat founders built an intent-first GTM agent. They went from $0 to $112K MRR in nine months, joined YC, and now state $2.5M ARR and 2,000+ paying teams.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 傳統業務常是狂發陌生郵件，回覆很少。Gojiberry 改成先找出「現在真的有興趣」的公司，再去聯絡。三個法國創辦人 9 個月把月經常收入從 0 做到 11.2 萬美元，並入選 Y Combinator。
 

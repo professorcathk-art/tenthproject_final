@@ -3,6 +3,7 @@ import { CASE_SEED_MARKER, CASE_LOCALE_SPLIT } from "@/lib/inspiration/constants
 import { CASE_EXTRAS } from "@/lib/inspiration/case-extras";
 import { BATCH2_CASES, type SeedCase } from "@/lib/seed/case-studies-batch2";
 import { BATCH3_CASES } from "@/lib/seed/case-studies-batch3";
+import { BATCH4_CASES } from "@/lib/seed/case-studies-batch4";
 
 export { CASE_SEED_MARKER, CASE_LOCALE_SPLIT };
 
@@ -25,7 +26,7 @@ const CASES: SeedCase[] = [
     summaryEn:
       "A 17-year-old founder turned “snap a photo, log the meal” into a calorie app that hit $1M in sales in five months and approached $1M MRR by month seven.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 拍張食物照片，App 就告訴你這餐大概多少卡路里。17 歲團隊自己賺錢、沒有外面投資；公開數字是五個月賣破 100 萬美元，後來月收入逼近 100 萬美元。下面是公開報導與訪談整理，不是公司審計財報。
 
@@ -181,7 +182,7 @@ Paul Graham would call this *schlep blindness*: everyone hates logging calories;
     summaryEn:
       "A 2023 Dubai-born AI humanizer that rewrites ChatGPT / Claude / Gemini drafts to read human and scores them with a built-in detector. Official MRR is undisclosed; third-party traffic is in the millions of monthly visits.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 很多人用 AI 寫完文章，會被學校、客戶或平台覺得「太像機器人」。StealthWriter 做的就是把這些草稿改得比較像人寫的，還能打分數告訴你像不像 AI。公司沒有公布每月收入；第三方流量工具顯示一個月有數百萬人造訪。
 
@@ -321,7 +322,7 @@ YC would call this *hair on fire*. LTV can be high (weekly deadlines) and the et
     summaryEn:
       "imageprompt.org is not another social wall. It owns the “image to prompt” query: reverse-prompt an image, generate a better prompt, send it to Flux / Midjourney / SD. Third-party traffic sits around 740k–1.15M monthly visits.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 想用 AI 畫圖，但不會寫「提示詞」？這個網站主打兩件事：看一張圖，反推出該怎麼寫；或直接幫你寫一則更好的提示詞，再送到 Flux、Midjourney、Stable Diffusion。它不是論壇，是工具站。第三方統計月訪大約 74 萬到 115 萬。
 
@@ -470,7 +471,7 @@ Platform investors want UGC flywheels. ImagePrompt.org is *indie SEO*. Ben Thomp
     summaryEn:
       "The live counterpart is HumanAI (usehumanai.com): custom agents that execute work, plus Hope — an AI that remembers you, paired with weekly human coaches. That is the shape after chatbots.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 靈感庫這則不是空殼域名，對照的是田納西已上線的 HumanAI。它不只要陪你聊天，還想變成「真的會把工作做完」的助手：一條線是客製 Agent，一條線是 Hope——AI 記得你的狀況，每週再配真人教練。公開收入未披露。
 
@@ -598,6 +599,7 @@ The warning is equal: demos lie, production slaps. Too many tools and the model 
   },
   ...BATCH2_CASES,
   ...BATCH3_CASES,
+  ...BATCH4_CASES,
 ];
 
 export function getSeedCaseStudies(): CaseStudy[] {

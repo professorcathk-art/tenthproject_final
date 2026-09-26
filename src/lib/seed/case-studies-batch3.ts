@@ -20,7 +20,7 @@ export const BATCH3_CASES: SeedCase[] = [
     summaryEn:
       "Upload a photo with no GPS and the model infers a location from buildings, vegetation, and street clues. The GeoSpy team rebranded the stack as Raven, spanning a light web trial and agency-grade investigations.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 照片被清掉定位之後，通常很難知道在哪裡拍。Raven 看的是畫面本身：房子、路牌、植物、路面。GeoSpy 團隊把它升級並改名，從網頁試用做到給執法與企業調查用。
 
@@ -137,7 +137,7 @@ Vertical spatial models still beat a general chat box on street furniture and mi
     summaryEn:
       "Two high-school classmates turn lectures, PDFs, and videos into notes, flashcards, and quizzes. Forbes 30 Under 30 Asia 2026; more than $7M disclosed funding. They call it a personal knowledge filter.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 上課錄音、講義、影片堆一堆，事後整理很累。ThetaWave 幫你變成筆記、字卡和測驗。兩位高中同學創辦，入選 Forbes 2026 亞洲 30 歲以下，公開融資超過 700 萬美元。
 
@@ -242,7 +242,7 @@ The moat is the path, not the summary. Switching cost rises only after the app h
     summaryEn:
       "A Hong Kong dad texted “cook rice” and came home to plain rice. He turned the mishap into a bilingual recipe app; a Threads story pushed it up the App Store food chart.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 僱主用英文說 cook rice，外傭按字面只煮了白飯。一位香港爸爸把這個笑話做成 App：你用中文或英文點菜，外傭看到自己懂的語言步驟。Threads 傳開後，它衝上過 App Store 美食榜。
 
@@ -336,7 +336,7 @@ A two-sided communication gap. Launch with the story, not the feature list. Fift
     summaryEn:
       "Indie studio 0 CCU Games boiled Dead by Daylight down to an 8-minute hide-and-seek. Two years on Roblox, third-party trackers count 770M+ visits and a 14k+ CCU peak.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 規則很短：一方躲、一方抓，八分鐘一局。獨立團隊 0 CCU Games 把它做成 Roblox 遊戲。上線兩年，第三方統計造訪超過七億，最多同時上萬人在玩。
 
@@ -423,7 +423,7 @@ Shrink a hardcore genre. Cap a match at ten minutes. Design the screenshot peopl
     summaryEn:
       "Nas Daily’s team turns one product photo into a store, copy, ads, and community checkout. Khosla led a $27M Series A in 2026; the site cites 3.5M members at $29 a month.",
     bodyZh: `${CASE_SEED_MARKER}
-## 先講人話
+## 簡單總結
 
 有產品、有粉絲，但不懂架網站、寫文案、跑廣告。Nas.com 的說法是：拍一張產品照，後面開店、文案、廣告、向社群收費都能接上。2026 年 Khosla 領投 2,700 萬美元；官網寫有 350 萬名成員、月費 29 美元。
 
