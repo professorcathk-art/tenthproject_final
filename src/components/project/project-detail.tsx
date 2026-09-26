@@ -38,6 +38,7 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { UAT_STATUSES, AI_TOOLS, type ProjectWithRelations, type UATStatus, type AITool } from "@/types";
 import { McpSettings } from "@/components/project/mcp-settings";
+import { SITE_URL } from "@/lib/seo";
 import { AiSuggestionsModal } from "@/components/project/ai-suggestions-modal";
 import { NextSprintSheet } from "@/components/project/next-sprint-sheet";
 import { formatDistanceToNow } from "date-fns";
@@ -899,7 +900,11 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           </TabsContent>
 
           <TabsContent value="mcp" className="mt-4">
-            <McpSettings projectId={project.id} projectName={project.name} />
+            <McpSettings
+              projects={[{ id: project.id, name: project.name }]}
+              lockedProjectId={project.id}
+              mcpUrl={`${SITE_URL}/api/mcp`}
+            />
           </TabsContent>
         </motion.div>
       </Tabs>

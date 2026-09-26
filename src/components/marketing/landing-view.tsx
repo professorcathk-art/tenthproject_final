@@ -198,7 +198,7 @@ export function LandingView() {
                 {tab === "mcp" && (
                   <>
                     <p className="text-slate-500 text-xs mb-2">.cursor/mcp.json</p>
-                    <p className="text-slate-200">{`{ "mcpServers": { "tenth-project": { "url": "/api/mcp" } } }`}</p>
+                    <p className="text-slate-200">{dict.mcp.whatBody}</p>
                   </>
                 )}
               </div>
