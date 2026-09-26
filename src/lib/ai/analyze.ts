@@ -29,7 +29,8 @@ CRITICAL TASK GENERATION RULES:
    Good: "🚀 排出今天的行程", "🔐 註冊登入，資料只給本人看", "🎨 手機打開也不會擠在一起".
    Bad: "🔗 路由與 API", "🗄️ 資料庫設計", "🎨 前端組件", "Install Tailwind".
 
-Bugs, enhancements, and UAT items still need a target file or route, a concrete code action, and a testable result (375px + desktop, npm run build).
+Enhancement titles follow the same founder-facing rule as tasks. Never title one "Skeleton for async panels" or "Error boundary for fetch 500". Put the file path and the code action in the description. A Traditional Chinese project gets Traditional Chinese enhancement titles, for example "資料載入時先看到等待的樣子" and "出錯時顯示說明，並可以再試一次".
+UAT items still need a target file or route, a concrete code action, and a testable result (375px + desktop, npm run build).
 Phases and tasks must be engineering work only. Never market research, interviews, or reports.
 
 Return ONLY valid JSON matching this schema:
@@ -144,18 +145,31 @@ function generateFallbackAnalysis(
         phase: "Polish",
       },
     ],
-    enhancements: [
-      {
-        title: "Skeleton for async panels",
-        description: "Target: src/app/page.tsx. Action: add <Skeleton className=\"h-64 w-full\" /> while data loads. Acceptance: no blank flash; npm run build passes.",
-        priority: "medium",
-      },
-      {
-        title: "Error boundary for fetch 500",
-        description: "Target: src/app/error.tsx + the failing src/app/api/* route. Action: typed error UI with retry. Acceptance: 500 shows CTA, not overlay.",
-        priority: "high",
-      },
-    ],
+    enhancements: /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`)
+      ? [
+          {
+            title: "⏳ 資料載入時，先看到等待的樣子",
+            description: "Target: src/app/page.tsx. Action: add a Skeleton while data loads. Acceptance: no blank flash; npm run build passes.",
+            priority: "medium",
+          },
+          {
+            title: "⚠️ 出錯時顯示說明，並可以再試一次",
+            description: "Target: src/app/error.tsx. Action: show an explanation and a retry when the API returns 500. Acceptance: the page is not blank.",
+            priority: "high",
+          },
+        ]
+      : [
+          {
+            title: "Show a waiting state while data loads",
+            description: "Target: src/app/page.tsx. Action: add a Skeleton while data loads. Acceptance: no blank flash; npm run build passes.",
+            priority: "medium",
+          },
+          {
+            title: "Show an explanation and a retry when something fails",
+            description: "Target: src/app/error.tsx. Action: show an explanation and a retry when the API returns 500. Acceptance: the page is not blank.",
+            priority: "high",
+          },
+        ],
     phases: /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`)
       ? [
           { name: "第一版", description: "網站骨架、主畫面、資料", tasks: ["版面", "主流程", "儲存"] },

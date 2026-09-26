@@ -1,5 +1,6 @@
-import type { AiSuggestion, Enhancement, ProjectWithRelations } from "@/types";
+import type { AiSuggestion, Enhancement, ProjectWithRelations, Task } from "@/types";
 import { keepCodingItems } from "@/lib/ai/coding-constraints";
+import { founderCard } from "@/lib/project/founder-copy";
 import { extractSpecFromSuggestion, inferTargetFile, specBlock, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/executable-spec";
 
 export { SPRINT_PROMPT_SYSTEM };
@@ -25,6 +26,7 @@ function collectTargetFiles(
   project: ProjectWithRelations,
   approved: AiSuggestion[],
   selectedEnhancements: Enhancement[] = [],
+  selectedTasks: Task[] = [],
 ) {
   const files = new Set<string>();
   for (const item of approved) files.add(extractSpecFromSuggestion(item).file);
@@ -38,10 +40,8 @@ function collectTargetFiles(
       files.add(uat.test_path?.trim() || inferTargetFile(`${uat.title}\n${uat.expected_result ?? ""}`));
     }
   }
-  for (const task of project.tasks ?? []) {
-    if (task.status === "todo" || task.status === "blocked") {
-      files.add(inferTargetFile(`${task.title}\n${task.description ?? ""}`));
-    }
+  for (const task of selectedTasks) {
+    files.add(inferTargetFile(`${task.title}\n${task.description ?? ""}\n${(task.technical_checklist ?? []).join("\n")}`));
   }
   for (const item of selectedEnhancements) {
     files.add(inferTargetFile(`${item.title}\n${item.description ?? ""}`));
@@ -53,13 +53,14 @@ export function synthesizeSprintPrompt(
   project: ProjectWithRelations,
   approved: AiSuggestion[] = [],
   selectedEnhancements: Enhancement[] = [],
+  selectedTasks: Task[] = [],
 ) {
-  const { openBugs, failedUat, todoTasks: rawTodoTasks } = collectSprintBacklog(project, approved, selectedEnhancements);
-  const todoTasks = keepCodingItems(rawTodoTasks, (task) => `${task.title} ${task.description ?? ""}`);
+  const { openBugs, failedUat } = collectSprintBacklog(project, approved, selectedEnhancements);
+  const todoTasks = keepCodingItems(selectedTasks, (task) => `${task.title} ${task.description ?? ""}`);
   const url = project.website_url ?? "（尚未填寫）";
   const github = project.github_url ?? "（尚未填寫）";
   const tool = project.selected_tool || "cursor";
-  const targets = collectTargetFiles(project, approved, selectedEnhancements);
+  const targets = collectTargetFiles(project, approved, selectedEnhancements, todoTasks);
 
   const suggestionLines = approved.length
     ? approved
@@ -99,24 +100,26 @@ export function synthesizeSprintPrompt(
   const taskLines = todoTasks.length
     ? todoTasks
         .map((task) => {
-          const file = inferTargetFile(`${task.title}\n${task.description ?? ""}`);
+          const steps = (task.technical_checklist ?? []).filter(Boolean);
+          const file = inferTargetFile(`${task.title}\n${task.description ?? ""}\n${steps.join("\n")}`);
           return specBlock({
             file,
             action: `[${task.priority}] ${task.title}`,
-            acceptance: task.description || "Visible result + npm run build",
+            acceptance: [task.description, ...steps].filter(Boolean).join("\n") || "Visible result + npm run build",
           });
         })
         .join("\n")
-    : "- 待辦任務已清空，請只處理上方建議／錯誤／UAT";
+    : "- 本輪沒有勾選待辦功能";
 
   const enhancementLines = selectedEnhancements.length
     ? selectedEnhancements
         .map((item) => {
+          const facing = founderCard(item, /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""}`) ? "zh" : "en");
           const file = inferTargetFile(`${item.title}\n${item.description ?? ""}`);
           return specBlock({
             file,
-            action: `[${item.priority}] ${item.title}`,
-            acceptance: item.description || "Visible result + matching UAT passes",
+            action: `[${item.priority}] ${facing.title}`,
+            acceptance: [facing.summary, item.description].filter(Boolean).join("\n"),
           });
         })
         .join("\n")

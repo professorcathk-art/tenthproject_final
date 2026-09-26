@@ -202,7 +202,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
     }
   }
 
-  async function nextSprint(payload: { suggestionIds: string[]; enhancementIds: string[] }) {
+  async function nextSprint(payload: { suggestionIds: string[]; enhancementIds: string[]; taskIds: string[] }) {
     setLoading("sprint");
     try {
       const res = await fetch("/api/ai/sprint-prompt", {
@@ -212,6 +212,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           projectId: project.id,
           suggestionIds: payload.suggestionIds,
           enhancementIds: payload.enhancementIds,
+          taskIds: payload.taskIds,
         }),
       });
       const data = await res.json();
@@ -920,7 +921,13 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
         loading={loading === "sprint"}
         suggestions={suggestions}
         enhancements={enhancements}
+        tasks={tasks}
+        uatItems={uatItems}
         onOpenChange={setSprintOpen}
+        onReviewUat={() => {
+          setSprintOpen(false);
+          setTab("uat");
+        }}
         onConfirm={nextSprint}
       />
     </div>

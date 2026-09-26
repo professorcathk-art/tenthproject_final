@@ -20,6 +20,7 @@ import type {
 } from "@/types";
 import { DEMO_USER } from "@/lib/auth/session";
 import { inferTargetFile } from "@/lib/ai/executable-spec";
+import { founderCard, technicalStepsFrom } from "@/lib/project/founder-copy";
 import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -987,7 +988,7 @@ export async function applyApprovedSuggestions(
   return { created, suggestions: await loadAiSuggestions(projectId) };
 }
 
-export async function queueEnhancementsForSprint(projectId: string, enhancementIds: string[]) {
+export async function queueEnhancementsForSprint(projectId: string, enhancementIds: string[], locale: "zh" | "en" = "zh") {
   const created = { tasks: 0, uat: 0 };
   if (!enhancementIds.length) return created;
 
@@ -1023,11 +1024,13 @@ export async function queueEnhancementsForSprint(projectId: string, enhancementI
   }
 
   for (const item of enhancements) {
-    const key = item.title.toLowerCase();
-    if (!taskTitles.has(key)) {
+    const facing = founderCard(item, locale);
+    const key = facing.title.toLowerCase();
+    if (!taskTitles.has(key) && !taskTitles.has(item.title.toLowerCase())) {
       await createTask(projectId, {
-        title: item.title,
-        description: item.description,
+        title: facing.title,
+        description: facing.summary,
+        technical_checklist: technicalStepsFrom(item.description),
         priority: item.priority,
         source: "ai",
       });
@@ -1035,12 +1038,12 @@ export async function queueEnhancementsForSprint(projectId: string, enhancementI
       taskTitles.add(key);
     }
 
-    const uatTitle = `驗收：${item.title}`;
+    const uatTitle = `驗收：${facing.title}`;
     if (!uatTitles.has(uatTitle.toLowerCase())) {
       await createUATItem(projectId, {
         title: uatTitle,
         test_path: inferTargetFile(`${item.title}\n${item.description ?? ""}`),
-        expected_result: item.description,
+        expected_result: facing.summary || item.description,
         priority: item.priority,
       });
       created.uat += 1;

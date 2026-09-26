@@ -9,6 +9,7 @@ import {
   logActivity,
   queueEnhancementsForSprint,
 } from "@/lib/db/store";
+import { UNMARKED_UAT } from "@/lib/project/founder-copy";
 import type { AITool, AiSuggestion } from "@/types";
 
 export const SYSTEM_PROMPT = SPRINT_PROMPT_SYSTEM;
@@ -17,16 +18,29 @@ export async function POST(request: NextRequest) {
   try {
     const { user } = await requireAuth();
     const body = await request.json();
-    const { projectId, suggestions, suggestionIds, enhancementIds } = body as {
+    const { projectId, suggestions, suggestionIds, enhancementIds, taskIds } = body as {
       projectId: string;
       suggestions?: AiSuggestion[];
       suggestionIds?: string[];
       enhancementIds?: string[];
+      taskIds?: string[];
     };
 
     const project = await getProject(projectId, user.id);
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    const unmarked = (project.uat_items ?? []).filter((item) => UNMARKED_UAT.has(item.status));
+    if (unmarked.length) {
+      return NextResponse.json(
+        {
+          error: "UAT_UNMARKED",
+          message: "這一輪還有驗收沒有標成通過或失敗，所以不能開下一輪。",
+          unmarked: unmarked.map((item) => ({ id: item.id, title: item.title, status: item.status })),
+        },
+        { status: 409 },
+      );
     }
 
     const allSuggestions = suggestions ?? project.ai_suggestions ?? [];
@@ -42,8 +56,9 @@ export async function POST(request: NextRequest) {
     }
 
     const selectedEnhancementIds = enhancementIds ?? [];
+    const chinese = /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`);
     const queued = selectedEnhancementIds.length
-      ? await queueEnhancementsForSprint(projectId, selectedEnhancementIds)
+      ? await queueEnhancementsForSprint(projectId, selectedEnhancementIds, chinese ? "zh" : "en")
       : { tasks: 0, uat: 0 };
 
     const fresh = (await getProject(projectId, user.id)) ?? project;
@@ -53,7 +68,8 @@ export async function POST(request: NextRequest) {
       selectedEnhancementIds.includes(item.id),
     );
 
-    const promptText = synthesizeSprintPrompt(fresh, approved, selectedEnhancements);
+    const selectedTasks = (fresh.tasks ?? []).filter((task) => (taskIds ?? []).includes(task.id) && task.status !== "done");
+    const promptText = synthesizeSprintPrompt(fresh, approved, selectedEnhancements, selectedTasks);
     const tool = (fresh.selected_tool as AITool) || "cursor";
 
     const promptRun = {
