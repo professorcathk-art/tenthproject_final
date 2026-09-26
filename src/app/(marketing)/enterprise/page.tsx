@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EnterpriseLanding } from "@/components/enterprise/enterprise-landing";
+import { getLocale } from "@/lib/i18n/server";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -10,6 +11,7 @@ export const metadata: Metadata = pageMetadata({
   keywords: ["企業 AI", "AI Agent", "工作流自動化", "數位轉型", "香港"],
 });
 
-export default function EnterprisePage() {
-  return <EnterpriseLanding />;
+export default async function EnterprisePage() {
+  const locale = await getLocale();
+  return <EnterpriseLanding locale={locale} />;
 }

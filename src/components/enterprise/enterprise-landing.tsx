@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import {
   Bot,
@@ -10,10 +8,9 @@ import {
   UserCheck,
   Workflow,
 } from "lucide-react";
-import { FadeIn } from "@/components/motion/fade-in";
 import { EnterpriseBookingSection } from "@/components/enterprise/enterprise-booking-section";
-import { useI18n } from "@/components/i18n/provider";
 import { enterpriseCopy } from "@/lib/enterprise/copy";
+import type { Locale } from "@/i18n/dictionaries";
 const valueIcons = [UserCheck, Bot, ShieldCheck, CheckCircle2];
 const serviceIcons = [Bot, Workflow, Building2, Sparkles];
 const caseImages = [
@@ -22,8 +19,7 @@ const caseImages = [
   { src: "/images/case-finance.jpg", alt: "金融盡職審查與文件研讀" },
 ];
 
-export function EnterpriseLanding() {
-  const { locale } = useI18n();
+export function EnterpriseLanding({ locale }: { locale: Locale }) {
   const copy = locale === "en" ? enterpriseCopy.en : enterpriseCopy.zh;
 
   return (
@@ -32,7 +28,7 @@ export function EnterpriseLanding() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
             <div className="pr-0 lg:col-span-7 lg:pr-6">
-              <FadeIn className="space-y-6">
+              <div className="space-y-6">
                 <p className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/70 px-4 py-1.5 text-sm font-medium text-slate-600 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-200">
                   {copy.hero.badge}
                 </p>
@@ -56,7 +52,7 @@ export function EnterpriseLanding() {
                     {copy.hero.ctaSecondary}
                   </a>
                 </div>
-              </FadeIn>
+              </div>
             </div>
             <div className="relative lg:col-span-5">
               <div className="relative min-h-[320px] overflow-hidden rounded-3xl lg:min-h-[520px]">
@@ -65,7 +61,8 @@ export function EnterpriseLanding() {
                   alt="Tenth Project 顧問與企業客戶在香港進行一對一諮詢"
                   fill
                   priority
-                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  quality={60}
+                  sizes="(min-width: 1024px) 480px, 100vw"
                   className="object-cover object-[center_28%] brightness-[0.7] contrast-[1.03] saturate-[0.75]"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(15,23,42,0.42)_100%)]" />
@@ -73,29 +70,29 @@ export function EnterpriseLanding() {
             </div>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {copy.hero.metrics.map((metric, index) => (
-              <FadeIn key={metric.value} delay={0.08 * index}>
+            {copy.hero.metrics.map((metric) => (
+              <div key={metric.value}>
                 <div className="rounded-2xl border border-slate-200/70 bg-white/70 px-5 py-5 dark:border-slate-800/50 dark:bg-slate-950/40">
                   <p className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{metric.value}</p>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{metric.label}</p>
                 </div>
-              </FadeIn>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <FadeIn>
+        <div>
           <h2 className="max-w-3xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
             {copy.value.title}
           </h2>
-        </FadeIn>
+        </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           {copy.value.items.map((item, index) => {
             const Icon = valueIcons[index];
             return (
-              <FadeIn key={item.title} delay={0.06 * index}>
+              <div key={item.title}>
                 <article className="h-full rounded-3xl glass-panel glow-card p-7">
                   <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                     <Icon className="h-5 w-5" />
@@ -103,7 +100,7 @@ export function EnterpriseLanding() {
                   <h3 className="text-lg font-semibold leading-snug">{item.title}</h3>
                   <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">{item.body}</p>
                 </article>
-              </FadeIn>
+              </div>
             );
           })}
         </div>
@@ -111,16 +108,16 @@ export function EnterpriseLanding() {
 
       <section className="border-y border-slate-200/70 bg-white/50 dark:border-slate-800/50 dark:bg-slate-900/30">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-          <FadeIn>
+          <div>
             <h2 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
               {copy.servicesTitle}
             </h2>
-          </FadeIn>
+          </div>
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {copy.services.map((service, index) => {
               const Icon = serviceIcons[index];
               return (
-                <FadeIn key={service.title} delay={0.05 * index}>
+                <div key={service.title}>
                   <article className="h-full rounded-3xl glass-panel p-7">
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                       <Icon className="h-5 w-5" />
@@ -136,7 +133,7 @@ export function EnterpriseLanding() {
                     </p>
                     <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">{service.tech}</p>
                   </article>
-                </FadeIn>
+                </div>
               );
             })}
           </div>
@@ -144,14 +141,14 @@ export function EnterpriseLanding() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <FadeIn>
+        <div>
           <h2 className="max-w-4xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
             {copy.process.title}
           </h2>
-        </FadeIn>
+        </div>
         <div className="mt-10 grid gap-4">
-          {copy.process.steps.map((step, index) => (
-            <FadeIn key={step.num} delay={0.04 * index}>
+          {copy.process.steps.map((step) => (
+            <div key={step.num}>
               <article className="grid gap-4 rounded-3xl glass-panel p-6 sm:grid-cols-[auto_1fr] sm:items-start sm:p-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white dark:bg-white dark:text-slate-950">
                   {step.num}
@@ -161,21 +158,21 @@ export function EnterpriseLanding() {
                   <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">{step.body}</p>
                 </div>
               </article>
-            </FadeIn>
+            </div>
           ))}
         </div>
       </section>
 
       <section id="cases" className="scroll-mt-24 border-y border-slate-200/70 bg-white/50 dark:border-slate-800/50 dark:bg-slate-900/30">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-          <FadeIn>
+          <div>
             <h2 className="max-w-4xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
               {copy.cases.title}
             </h2>
-          </FadeIn>
+          </div>
           <div className="mt-10 grid gap-8">
             {copy.cases.items.map((item, index) => (
-              <FadeIn key={item.title} delay={0.05 * index}>
+              <div key={item.title}>
                 <article className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.45)] dark:border-slate-800/70 dark:bg-slate-950/50">
                   <div className="grid lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)]">
                     <div className="relative aspect-[16/10] bg-slate-200 lg:aspect-auto lg:min-h-full dark:bg-slate-900">
@@ -221,7 +218,7 @@ export function EnterpriseLanding() {
                     </div>
                   </div>
                 </article>
-              </FadeIn>
+              </div>
             ))}
           </div>
         </div>
@@ -229,9 +226,9 @@ export function EnterpriseLanding() {
 
       <section className="border-t border-slate-200/70 bg-white/50 py-16 dark:border-slate-800/50 dark:bg-slate-900/30 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <FadeIn>
+          <div>
             <EnterpriseBookingSection />
-          </FadeIn>
+          </div>
         </div>
       </section>
     </div>
