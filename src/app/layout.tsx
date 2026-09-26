@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const chinese = dict.meta.title.includes("重新定義");
   const socialTitle = chinese
     ? "Tenth Project｜企業 AI 轉型與 Vibe Coding 實戰平台"
-    : "Tenth Project | Enterprise AI and Vibe Coding";
+    : "Tenth Project | Enterprise AI transformation and hands-on Vibe Coding";
   const socialDescription = chinese
     ? "從企業流程自動化到個人 AI SaaS 產品開發，提供可落地的技術方案與 VIP 導師社群。"
     : dict.meta.description;

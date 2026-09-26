@@ -1,3 +1,4 @@
+import { ProductionGuideEn } from "@/components/portal/production-guide-en";
 import { PromptBlock } from "@/components/portal/prompt-block";
 
 const promptMvp = `我想要開發一個 [旅遊計劃行程 / 記帳 / AI 寫作] 的 WebApp。
@@ -23,7 +24,8 @@ const promptUi = `你是一位世界頂級的 SaaS UI/UX 設計師。
 我附上了目前網站的截圖以及它的 React / Tailwind 原始碼。
 請指出目前設計中 3 個視覺缺陷（例如：留白不足、顏色層級不明確、排版混亂），並直接給出修改後的 Tailwind 完整代碼。請讓整體風格看起來像 Vercel 或 Linear 那樣具備現代科技感與玻璃擬物化 (Glassmorphism)。`;
 
-export function ProductionGuide() {
+export function ProductionGuide({ locale = "zh" }: { locale?: "zh" | "en" }) {
+  if (locale === "en") return <ProductionGuideEn />;
   return (
     <article className="mx-auto max-w-3xl">
       <h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">

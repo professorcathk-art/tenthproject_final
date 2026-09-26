@@ -87,7 +87,7 @@ export function PortalShell({
   paid: boolean;
   projectCount: number;
 }) {
-  const { dict } = useI18n();
+  const { dict, locale } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const [commandOpen, setCommandOpen] = useState(false);
@@ -99,14 +99,14 @@ export function PortalShell({
     () => [
       { href: "/dashboard", label: dict.portal.hub, icon: FolderKanban },
       { href: "/learning", label: dict.portal.learning, icon: BookOpen },
-      { href: "/dashboard/production-guide", label: "SaaS 製作攻略", icon: Hammer },
-      { href: "/dashboard/marketing-guide", label: "SaaS 宣傳攻略", icon: Megaphone },
+      { href: "/dashboard/production-guide", label: dict.portal.productionGuide, icon: Hammer },
+      { href: "/dashboard/marketing-guide", label: dict.portal.marketingGuide, icon: Megaphone },
       { href: "/mcp", label: dict.portal.mcp, icon: KeyRound },
       { href: "/vault", label: dict.portal.vault, icon: Lightbulb },
       { href: "/settings", label: dict.portal.settings, icon: Settings },
       ...(user.isAdmin ? [{ href: "/admin", label: dict.nav.admin, icon: Shield }] : []),
     ],
-    [dict.nav.admin, dict.portal.hub, dict.portal.learning, dict.portal.mcp, dict.portal.settings, dict.portal.vault, user.isAdmin],
+    [dict.nav.admin, dict.portal.hub, dict.portal.learning, dict.portal.marketingGuide, dict.portal.mcp, dict.portal.productionGuide, dict.portal.settings, dict.portal.vault, user.isAdmin],
   );
 
   const commands = useMemo(
@@ -155,12 +155,16 @@ export function PortalShell({
         <div className="mt-auto space-y-3">
           {paid ? null : (
             <JoinLifetimeButton className="h-10 w-full shadow-[0_0_18px_rgba(251,191,36,0.45)]">
-              ⚡ 升級 VIP 終身會員
+              {locale === "en" ? "⚡ Upgrade to VIP lifetime" : "⚡ 升級 VIP 終身會員"}
             </JoinLifetimeButton>
           )}
           <div className="rounded-2xl border border-slate-200/80 px-3 py-3 text-xs text-slate-500 dark:border-slate-800">
             <p className="font-semibold text-slate-900 dark:text-white">
-              {paid ? dict.portal.lifetime : `專案額度: ${projectCount}/${FREE_PROJECT_LIMIT} (免費版)`}
+              {paid
+                ? dict.portal.lifetime
+                : locale === "en"
+                  ? `Project quota: ${projectCount}/${FREE_PROJECT_LIMIT} (Free)`
+                  : `專案額度: ${projectCount}/${FREE_PROJECT_LIMIT} (免費版)`}
             </p>
             <p className="mt-1 truncate">{user.email}</p>
           </div>
@@ -202,7 +206,7 @@ export function PortalShell({
           <div className="flex items-center gap-2">
             {paid ? null : (
               <JoinLifetimeButton className="hidden h-9 px-4 text-xs shadow-[0_0_18px_rgba(251,191,36,0.45)] sm:inline-flex">
-                ⚡ 升級 VIP 終身會員
+                {locale === "en" ? "⚡ Upgrade to VIP lifetime" : "⚡ 升級 VIP 終身會員"}
               </JoinLifetimeButton>
             )}
             <Link href="/projects/new" className="hidden sm:block">

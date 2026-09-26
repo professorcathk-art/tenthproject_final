@@ -51,6 +51,8 @@ export const dictionaries = {
       command: "快速指令",
       lifetime: "Lifetime 會員",
       newProject: "建立新專案",
+      productionGuide: "SaaS 製作攻略",
+      marketingGuide: "SaaS 宣傳攻略",
     },
     lang: { zh: "繁", en: "EN" },
     hero: {
@@ -770,9 +772,9 @@ export const dictionaries = {
   },
   en: {
     meta: {
-      title: "Tenth Project | Enterprise AI Workflows and Vibe Coding",
+      title: "Tenth Project | Redefine enterprise operations with AI and hands-on Vibe Coding",
       description:
-        "Custom AI agents and workflow automation for enterprises, plus hands-on Vibe Coding training from idea to a product that can charge.",
+        "Big-tech architecture and an investment-banking perspective: enterprise AI agent workflow deployment, plus end-to-end Vibe Coding training from zero to one.",
     },
     brand: "Tenth Project",
     nav: {
@@ -815,14 +817,16 @@ export const dictionaries = {
       command: "Command menu",
       lifetime: "Lifetime member",
       newProject: "Create project",
+      productionGuide: "SaaS build playbook",
+      marketingGuide: "SaaS growth playbook",
     },
     lang: { zh: "繁", en: "EN" },
     hero: {
       badge: "✨ Custom AI systems · Enterprise transformation · Agile product delivery",
       title: "Redefine enterprise operations with AI",
-      titleAccent: "From process optimization and hyperautomation to hands-on AI training for creators — all in one place",
+      titleAccent: "",
       subtitle:
-        "We love technology and use frontier AI to solve real commercial pain. We help enterprises transform digitally, cut cost, and raise output — and help creators turn a vision into a product that can earn.",
+        "As leading specialists in putting AI into production, the Tenth Project team will go inside your company, understand your core business workflows in depth, and focus on hyper-automating tedious work and raising efficiency.",
       tools: "Custom AI Agents · Enterprise Automation · Data Intelligence · Full-Stack Systems",
       ctaPrimary: "Book a free enterprise consult",
       ctaSecondary: "Browse member benefits & courses",

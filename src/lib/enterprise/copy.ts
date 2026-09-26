@@ -187,7 +187,7 @@ export const enterpriseCopy = {
       items: [
         {
           title: "Led by dual-domain specialists (Executive Leadership)",
-          body: "Former Alibaba specialist Felix Zhu leads system architecture; former investment-banking executive director Chris Lau leads process redesign. No layered outsourcing — technical and commercial operators work directly with your core team.",
+          body: "Former Alibaba specialist Felix Zhu leads system architecture; former investment-banking Associate Director Chris Lau leads process redesign. No layered outsourcing — technical and commercial operators work directly with your core team.",
         },
         {
           title: "100% custom agents and API integration (Custom Tailored, No Templates)",
