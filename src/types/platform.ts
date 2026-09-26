@@ -132,6 +132,20 @@ export interface WebinarSignup {
   created_at: string;
 }
 
+export type CheckoutAttemptStatus = "open" | "abandoned" | "paid";
+
+export interface CheckoutAttempt {
+  id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  stripe_session_id: string;
+  status: CheckoutAttemptStatus;
+  notified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type CaseMarkStatus = "saved" | "passed";
 
 export interface CaseStudyMark {

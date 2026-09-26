@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BUDGET_RANGES, COMPANY_SIZES, SERVICE_TYPES, type EnterpriseEnquiry, type WebinarSignup } from "@/types/platform";
+import { BUDGET_RANGES, COMPANY_SIZES, SERVICE_TYPES, type CheckoutAttempt, type EnterpriseEnquiry, type WebinarSignup } from "@/types/platform";
 
 type AdminCopy = {
   pending: string;
@@ -25,6 +25,9 @@ type AdminCopy = {
   whatsapp: string;
   leadsHint: string;
   webinarsHint: string;
+  abandonedHint: string;
+  abandonedOpen: string;
+  abandonedExpired: string;
 };
 
 function downloadCsv(filename: string, headers: string[], rows: string[][]) {
@@ -218,6 +221,79 @@ export function WebinarLeadsTable({
                   <TableCell>
                     <StatusSelect value={row.status} labels={labels} onChange={(status) => onStatus(row.id, status)} />
                   </TableCell>
+                  <TableCell>
+                    <Button size="sm" variant="ghost" onClick={() => onDelete(row.id)}>
+                      {labels.delete}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AbandonedCheckoutTable({
+  rows,
+  labels,
+  onDelete,
+}: {
+  rows: CheckoutAttempt[];
+  labels: AdminCopy;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-slate-500">{labels.abandonedHint}</p>
+        {rows.length > 0 ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              downloadCsv(
+                "abandoned-checkouts.csv",
+                [labels.createdAt, labels.name, labels.email, labels.whatsapp, labels.status],
+                rows.map((row) => [
+                  new Date(row.created_at).toLocaleString(),
+                  row.name,
+                  row.email,
+                  row.whatsapp,
+                  row.status === "abandoned" ? labels.abandonedExpired : labels.abandonedOpen,
+                ]),
+              )
+            }
+          >
+            {labels.exportCsv}
+          </Button>
+        ) : null}
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">{labels.abandonedHint}</p>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <Table className="min-w-[760px]">
+            <TableHeader>
+              <TableRow className="bg-slate-50 dark:bg-slate-900">
+                <TableHead>{labels.createdAt}</TableHead>
+                <TableHead>{labels.name}</TableHead>
+                <TableHead>{labels.email}</TableHead>
+                <TableHead>{labels.whatsapp}</TableHead>
+                <TableHead>{labels.status}</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="text-xs text-slate-500">{new Date(row.created_at).toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">{row.name}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.whatsapp}</TableCell>
+                  <TableCell>{row.status === "abandoned" ? labels.abandonedExpired : labels.abandonedOpen}</TableCell>
                   <TableCell>
                     <Button size="sm" variant="ghost" onClick={() => onDelete(row.id)}>
                       {labels.delete}

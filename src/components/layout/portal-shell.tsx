@@ -148,7 +148,7 @@ export function PortalShell({
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white px-4 py-5 lg:flex dark:border-slate-800 dark:bg-slate-950">
         <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2 font-semibold">
-          <Image src="/logo.jpg" alt="Tenth Project" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+          <Image src="/tp-logo.svg" alt="Tenth Project" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
           <span className="tracking-tight">{dict.portal.brand}</span>
         </Link>
         <PortalNavLinks items={nav} pathname={pathname} />
@@ -170,12 +170,19 @@ export function PortalShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 dark:border-slate-800 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70">
           <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Link href="/dashboard" className="inline-flex shrink-0 lg:hidden" aria-label="Tenth Project">
+              <Image src="/tp-logo.svg" alt="" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
+            </Link>
             <Sheet open={navOpen} onOpenChange={(open) => setNavPath(open ? pathname : null)}>
               <SheetTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800">
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
-                <div className="mt-10">
+                <Link href="/dashboard" onClick={() => setNavPath(null)} className="mt-8 flex items-center gap-2.5 px-2 font-semibold">
+                  <Image src="/tp-logo.svg" alt="" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
+                  <span className="tracking-tight">{dict.portal.brand}</span>
+                </Link>
+                <div className="mt-6">
                   <PortalNavLinks items={nav} pathname={pathname} onNavigate={() => setNavPath(null)} />
                 </div>
               </SheetContent>

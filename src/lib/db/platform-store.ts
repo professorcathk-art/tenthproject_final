@@ -11,6 +11,7 @@ import type {
   Course,
   EnterpriseEnquiry,
   WebinarSignup,
+  CheckoutAttempt,
   CaseStudyMark,
   CaseMarkStatus,
   Lesson,
@@ -37,6 +38,7 @@ interface PlatformStore {
   caseStudies: CaseStudy[];
   enterpriseEnquiries: EnterpriseEnquiry[];
   webinarSignups: WebinarSignup[];
+  checkoutAttempts: CheckoutAttempt[];
   mcpApiKeys: McpApiKey[];
   members: Member[];
   caseMarks: CaseStudyMark[];
@@ -51,6 +53,7 @@ function emptyPlatformStore(): PlatformStore {
     caseStudies: [],
     enterpriseEnquiries: [],
     webinarSignups: [],
+    checkoutAttempts: [],
     mcpApiKeys: [],
     members: [],
     caseMarks: [],
@@ -79,6 +82,7 @@ async function ensurePlatformStore(): Promise<PlatformStore> {
         ...parsed,
         members: parsed.members ?? [],
         webinarSignups: parsed.webinarSignups ?? [],
+        checkoutAttempts: parsed.checkoutAttempts ?? [],
         caseMarks: parsed.caseMarks ?? [],
       };
       return memoryStore;
@@ -880,6 +884,171 @@ export async function updateWebinarSignupStatus(id: string, status: WebinarSignu
   const store = await ensurePlatformStore();
   const idx = store.webinarSignups.findIndex((item) => item.id === id);
   if (idx >= 0) store.webinarSignups[idx].status = status;
+  await savePlatformStore(store);
+}
+
+export async function recordCheckoutAttempt(data: {
+  name: string;
+  email: string;
+  whatsapp: string;
+  stripeSessionId: string;
+}) {
+  const now = new Date().toISOString();
+  const attempt: CheckoutAttempt = {
+    id: uuidv4(),
+    name: data.name,
+    email: data.email.trim().toLowerCase(),
+    whatsapp: data.whatsapp,
+    stripe_session_id: data.stripeSessionId,
+    status: "open",
+    notified_at: null,
+    created_at: now,
+    updated_at: now,
+  };
+
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient()
+      .from("checkout_attempts")
+      .upsert(attempt, { onConflict: "stripe_session_id", ignoreDuplicates: true });
+    if (error) throw new Error(error.message);
+    return attempt;
+  }
+
+  const store = await ensurePlatformStore();
+  store.checkoutAttempts = store.checkoutAttempts ?? [];
+  if (store.checkoutAttempts.some((item) => item.stripe_session_id === attempt.stripe_session_id)) {
+    return store.checkoutAttempts.find((item) => item.stripe_session_id === attempt.stripe_session_id) ?? attempt;
+  }
+  store.checkoutAttempts.unshift(attempt);
+  await savePlatformStore(store);
+  return attempt;
+}
+
+export async function getAbandonedCheckouts(): Promise<CheckoutAttempt[]> {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await createServiceClient()
+      .from("checkout_attempts")
+      .select("*")
+      .in("status", ["open", "abandoned"])
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as CheckoutAttempt[];
+  }
+  const store = await ensurePlatformStore();
+  return (store.checkoutAttempts ?? []).filter((item) => item.status !== "paid");
+}
+
+export async function prepareAbandonedNotice(input: {
+  name: string;
+  email: string;
+  whatsapp: string;
+  stripeSessionId: string;
+}): Promise<"send" | "skip"> {
+  const now = new Date().toISOString();
+  if (isSupabaseConfigured()) {
+    const client = createServiceClient();
+    const { data, error } = await client
+      .from("checkout_attempts")
+      .select("*")
+      .eq("stripe_session_id", input.stripeSessionId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    const row = data as CheckoutAttempt | null;
+    if (row?.status === "paid" || row?.notified_at) return "skip";
+    if (!row) {
+      const created: CheckoutAttempt = {
+        id: uuidv4(),
+        name: input.name,
+        email: input.email.trim().toLowerCase(),
+        whatsapp: input.whatsapp,
+        stripe_session_id: input.stripeSessionId,
+        status: "abandoned",
+        notified_at: null,
+        created_at: now,
+        updated_at: now,
+      };
+      const { error: insertError } = await client.from("checkout_attempts").insert(created);
+      if (insertError) throw new Error(insertError.message);
+      return "send";
+    }
+    const { error: updateError } = await client
+      .from("checkout_attempts")
+      .update({ status: "abandoned", updated_at: now })
+      .eq("stripe_session_id", input.stripeSessionId);
+    if (updateError) throw new Error(updateError.message);
+    return "send";
+  }
+
+  const store = await ensurePlatformStore();
+  store.checkoutAttempts = store.checkoutAttempts ?? [];
+  const row = store.checkoutAttempts.find((item) => item.stripe_session_id === input.stripeSessionId);
+  if (row?.status === "paid" || row?.notified_at) return "skip";
+  if (!row) {
+    store.checkoutAttempts.unshift({
+      id: uuidv4(),
+      name: input.name,
+      email: input.email.trim().toLowerCase(),
+      whatsapp: input.whatsapp,
+      stripe_session_id: input.stripeSessionId,
+      status: "abandoned",
+      notified_at: null,
+      created_at: now,
+      updated_at: now,
+    });
+  } else {
+    row.status = "abandoned";
+    row.updated_at = now;
+  }
+  await savePlatformStore(store);
+  return "send";
+}
+
+export async function markCheckoutNotified(stripeSessionId: string) {
+  const now = new Date().toISOString();
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient()
+      .from("checkout_attempts")
+      .update({ notified_at: now, status: "abandoned", updated_at: now })
+      .eq("stripe_session_id", stripeSessionId)
+      .neq("status", "paid");
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensurePlatformStore();
+  const row = (store.checkoutAttempts ?? []).find((item) => item.stripe_session_id === stripeSessionId);
+  if (!row || row.status === "paid") return;
+  row.status = "abandoned";
+  row.notified_at = now;
+  row.updated_at = now;
+  await savePlatformStore(store);
+}
+
+export async function markCheckoutPaid(stripeSessionId: string) {
+  const now = new Date().toISOString();
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient()
+      .from("checkout_attempts")
+      .update({ status: "paid", updated_at: now })
+      .eq("stripe_session_id", stripeSessionId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensurePlatformStore();
+  const row = (store.checkoutAttempts ?? []).find((item) => item.stripe_session_id === stripeSessionId);
+  if (!row) return;
+  row.status = "paid";
+  row.updated_at = now;
+  await savePlatformStore(store);
+}
+
+export async function deleteCheckoutAttempt(id: string) {
+  if (isSupabaseConfigured()) {
+    const { error } = await createServiceClient().from("checkout_attempts").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = await ensurePlatformStore();
+  store.checkoutAttempts = (store.checkoutAttempts ?? []).filter((item) => item.id !== id);
   await savePlatformStore(store);
 }
 

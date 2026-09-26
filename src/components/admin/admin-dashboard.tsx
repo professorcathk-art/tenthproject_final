@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/i18n/provider";
 import { ClassroomEditor } from "@/components/admin/classroom-editor";
-import { EnterpriseLeadsTable, WebinarLeadsTable } from "@/components/admin/admin-lead-tables";
-import { fromBillingTier, toBillingTier, type CaseStudy, type Course, type EnterpriseEnquiry, type Member, type WebinarSignup } from "@/types/platform";
+import { AbandonedCheckoutTable, EnterpriseLeadsTable, WebinarLeadsTable } from "@/components/admin/admin-lead-tables";
+import { fromBillingTier, toBillingTier, type CaseStudy, type CheckoutAttempt, type Course, type EnterpriseEnquiry, type Member, type WebinarSignup } from "@/types/platform";
 
 interface AdminDashboardProps {
   initialCaseStudies: CaseStudy[];
@@ -19,6 +19,7 @@ interface AdminDashboardProps {
   initialCourses: Course[];
   initialMembers: Member[];
   initialWebinars: WebinarSignup[];
+  initialCheckouts: CheckoutAttempt[];
 }
 
 const emptyMember = {
@@ -35,6 +36,7 @@ export function AdminDashboard({
   initialCourses,
   initialMembers,
   initialWebinars,
+  initialCheckouts,
 }: AdminDashboardProps) {
   const { dict, locale } = useI18n();
   const a = dict.admin;
@@ -43,6 +45,7 @@ export function AdminDashboard({
   const [courses, setCourses] = useState(initialCourses);
   const [members, setMembers] = useState(initialMembers);
   const [webinars, setWebinars] = useState(initialWebinars);
+  const [checkouts, setCheckouts] = useState(initialCheckouts);
   const [memberForm, setMemberForm] = useState(emptyMember);
   const [newStudy, setNewStudy] = useState({
     title: "",
@@ -146,6 +149,16 @@ export function AdminDashboard({
     setWebinars((list) => list.filter((item) => item.id !== id));
   }
 
+  async function removeCheckout(id: string) {
+    if (!confirm(a.confirmDelete)) return;
+    await fetch("/api/admin/checkouts", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setCheckouts((list) => list.filter((item) => item.id !== id));
+  }
+
   async function deleteStudy(id: string) {
     if (!confirm(a.confirmDelete)) return;
     await fetch("/api/admin/case-studies", {
@@ -163,7 +176,7 @@ export function AdminDashboard({
         <p className="text-slate-600 mt-1">{a.subtitle}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-slate-500">{a.courses}</CardTitle>
@@ -210,6 +223,14 @@ export function AdminDashboard({
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-slate-500">{a.abandoned}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{checkouts.length}</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="courses">
@@ -219,6 +240,7 @@ export function AdminDashboard({
           <TabsTrigger value="case-studies">{a.cases}</TabsTrigger>
           <TabsTrigger value="enquiries">{a.leads}</TabsTrigger>
           <TabsTrigger value="webinars">{a.webinars}</TabsTrigger>
+          <TabsTrigger value="checkouts">{a.abandoned}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="courses">
@@ -342,6 +364,10 @@ export function AdminDashboard({
 
         <TabsContent value="webinars" className="mt-4">
           <WebinarLeadsTable rows={webinars} labels={a} onStatus={updateWebinarStatus} onDelete={removeWebinar} />
+        </TabsContent>
+
+        <TabsContent value="checkouts" className="mt-4">
+          <AbandonedCheckoutTable rows={checkouts} labels={a} onDelete={removeCheckout} />
         </TabsContent>
       </Tabs>
     </div>

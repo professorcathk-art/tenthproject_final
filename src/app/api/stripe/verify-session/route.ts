@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeSessionCookie } from "@/lib/auth/session";
+import { markCheckoutPaid } from "@/lib/db/platform-store";
 import { grantLifetimeMembership } from "@/lib/membership/grant-lifetime";
 import { getStripe } from "@/lib/stripe";
 
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
       stripeSessionId: session.id,
       existingUserId: session.metadata?.user_id || null,
     });
+    await markCheckoutPaid(session.id).catch((error) => console.error("markCheckoutPaid:", error));
 
     const response = NextResponse.json({
       ok: true,

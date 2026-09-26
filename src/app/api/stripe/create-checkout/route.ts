@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { captureFreeCheckoutLead, isPaidEmail } from "@/lib/auth/membership";
 import { getSession } from "@/lib/auth/session";
+import { recordCheckoutAttempt } from "@/lib/db/platform-store";
 import { getCheckoutBaseUrl, getLifetimePriceId, getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -59,6 +60,17 @@ export async function POST(req: Request) {
 
     if (!checkout.url) {
       return NextResponse.json({ error: "Stripe did not return a checkout URL." }, { status: 502 });
+    }
+
+    try {
+      await recordCheckoutAttempt({
+        name,
+        email,
+        whatsapp,
+        stripeSessionId: checkout.id,
+      });
+    } catch (error) {
+      console.error("recordCheckoutAttempt:", error);
     }
 
     return NextResponse.json({ url: checkout.url });

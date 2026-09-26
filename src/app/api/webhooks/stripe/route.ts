@@ -1,5 +1,6 @@
 import { after, NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { markCheckoutNotified, markCheckoutPaid, prepareAbandonedNotice } from "@/lib/db/platform-store";
 import { notifyAdmin } from "@/lib/email/notify-admin";
 import { grantLifetimeMembership } from "@/lib/membership/grant-lifetime";
 import { getStripe } from "@/lib/stripe";
@@ -45,12 +46,31 @@ export async function POST(req: Request) {
     const whatsapp = session.metadata?.whatsapp || "";
 
     if (event.type === "checkout.session.expired") {
-      after(() =>
-        notifyAdmin(
+      let shouldSend: "send" | "skip" = "send";
+      try {
+        shouldSend = await prepareAbandonedNotice({
+          name,
+          email,
+          whatsapp,
+          stripeSessionId: session.id,
+        });
+      } catch (error) {
+        console.error("prepareAbandonedNotice:", error);
+        return NextResponse.json({ error: "Failed to record abandoned checkout" }, { status: 500 });
+      }
+
+      if (shouldSend === "send") {
+        const notice = await notifyAdmin(
           `未完成付款｜${name} — ${email || "未知電郵"}`,
           ["Lifetime Checkout 逾時未付款。", "", `姓名：${name}`, `電郵：${email || "—"}`, `WhatsApp：${whatsapp || "—"}`, `Stripe session：${session.id}`].join("\n"),
-        ).catch((error) => console.error("abandoned checkout email:", error)),
-      );
+        );
+        if (process.env.RESEND_API_KEY && !notice.sent) {
+          return NextResponse.json({ error: "Failed to send abandoned checkout email" }, { status: 500 });
+        }
+        if (notice.sent) {
+          await markCheckoutNotified(session.id).catch((error) => console.error("markCheckoutNotified:", error));
+        }
+      }
       return NextResponse.json({ received: true });
     }
 
@@ -68,6 +88,7 @@ export async function POST(req: Request) {
           stripeSessionId: session.id,
           existingUserId: session.metadata?.user_id || null,
         });
+        await markCheckoutPaid(session.id).catch((error) => console.error("markCheckoutPaid:", error));
         after(() =>
           notifyAdmin(
             `新付款｜${name} — ${email}`,
