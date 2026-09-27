@@ -244,6 +244,138 @@ const gojiberry = brief({
   avoidEn: "Full LinkedIn automation, blast sending, or buying a data lake. Ship 20 high-intent people + human send.",
 });
 
+const wayback = brief({
+  name: "Wayback Machine",
+  site: "https://web.archive.org/",
+  loopZh: "使用者貼上一個網址，看到這個網頁以前長什麼樣子。對手改了定價頁，就通知他。",
+  loopEn: "A person pastes a URL and sees how that page used to look. When a competitor changes a pricing page, they get a notice.",
+  screensZh: "- 貼網址\n- 依日期看舊版\n- 改動通知",
+  screensEn: "- Paste a URL\n- Browse old dates\n- Change notice",
+  avoidZh: "先不要存整個網路。只盯一種會改的頁面，例如對手的定價頁。",
+  avoidEn: "Do not archive the whole web. Watch one kind of page, such as a competitor’s pricing page.",
+});
+
+const today = brief({
+  name: "Today",
+  site: "https://today.ai/",
+  loopZh: "使用者用一句話交代今天要做的事。行程被打亂時，他只要確認或拒絕，剩下的事就改到明天早上。",
+  loopEn: "A person states today’s plan in one sentence. When the day breaks, they confirm or reject, and the rest moves to tomorrow morning.",
+  screensZh: "- 今天的清單\n- 一句話交代\n- 確認或拒絕",
+  screensEn: "- Today’s list\n- One spoken instruction\n- Confirm or reject",
+  avoidZh: "先不要做一個什麼都能排的人生助理。先做一件你自己每天會用的事，例如健身或讀書。",
+  avoidEn: "Do not build a life assistant. Start with one daily plan you already keep, such as workouts or reading.",
+});
+
+const plaid = brief({
+  name: "Plaid",
+  site: "https://plaid.com/",
+  loopZh: "使用者在 App 裡點連接帳戶，選一家機構，登入，資料就出現。做 App 的人只接這一個入口。",
+  loopEn: "A person taps connect account, picks an institution, signs in, and the data appears. The app builder connects once.",
+  screensZh: "- 選機構\n- 登入\n- 接上之後的結果\n- 給開發者試用的假資料",
+  screensEn: "- Pick an institution\n- Sign in\n- Connected result\n- Fake data for a test",
+  avoidZh: "沒有準備花好幾年，就不要做銀行，也不要保管別人的網銀密碼。先做一種大家都在抱怨的接法，例如租約、病歷或貨況。",
+  avoidEn: "Do not connect banks or store banking passwords unless you will spend years on it. Start with one messy handoff, such as leases, records, or shipment status.",
+});
+
+const ash = brief({
+  name: "Ash",
+  site: "https://www.slingshot.xyz/",
+  loopZh: "使用者來談心情。產品先問一句，不立刻給三個步驟。危險的時候把人交給真人。",
+  loopEn: "A person comes to talk about how they feel. The product asks one question before giving steps, and hands them to a human when it is dangerous.",
+  screensZh: "- 第一眼寫明這不是醫生\n- 對話\n- 什麼情況必須轉給真人",
+  screensEn: "- First screen says this is not a doctor\n- Conversation\n- Rules for handing off to a human",
+  avoidZh: "心理師還沒有一起看過這些話之前，不要寫這是治療。商店頁寫「這是一個可以說話的伴」。",
+  avoidEn: "Do not call it therapy before a clinician has reviewed the words. The store page says it is a companion you can talk to.",
+});
+
+const astrotalk = brief({
+  name: "Astrotalk",
+  site: "https://astrotalk.com/",
+  loopZh: "使用者選一位已經審核過的師傅，先付一分鐘，用文字、語音或視訊問一個問題。問完還能買一件相關的東西。",
+  loopEn: "A person picks a reviewed practitioner, pays for one minute, and asks by text, voice, or video. Afterward they can buy one related item.",
+  screensZh: "- 師傅清單和評價\n- 按分鐘計費\n- 問答\n- 問完之後的商品",
+  screensEn: "- Practitioner list and reviews\n- Per-minute price\n- The question\n- A product after the session",
+  avoidZh: "先不要做占星本身。先找一種線下很分散、人們願意為了焦慮付錢的服務，把第一次開口變得不那麼難。",
+  avoidEn: "Do not start by building astrology. Pick a scattered offline service people already pay for when they are anxious, and make the first question easy.",
+});
+
+const river = brief({
+  name: "River",
+  site: "https://river.ai/",
+  loopZh: "客戶交出一份自己的文件。同一個問題問兩次，第二次真的比較準。調好的那一份留在客戶手上。",
+  loopEn: "A customer hands over one of their own documents. The same question is better the second time. The tuned copy stays with the customer.",
+  screensZh: "- 上傳一份文件\n- 調之前和調之後的回答\n- 誰留下那一份模型",
+  screensEn: "- Upload one document\n- Answer before and after\n- Who keeps the tuned model",
+  avoidZh: "先不要租機器，也不要從零訓練模型。用現成的服務，拿一份真實文件證明回答變準了。",
+  avoidEn: "Do not rent a cluster or train from scratch. Use an existing service and prove the answer improved on one real document.",
+});
+
+const fish = brief({
+  name: "Fish Audio",
+  site: "https://fish.audio/",
+  loopZh: "使用者上傳一小段自己的聲音，打一段字，再說「這句輕一點」。它就用那個聲音念出來。",
+  loopEn: "A person uploads a short clip of their voice, types a line, and says “softer.” It speaks in that voice.",
+  screensZh: "- 上傳聲音\n- 輸入文字\n- 用一句話改語氣\n- 聽結果",
+  screensEn: "- Upload a voice\n- Type the line\n- Change the tone in one sentence\n- Listen",
+  avoidZh: "先不要做一排專業滑桿。語氣用一句人話控制。",
+  avoidEn: "Do not start with a row of expert sliders. Control the tone with one spoken sentence.",
+});
+
+const tripo = brief({
+  name: "Tripo",
+  site: "https://www.tripo3d.ai/",
+  loopZh: "使用者打一句話或上傳一張照片，得到一個可以轉的立體模型。這個檔案要能放進他們已經在用的軟體裡改。",
+  loopEn: "A person types a sentence or uploads a photo and gets a 3D model they can turn. The file must open in the software they already use.",
+  screensZh: "- 輸入一句話或上傳照片\n- 可以旋轉的模型\n- 下載後放進設計軟體",
+  screensEn: "- A sentence or a photo\n- A model you can rotate\n- A download that opens in design software",
+  avoidZh: "先不要什麼都能生成。先把一種東西做順，例如鞋子或一個角色，而且改得動，不用整份重畫。",
+  avoidEn: "Do not generate everything. Make one object well, such as a shoe or a character, and make sure it can be edited.",
+});
+
+const peec = brief({
+  name: "Peec",
+  site: "https://peec.ai/",
+  loopZh: "行銷人員每週看到：自己的品牌在 ChatGPT 的回答裡有沒有被提到、排第幾、語氣正不正。這週可以跟上週比較。",
+  loopEn: "Each week a marketer sees whether their brand was mentioned in ChatGPT, where it ranked, and whether the tone was positive. This week compares with last week.",
+  screensZh: "- 十個常見問題\n- 有沒有被提到\n- 跟上一週比較\n- 可以換成代理商招牌的報告",
+  screensEn: "- Ten common questions\n- Whether you were mentioned\n- Comparison with last week\n- A report an agency can rebrand",
+  avoidZh: "先不要保證排名會上升。先把「這週有沒有出現」量出來，而且能夠按週比較。",
+  avoidEn: "Do not promise a better rank. First measure whether you appeared this week, and make the weeks comparable.",
+});
+
+const grasp = brief({
+  name: "Grasp",
+  site: "https://www.grasp-ai.com/",
+  loopZh: "分析師交出一個研究題目，拿回來的是他們已經在用的 Excel 和簡報，不用再複製貼上。",
+  loopEn: "An analyst submits a research question and gets back the Excel and the slides they already use, without copying and pasting.",
+  screensZh: "- 輸入題目\n- 下載試算表\n- 下載簡報",
+  screensEn: "- Enter the question\n- Download the spreadsheet\n- Download the slides",
+  avoidZh: "先不要做一個聊天窗。先把一種表做準，直接交出那個檔案。",
+  avoidEn: "Do not ship another chat window. Make one spreadsheet accurate and deliver that file.",
+});
+
+const puppy = brief({
+  name: "Puppy Sphere",
+  site: "https://thepuppysphere.com/",
+  loopZh: "客人預約一個時段，到店裡跟小狗一起上課，結束前拍照。收入來自這一堂課。客人會再來，再開下一間。",
+  loopEn: "A guest books a slot, takes a class with puppies, and gets a photo. Revenue is the class fee. Repeat guests come before the next location opens.",
+  screensZh: "- 預約時段\n- 到店體驗\n- 這一堂課的收費",
+  screensEn: "- Book a slot\n- The in-person hour\n- Payment for that class",
+  avoidZh: "課表還沒有穩定、客人還沒有再來之前，不要先做 App。先把第一間店的動線和安全做完。",
+  avoidEn: "Do not build an app before the schedule is steady and guests come back. Finish the flow and the safety of the first location.",
+});
+
+const rillet = brief({
+  name: "Rillet",
+  site: "https://www.rillet.com/",
+  loopZh: "每一筆交易進來就先分類。人只核對那些對不上的交易，點頭之後才入帳。帳每天都在收，不用等到月底才一次趕完。",
+  loopEn: "Each transaction is categorized as it arrives. A person reviews only the ones that do not match, and it posts after they approve. The books close a little every day.",
+  screensZh: "- 交易清單\n- 建議的分類\n- 人點頭之後入帳\n- 這個月還沒收完的項目",
+  screensEn: "- Transaction list\n- Suggested category\n- Post after approval\n- What is still open this month",
+  avoidZh: "第一天不要說要換掉整套會計系統。先把一種每個月都要重做的帳，做成一份人可以核對的草稿。",
+  avoidEn: "Do not open by replacing the whole accounting system. Turn one monthly entry into a draft a person can approve.",
+});
+
 export const CASE_EXTRAS: Record<string, CaseExtra> = {
   calai: { difficulty: 3, clonePromptZh: calai.zh, clonePromptEn: calai.en },
   stealthwriter: { difficulty: 3, clonePromptZh: stealth.zh, clonePromptEn: stealth.en },
@@ -265,4 +397,16 @@ export const CASE_EXTRAS: Record<string, CaseExtra> = {
   "wok-hei": { difficulty: 2, clonePromptZh: wokHei.zh, clonePromptEn: wokHei.en },
   "hide-or-die": { difficulty: 3, clonePromptZh: hideOrDie.zh, clonePromptEn: hideOrDie.en },
   "nas-com": { difficulty: 4, clonePromptZh: nasCom.zh, clonePromptEn: nasCom.en },
+  "wayback-machine": { difficulty: 2, clonePromptZh: wayback.zh, clonePromptEn: wayback.en },
+  "today-ai": { difficulty: 3, clonePromptZh: today.zh, clonePromptEn: today.en },
+  plaid: { difficulty: 4, clonePromptZh: plaid.zh, clonePromptEn: plaid.en },
+  "slingshot-ai": { difficulty: 4, clonePromptZh: ash.zh, clonePromptEn: ash.en },
+  astrotalk: { difficulty: 3, clonePromptZh: astrotalk.zh, clonePromptEn: astrotalk.en },
+  "river-ai": { difficulty: 5, clonePromptZh: river.zh, clonePromptEn: river.en },
+  "fish-audio": { difficulty: 3, clonePromptZh: fish.zh, clonePromptEn: fish.en },
+  "tripo-ai": { difficulty: 4, clonePromptZh: tripo.zh, clonePromptEn: tripo.en },
+  "peec-ai": { difficulty: 3, clonePromptZh: peec.zh, clonePromptEn: peec.en },
+  grasp: { difficulty: 3, clonePromptZh: grasp.zh, clonePromptEn: grasp.en },
+  "puppy-sphere": { difficulty: 2, clonePromptZh: puppy.zh, clonePromptEn: puppy.en },
+  rillet: { difficulty: 4, clonePromptZh: rillet.zh, clonePromptEn: rillet.en },
 };
