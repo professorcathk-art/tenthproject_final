@@ -1,4 +1,5 @@
 import { executeMcpTool, MCP_TOOLS } from "@/lib/mcp/tools";
+import { SHIPPING_RULES } from "@/lib/mcp/shipping";
 
 const SERVER_INFO = { name: "tenthproject", version: "1.0.0" };
 
@@ -61,7 +62,7 @@ async function rpcResultFor(method: string, params: unknown, projectId: string, 
       protocolVersion: negotiateProtocol(requested),
       capabilities: { tools: { listChanged: false } },
       serverInfo: SERVER_INFO,
-      instructions: "這把連線只對應 Tenth Project 裡的一個專案。用工具讀取路線圖，並回報測試與建置結果。",
+      instructions: SHIPPING_RULES,
     };
   }
   if (method === "ping" || method === "logging/setLevel") return {};

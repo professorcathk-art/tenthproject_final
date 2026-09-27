@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "@/lib/auth/session";
-import { collectSprintBacklog, synthesizeSprintPrompt, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/sprint-prompt";
-import {
-  addPromptRun,
-  applyApprovedSuggestions,
-  getProject,
-  logActivity,
-  queueEnhancementsForSprint,
-} from "@/lib/db/store";
-import { UNMARKED_UAT } from "@/lib/project/founder-copy";
-import type { AITool, AiSuggestion } from "@/types";
+import { SPRINT_PROMPT_SYSTEM } from "@/lib/ai/sprint-prompt";
+import { openNextSprint } from "@/lib/ai/open-next-sprint";
+import { logActivity } from "@/lib/db/store";
+import type { AiSuggestion } from "@/types";
 
 export const SYSTEM_PROMPT = SPRINT_PROMPT_SYSTEM;
 
@@ -26,73 +19,20 @@ export async function POST(request: NextRequest) {
       taskIds?: string[];
     };
 
-    const project = await getProject(projectId, user.id);
-    if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    }
-
-    const unmarked = (project.uat_items ?? []).filter((item) => UNMARKED_UAT.has(item.status));
-    if (unmarked.length) {
+    const opened = await openNextSprint({
+      projectId,
+      userId: user.id,
+      suggestions,
+      suggestionIds,
+      enhancementIds,
+      taskIds,
+    });
+    if (!opened.ok) {
       return NextResponse.json(
-        {
-          error: "UAT_UNMARKED",
-          message: "這一輪還有驗收沒有標成通過或失敗，所以不能開下一輪。",
-          unmarked: unmarked.map((item) => ({ id: item.id, title: item.title, status: item.status })),
-        },
-        { status: 409 },
+        { error: opened.error, message: "message" in opened ? opened.message : undefined, unmarked: "unmarked" in opened ? opened.unmarked : undefined },
+        { status: opened.status },
       );
     }
-
-    const allSuggestions = suggestions ?? project.ai_suggestions ?? [];
-    const selectedSuggestions = suggestionIds
-      ? allSuggestions.filter((item) => suggestionIds.includes(item.id) && item.status !== "dismissed")
-      : allSuggestions.filter((item) => item.approved && (item.status === "pending" || item.status === "applied"));
-
-    const pendingSelected = selectedSuggestions
-      .filter((item) => item.status === "pending")
-      .map((item) => ({ ...item, approved: true }));
-    if (pendingSelected.length) {
-      await applyApprovedSuggestions(projectId, pendingSelected, { alwaysCreateUat: true });
-    }
-
-    const selectedEnhancementIds = enhancementIds ?? [];
-    const chinese = /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`);
-    const queued = selectedEnhancementIds.length
-      ? await queueEnhancementsForSprint(projectId, selectedEnhancementIds, chinese ? "zh" : "en")
-      : { tasks: 0, uat: 0 };
-
-    const fresh = (await getProject(projectId, user.id)) ?? project;
-    const selectedIds = new Set(selectedSuggestions.map((item) => item.id));
-    const approved = (fresh.ai_suggestions ?? []).filter((item) => selectedIds.has(item.id));
-    const selectedEnhancements = (fresh.enhancements ?? []).filter((item) =>
-      selectedEnhancementIds.includes(item.id),
-    );
-
-    const selectedTasks = (fresh.tasks ?? []).filter((task) => (taskIds ?? []).includes(task.id) && task.status !== "done");
-    const promptText = synthesizeSprintPrompt(fresh, approved, selectedEnhancements, selectedTasks);
-    const tool = (fresh.selected_tool as AITool) || "cursor";
-
-    const promptRun = {
-      id: uuidv4(),
-      project_id: projectId,
-      tool,
-      prompt_text: promptText,
-      prompt_type: "next-step" as const,
-      generated_from_context_version: fresh.context_versions?.[0]?.id ?? null,
-      created_at: new Date().toISOString(),
-      is_executed: false,
-      executed_at: null,
-    };
-
-    await addPromptRun(promptRun);
-    const backlog = collectSprintBacklog(fresh, approved, selectedEnhancements);
-    await logActivity(projectId, "sprint_prompt", "Synthesized next-sprint Cursor master prompt", {
-      suggestions: approved.length,
-      enhancements: selectedEnhancements.length,
-      bugs: backlog.openBugs.length,
-      uat: backlog.failedUat.length,
-      queuedUat: queued.uat,
-    });
 
     let mcpSynced = false;
     try {
@@ -106,22 +46,11 @@ export async function POST(request: NextRequest) {
     await logActivity(projectId, "mcp_sync", mcpSynced ? "Sprint context ready for Cursor MCP" : "MCP endpoint check failed", {
       endpoint: "/api/mcp",
       ok: mcpSynced,
-      selectedSuggestions: approved.length,
-      selectedEnhancements: selectedEnhancements.length,
+      selectedSuggestions: opened.backlog.suggestions,
+      selectedEnhancements: opened.backlog.enhancements,
     });
 
-    return NextResponse.json({
-      promptRun,
-      mcpSynced,
-      backlog: {
-        suggestions: approved.length,
-        enhancements: selectedEnhancements.length,
-        openBugs: backlog.openBugs.length,
-        failedUat: backlog.failedUat.length,
-        todoTasks: backlog.todoTasks.length,
-        queuedUat: queued.uat,
-      },
-    });
+    return NextResponse.json({ promptRun: opened.promptRun, mcpSynced, backlog: opened.backlog });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Sprint prompt failed";
     return NextResponse.json({ error: message }, { status: message === "Unauthorized" ? 401 : 500 });

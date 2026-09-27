@@ -1,4 +1,6 @@
-import { getProject, updateUATItem, updateTask, logActivity } from "@/lib/db/store";
+import { getProject, updateUATItem, updateTask, logActivity, setPromptExecution } from "@/lib/db/store";
+import { openNextSprint } from "@/lib/ai/open-next-sprint";
+import { shippingCue } from "@/lib/mcp/shipping";
 import type { Task, UATStatus } from "@/types";
 
 const MCP_TASK_STATUS = {
@@ -11,12 +13,12 @@ export const MCP_TOOLS = [
   {
     name: "get_active_roadmap",
     description:
-      "取得目前衝刺的功能任務、階段與下一步。每張任務的 title 是給創辦人看的功能名稱，technical_checklist 才是給 Cursor 的實作步驟。請依照 checklist 寫程式，不要把 checklist 拆成新的看板卡片。",
+      "出貨前先呼叫。回傳 shipping.phase 與 shipping.askUser。phase 是 build 才寫程式；其他 phase 必須停下來，把 askUser 問使用者。沒有使用者同意，不要改程式，也不要開下一輪。任務的 technical_checklist 才是實作步驟，不要把 checklist 拆成新的看板卡片。",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "fetch_uat_status",
-    description: "Retrieve UAT items with their current status, filterable by status",
+    description: "查看驗收項目與狀態。出貨停住時，用它列出還沒標成通過或失敗的項目。",
     inputSchema: {
       type: "object",
       properties: {
@@ -26,7 +28,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "update_uat_item",
-    description: "Update a UAT item status after running local tests",
+    description: "更新一條驗收。只有你實際測過，或使用者明確說通過或失敗，才可以改。",
     inputSchema: {
       type: "object",
       properties: {
@@ -40,12 +42,12 @@ export const MCP_TOOLS = [
   {
     name: "get_sprint_prompt",
     description:
-      "Fetch the newest Cursor master prompt (default to latest version), its execution flag, the ticked sprint scope, and UAT created for those enhancements",
+      "讀取最新一輪出貨提示詞和 shipping 狀態。若 shipping.mustStop 是 true，停下來問使用者，不要把舊提示詞再做一遍，也不要自己開下一輪。",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "log_bug",
-    description: "Log a bug when a build or test fails in Cursor",
+    description: "建置或測試失敗時記錄一筆錯誤，讓下一輪可以帶著修。",
     inputSchema: {
       type: "object",
       properties: {
@@ -58,7 +60,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "update_task_status",
-    description: "更新專案看板中特定任務的進度狀態（如將完成的功能標記為 completed）。",
+    description: "把看板上的任務標成 todo、in_progress 或 completed。只標你真的做完的任務。",
     inputSchema: {
       type: "object",
       properties: {
@@ -71,7 +73,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "report_build_status",
-    description: "回報本地或預覽環境的建置與編譯結果。若建置失敗，自動記錄錯誤日誌以供 AI 分析。",
+    description: "回報這一次建置是成功還是失敗。失敗會自動記一筆錯誤。",
     inputSchema: {
       type: "object",
       properties: {
@@ -80,6 +82,21 @@ export const MCP_TOOLS = [
         environment: { type: "string", enum: ["local", "vercel"], description: "預設 local" },
       },
       required: ["status"],
+    },
+  },
+  {
+    name: "start_next_sprint",
+    description:
+      "只有使用者明確同意繼續下一衝刺才呼叫，而且 confirmed 必須是 true。沒有同意會被拒絕。還沒標成通過或失敗的驗收也會擋住。沒有傳入的 task_ids 不會變成新功能。開完之後做完那一輪就要再問一次。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        confirmed: { type: "boolean", description: "使用者這次對話明確同意繼續時才是 true" },
+        task_ids: { type: "array", items: { type: "string" }, description: "使用者點名要帶進下一輪的任務" },
+        enhancement_ids: { type: "array", items: { type: "string" }, description: "使用者點名的改進" },
+        suggestion_ids: { type: "array", items: { type: "string" }, description: "使用者點名的 AI 建議" },
+      },
+      required: ["confirmed"],
     },
   },
 ];
@@ -165,6 +182,7 @@ export async function executeMcpTool(
         latestPromptType: latestPrompt?.prompt_type ?? null,
         latestPromptAt: latestPrompt?.created_at ?? null,
         latestPromptExecuted: latestPrompt?.is_executed ?? false,
+        shipping: projectShipping(project),
       };
     }
 
@@ -215,6 +233,7 @@ export async function executeMcpTool(
         openBugs: (project.bugs ?? [])
           .filter((bug) => bug.status === "open" || bug.status === "in_progress")
           .map((bug) => ({ id: bug.id, title: bug.title, severity: bug.severity })),
+        shipping: projectShipping(project),
       };
     }
 
@@ -309,7 +328,80 @@ export async function executeMcpTool(
       return { success: true, status, environment, bug };
     }
 
+    case "start_next_sprint":
+      return startNextSprint(project, args, projectId, userId);
+
     default:
       throw new Error(`Unknown tool: ${toolName}`);
   }
+}
+
+function projectShipping(project: NonNullable<Awaited<ReturnType<typeof getProject>>>) {
+  const bugs = (project.bugs ?? []).filter((bug) => bug.status === "open" || bug.status === "in_progress");
+  return shippingCue({
+    tasks: (project.tasks ?? []).map((task) => ({ id: task.id, title: task.title, status: task.status })),
+    uatItems: (project.uat_items ?? []).map((item) => ({ id: item.id, title: item.title, status: item.status })),
+    openBugCount: bugs.length,
+  });
+}
+
+function idList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item)).filter(Boolean);
+}
+
+async function startNextSprint(
+  project: NonNullable<Awaited<ReturnType<typeof getProject>>>,
+  args: Record<string, unknown>,
+  projectId: string,
+  userId: string,
+) {
+  const agreed = args.confirmed === true || args.confirmed === "true";
+  const shipping = projectShipping(project);
+  if (!agreed) {
+    return { started: false, reason: "need_confirmation", shipping, askUser: shipping.askUser };
+  }
+  if (shipping.phase === "build") {
+    return {
+      started: false,
+      reason: "round_open",
+      openTasks: shipping.openTasks,
+      askUser: "這一輪還有未完成的任務。先做完，或告訴我哪些要帶進下一輪。不要在沒問過的情況下直接開下一輪。",
+    };
+  }
+  if (shipping.phase === "waiting_for_uat") {
+    return {
+      started: false,
+      reason: "uat_unmarked",
+      unmarked: shipping.unmarkedUat,
+      askUser: shipping.askUser,
+    };
+  }
+  const taskIds = idList(args.task_ids);
+  const enhancementIds = idList(args.enhancement_ids);
+  const suggestionIds = idList(args.suggestion_ids);
+  if (shipping.phase === "idle" && !taskIds.length && !enhancementIds.length && !suggestionIds.length) {
+    return { started: false, reason: "nothing_to_ship", askUser: shipping.askUser };
+  }
+
+  const previousId = project.prompt_runs?.[0]?.id ?? null;
+  const opened = await openNextSprint({ projectId, userId, taskIds, enhancementIds, suggestionIds });
+  if (!opened.ok) {
+    return {
+      started: false,
+      reason: opened.error,
+      message: "message" in opened ? opened.message : opened.error,
+      unmarked: "unmarked" in opened ? opened.unmarked : [],
+    };
+  }
+  if (previousId && previousId !== opened.promptRun.id) {
+    await setPromptExecution(previousId, projectId, true);
+  }
+  return {
+    started: true,
+    promptRunId: opened.promptRun.id,
+    prompt: opened.promptRun.prompt_text,
+    backlog: opened.backlog,
+    askUser: "下一輪已經開好。請照提示詞做完，然後再呼叫 get_active_roadmap。若 mustStop 是 true，停下來問使用者要不要再繼續。",
+  };
 }

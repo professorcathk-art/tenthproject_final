@@ -185,6 +185,14 @@ export function McpSettings({
               </li>
             ))}
           </ol>
+          <p className="mt-4 text-sm font-medium text-slate-800">{m.useTitle}</p>
+          <ol className="mt-1 space-y-1 text-sm leading-relaxed text-slate-600">
+            {[m.use1, m.use2, m.use3].map((step, index) => (
+              <li key={step}>
+                {index + 1}. {step}
+              </li>
+            ))}
+          </ol>
         </div>
         <Button onClick={() => setCreateOpen(true)}>{m.create}</Button>
       </div>

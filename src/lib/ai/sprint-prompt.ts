@@ -191,5 +191,8 @@ npm run build
 ## 8. Out of scope
 付款、多租戶、重做設計系統、與本輪無關的重構。
 市場調查、用戶訪談、撰寫報告、UI/UX mockups（非程式實作）。
+
+## 9. 這一輪做完就停
+做完上面的修改，回報建置和驗收之後就停下來。呼叫 Tenth Project MCP 的 get_active_roadmap。若 shipping.mustStop 是 true，把 shipping.askUser 原句問使用者，等使用者回答。只有使用者明確同意繼續，才呼叫 start_next_sprint，而且 confirmed 要是 true。不要自己開下一輪。
 `;
 }
