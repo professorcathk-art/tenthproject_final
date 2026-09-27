@@ -65,7 +65,16 @@ const lessons = [
 
 function JoinLink({ children, className }: { children: string; className?: string }) {
   return (
-    <a href={GROUP_URL} target="_blank" rel="noopener noreferrer" className={className}>
+    <a
+      href={GROUP_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        buttonVariants({ size: "lg" }),
+        "join-glow h-12 bg-[#25D366] px-8 text-base font-semibold text-white hover:bg-[#1ebe5d]",
+        className,
+      )}
+    >
       {children}
     </a>
   );
@@ -89,7 +98,7 @@ export default function WebinarPage() {
           Vibe Coding究竟能做到什麼程度？AI Coding 又能如何盈利賺錢？
         </p>
         <div className="mt-8 flex items-center justify-center">
-          <JoinLink className={cn(buttonVariants({ size: "lg" }), "min-w-44")}>加入通知群組</JoinLink>
+          <JoinLink className="min-w-52">加入通知群組</JoinLink>
         </div>
         <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-500">
           <li>線上直播</li>
@@ -214,7 +223,7 @@ export default function WebinarPage() {
           <p className="text-xs font-semibold tracking-wide text-emerald-700 uppercase">🎟️ 完全免費</p>
           <h3 className="mt-3 text-2xl font-semibold text-slate-950">加入通知群組</h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">透過WhatsApp群組取得說明會最新資訊、報名連結及出席入門大禮包。</p>
-          <JoinLink className={cn(buttonVariants({ size: "lg" }), "mt-6 w-full")}>立即加入通知群組</JoinLink>
+          <JoinLink className="mt-6 w-full">立即加入通知群組</JoinLink>
           <p className="mt-4 text-center text-xs leading-relaxed text-slate-500">按下按鈕後，將跳轉至WhatsApp加入群組。完全免費，無需信用卡。</p>
         </div>
         <p className="mt-10 text-xs text-slate-400">© 2026 Tenth Project · 《21天造出AI工具站分享會》· 免費線上活動</p>
