@@ -40,7 +40,7 @@ ${config}
 
 3. ${remind}
 
-4. 我回覆已經打開之後，請呼叫 get_active_roadmap。之後每一次只把 shipping.nextStep.say 問我。我回覆「確認」就只做那一件，做完再問下一句。不要一次列很多步。
+4. 我回覆已經打開之後，請呼叫 get_active_roadmap。若 shipping.mustStop 是 false，直接把這一輪做完，途中不要問我。驗收自己在本機看、自己標通過或失敗。只有 mustStop 是 true 時，才把 nextStep.say 問我。我回覆「確認」才開下一衝刺。
 
 ${SHIPPING_RULES}`;
 }

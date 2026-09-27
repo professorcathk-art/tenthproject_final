@@ -5,6 +5,9 @@ import {
   keepCodingItems,
   looksLikeNonCodingWork,
 } from "@/lib/ai/coding-constraints";
+import { deliveryGuard, detectDeliveryShape, extensionFiles, promptMatchesShape, type DeliveryShape } from "@/lib/ai/delivery-shape";
+import { briefSourceFromProject } from "@/lib/ai/product-brief";
+import { findIntakeArtifact, parseIntake } from "@/lib/project/intake";
 
 export type PromptType = "initial" | "next-step" | "bug-fix" | "re-test" | "enhancement";
 
@@ -20,7 +23,7 @@ const MIN_MASTER_PROMPT_LENGTH = 800;
 
 const MASTER_PROMPT_SYSTEM = `You are a Technical Lead writing a Cursor-ready master prompt.
 STRICT RULE: NEVER say "improve UI", "optimize UX", or "conduct UAT".
-Every task must name a file (src/app/page.tsx, src/components/...), a concrete React/Next.js/Tailwind action, and acceptance criteria including npm run build.
+Every task must name a concrete file and a concrete code action. Obey the delivery shape in the user message. If that shape is a browser extension, write a Manifest V3 extension and do not output a Next.js website. Acceptance criteria must match that shape.
 
 ${MASTER_PROMPT_CODING_CONSTRAINTS}
 
@@ -74,7 +77,23 @@ function getClient() {
   return new OpenAI({ apiKey, baseURL });
 }
 
-function recommendStack(productType?: string) {
+function sourceFromContext(ctx: MasterPromptContext) {
+  const intake = parseIntake(findIntakeArtifact(ctx.artifacts));
+  return briefSourceFromProject(ctx.project, intake?.notes, intake?.fileNames);
+}
+
+function recommendStack(shape: DeliveryShape) {
+  if (shape === "browser_extension") {
+    const files = extensionFiles();
+    return { stack: files.stack, structure: files.structure };
+  }
+  if (shape === "unspecified") {
+    return {
+      stack: "Only the form the founder filled in. Do not assume Next.js, login, or a database.",
+      structure: "Create only the files that product needs. Do not scaffold a website.",
+    };
+  }
+  const productType = shape === "web_app" ? "webapp" : shape;
   const type = productType ?? "webapp";
   if (type === "landing_page") {
     return {
@@ -149,7 +168,11 @@ function recommendStack(productType?: string) {
 
 function buildUserContext(ctx: MasterPromptContext): string {
   const { project, analysis, promptType, artifacts, existingState } = ctx;
+  const intake = parseIntake(findIntakeArtifact(artifacts));
+  const source = briefSourceFromProject(project, intake?.notes, intake?.fileNames);
+  const zh = /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${intake?.notes ?? ""}`);
   const artifactSummary = (artifacts ?? [])
+    .filter((item) => item.title !== "建立專案時填的表")
     .map((a) => `- [${a.type}] ${a.title}${a.content_url ? `: ${a.content_url}` : ""}`)
     .join("\n");
 
@@ -163,8 +186,12 @@ Product Type: ${project.product_type}
 Stage: ${project.stage}
 Target Audience: ${project.target_audience}
 Goal: ${project.goal}
+Original form notes: ${intake?.notes || "none"}
+Uploaded files: ${(intake?.fileNames ?? []).join(", ") || "none"}
 Website URL: ${project.website_url ?? "none"}
 GitHub URL: ${project.github_url ?? "none"}
+
+${deliveryGuard(detectDeliveryShape(source), zh)}
 
 === AI ANALYSIS ===
 Summary: ${analysis.projectSummary ?? ""}
@@ -199,13 +226,71 @@ ${existingState ? JSON.stringify(existingState, null, 2) : "Starting fresh"}
 `.trim();
 }
 
+function buildShapeBoundPrompt(tool: AITool, ctx: MasterPromptContext, shape: DeliveryShape): string {
+  const { project, analysis } = ctx;
+  const intake = parseIntake(findIntakeArtifact(ctx.artifacts));
+  const name = project.name ?? "Project";
+  const zh = /[\u4e00-\u9fff]/.test(`${name} ${project.description ?? ""} ${project.goal ?? ""} ${intake?.notes ?? ""}`);
+  const files = shape === "browser_extension" ? extensionFiles() : null;
+  const tasks = (analysis.tasks ?? []).slice(0, 5);
+  const taskLines = tasks.length
+    ? tasks.map((task, index) => `${index + 1}. **${task.title}** — ${task.description ?? ""}\n${(task.technical_checklist ?? []).map((step) => `   - ${step}`).join("\n")}`).join("\n")
+    : zh
+      ? "1. 只做使用者表格裡寫的那一件。"
+      : "1. Build only what the form asks for.";
+  const acceptance = (analysis.acceptanceCriteria ?? []).map((item) => `- [ ] ${item}`).join("\n");
+  return `# Master Build Prompt: ${name}
+
+> Tool: ${tool}
+> ${deliveryGuard(shape, zh)}
+
+## 1. What the founder filled in
+- Name: ${name}
+- What to build: ${project.description ?? ""}
+- End goal: ${project.goal ?? ""}
+- Audience: ${project.target_audience ?? ""}
+- Product type: ${project.product_type ?? ""}
+- Stage: ${project.stage ?? ""}
+- AI tool: ${project.selected_tool ?? tool}
+- Notes: ${intake?.notes || (zh ? "沒有另外填寫" : "none")}
+- Files: ${(intake?.fileNames ?? []).join(", ") || (zh ? "沒有" : "none")}
+- Website: ${project.website_url ?? (zh ? "沒有" : "none")}
+- GitHub: ${project.github_url ?? (zh ? "沒有" : "none")}
+
+## 2. Tech stack
+${files ? files.stack : "Follow the form. Do not introduce Next.js, Supabase, login, or a dashboard."}
+
+## 3. Files
+\`\`\`
+${files ? files.structure : "Only the files this product needs."}
+\`\`\`
+
+## 4. This sprint
+${taskLines}
+
+## 5. Acceptance
+${acceptance || (files ? files.pages.map((page) => `- [ ] ${page.route}: ${page.purpose}`).join("\n") : "- [ ] The result matches the form, and it is not a website unless the form asked for one.")}
+
+## 6. How to check
+${shape === "browser_extension"
+  ? "Load the unpacked extension in chrome://extensions. Open a job application page. Save details in the popup, click fill, and see those details in the form. The page must still be the job site."
+  : "Run the product the way the form describes. Do not add a website check."}
+
+Do not invent market research, interviews, or a different product.
+`;
+}
+
 function buildTemplateMasterPrompt(tool: AITool, ctx: MasterPromptContext): string {
+  const shape = detectDeliveryShape(sourceFromContext(ctx));
+  if (shape === "browser_extension" || shape === "unspecified") {
+    return buildShapeBoundPrompt(tool, ctx, shape);
+  }
   const { project, analysis, promptType } = ctx;
   const name = project.name ?? "Project";
   const goal = project.goal ?? project.description ?? "";
   const audience = project.target_audience ?? "target users";
   const stage = project.stage ?? "idea";
-  const { stack, structure } = recommendStack(project.product_type);
+  const { stack, structure } = recommendStack(shape);
 
   const phases = (analysis.phases ?? [])
     .map((phase) => ({
@@ -288,7 +373,7 @@ Build incrementally with clear acceptance criteria. Test on mobile.`,
 
   const instructions = toolInstructions[tool] ?? toolInstructions.other;
 
-  const pages = inferPages(project.product_type, name, goal);
+  const pages = inferPages(shape === "web_app" ? "webapp" : shape, name, goal);
 
   return `# Master Build Prompt: ${name}
 
@@ -525,13 +610,16 @@ export async function generateMasterPrompts(ctx: MasterPromptContext): Promise<A
     if (!content) return templates;
 
     const parsed = JSON.parse(content) as AIAnalysis["prompts"];
+    const shape = detectDeliveryShape(sourceFromContext(ctx));
+    const keep = (prompt: string | undefined, fallback: string) =>
+      prompt && !isPromptTooSimple(prompt) && promptMatchesShape(prompt, shape) ? prompt : fallback;
 
     return {
-      cursor: isPromptTooSimple(parsed.cursor) ? templates.cursor : parsed.cursor,
-      lovable: isPromptTooSimple(parsed.lovable) ? templates.lovable : parsed.lovable,
-      gemini: isPromptTooSimple(parsed.gemini) ? templates.gemini : parsed.gemini,
-      claude: isPromptTooSimple(parsed.claude) ? templates.claude : parsed.claude,
-      general: isPromptTooSimple(parsed.general) ? templates.general : parsed.general,
+      cursor: keep(parsed.cursor, templates.cursor),
+      lovable: keep(parsed.lovable, templates.lovable),
+      gemini: keep(parsed.gemini, templates.gemini),
+      claude: keep(parsed.claude, templates.claude),
+      general: keep(parsed.general, templates.general),
     };
   } catch (error) {
     console.error("Master prompt generation failed, using templates:", error);

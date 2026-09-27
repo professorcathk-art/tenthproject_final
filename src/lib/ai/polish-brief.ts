@@ -1,9 +1,11 @@
 import OpenAI from "openai";
+import { deliveryGuard, detectDeliveryShape } from "@/lib/ai/delivery-shape";
 import { briefFromAnswers, normalizeBrief, type BriefSource, type ProductBrief } from "@/lib/ai/product-brief";
 
 const POLISH_SYSTEM = `You rewrite a founder's rough answers into a product brief they can edit.
 Rules:
 - Keep their product. Do not invent a different app, a new market, or features they did not imply.
+- Obey the delivery shape. A browser extension stays an extension. Do not rewrite it as a website, Next.js app, login, or dashboard.
 - Make each field concrete enough that a coding agent can build the first slice.
 - functions: 3 to 7 items, each one a thing the first version actually does.
 - firstSprint: one buildable slice, not the whole company.
@@ -42,6 +44,7 @@ export async function polishProductBrief(source: BriefSource): Promise<ProductBr
     `Stage: ${source.stage ?? ""}`,
     `Extra notes: ${source.notes ?? ""}`,
     `Files: ${(source.fileNames ?? []).join(", ") || "none"}`,
+    deliveryGuard(detectDeliveryShape(source), /[\u4e00-\u9fff]/.test([source.name, source.description, source.goal, source.notes].join("\n"))),
   ].join("\n");
 
   try {

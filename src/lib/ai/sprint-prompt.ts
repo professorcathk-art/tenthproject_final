@@ -1,6 +1,9 @@
 import type { AiSuggestion, Enhancement, ProjectWithRelations, Task } from "@/types";
 import { keepCodingItems } from "@/lib/ai/coding-constraints";
+import { deliveryGuard, detectDeliveryShape } from "@/lib/ai/delivery-shape";
+import { briefSourceFromProject } from "@/lib/ai/product-brief";
 import { founderCard } from "@/lib/project/founder-copy";
+import { findIntakeArtifact, parseIntake } from "@/lib/project/intake";
 import { extractSpecFromSuggestion, inferTargetFile, specBlock, SPRINT_PROMPT_SYSTEM } from "@/lib/ai/executable-spec";
 
 export { SPRINT_PROMPT_SYSTEM };
@@ -22,29 +25,38 @@ export function collectSprintBacklog(
   return { openBugs, failedUat, todoTasks, approved, selectedEnhancements, openUat };
 }
 
+function projectShape(project: ProjectWithRelations) {
+  const intake = parseIntake(findIntakeArtifact(project.artifacts));
+  const shape = detectDeliveryShape(briefSourceFromProject(project, intake?.notes, intake?.fileNames));
+  const zh = /[\u4e00-\u9fff]/.test(`${project.name} ${project.description ?? ""} ${project.goal ?? ""} ${intake?.notes ?? ""}`);
+  const fallback = shape === "browser_extension" ? "src/content.ts" : shape === "unspecified" ? "" : "src/app/page.tsx";
+  return { shape, zh, fallback, guard: deliveryGuard(shape, zh), notes: intake?.notes ?? "" };
+}
+
 function collectTargetFiles(
   project: ProjectWithRelations,
   approved: AiSuggestion[],
   selectedEnhancements: Enhancement[] = [],
   selectedTasks: Task[] = [],
+  fallback = "src/app/page.tsx",
 ) {
   const files = new Set<string>();
   for (const item of approved) files.add(extractSpecFromSuggestion(item).file);
   for (const bug of project.bugs ?? []) {
     if (bug.status === "open" || bug.status === "in_progress") {
-      files.add(inferTargetFile(`${bug.title}\n${bug.description ?? ""}`));
+      files.add(inferTargetFile(`${bug.title}\n${bug.description ?? ""}`, fallback));
     }
   }
   for (const uat of project.uat_items ?? []) {
     if (uat.status === "failed" || uat.status === "reopened") {
-      files.add(uat.test_path?.trim() || inferTargetFile(`${uat.title}\n${uat.expected_result ?? ""}`));
+      files.add(uat.test_path?.trim() || inferTargetFile(`${uat.title}\n${uat.expected_result ?? ""}`, fallback));
     }
   }
   for (const task of selectedTasks) {
-    files.add(inferTargetFile(`${task.title}\n${task.description ?? ""}\n${(task.technical_checklist ?? []).join("\n")}`));
+    files.add(inferTargetFile(`${task.title}\n${task.description ?? ""}\n${(task.technical_checklist ?? []).join("\n")}`, fallback));
   }
   for (const item of selectedEnhancements) {
-    files.add(inferTargetFile(`${item.title}\n${item.description ?? ""}`));
+    files.add(inferTargetFile(`${item.title}\n${item.description ?? ""}`, fallback));
   }
   return [...files];
 }
@@ -60,7 +72,10 @@ export function synthesizeSprintPrompt(
   const url = project.website_url ?? "（尚未填寫）";
   const github = project.github_url ?? "（尚未填寫）";
   const tool = project.selected_tool || "cursor";
-  const targets = collectTargetFiles(project, approved, selectedEnhancements, todoTasks);
+  const shapeInfo = projectShape(project);
+  const website = shapeInfo.shape === "web_app" || shapeInfo.shape === "landing_page" || shapeInfo.shape === "dashboard";
+  const targets = collectTargetFiles(project, approved, selectedEnhancements, todoTasks, shapeInfo.fallback || "src/content.ts")
+    .filter((file) => Boolean(file) && (website || file !== "src/app/page.tsx"));
 
   const suggestionLines = approved.length
     ? approved
@@ -74,7 +89,7 @@ export function synthesizeSprintPrompt(
   const bugLines = openBugs.length
     ? openBugs
         .map((bug) => {
-          const file = inferTargetFile(`${bug.title}\n${bug.description ?? ""}`);
+          const file = inferTargetFile(`${bug.title}\n${bug.description ?? ""}`, shapeInfo.fallback || "src/content.ts");
           return specBlock({
             file,
             action: `Fix ${bug.title} (${bug.severity}, ${bug.status})`,
@@ -87,7 +102,7 @@ export function synthesizeSprintPrompt(
   const uatLines = failedUat.length
     ? failedUat
         .map((item) => {
-          const file = item.test_path?.trim() || inferTargetFile(`${item.title}\n${item.expected_result ?? ""}`);
+          const file = item.test_path?.trim() || inferTargetFile(`${item.title}\n${item.expected_result ?? ""}`, shapeInfo.fallback || "src/content.ts");
           return specBlock({
             file,
             action: `Re-test failed UAT 「${item.title}」 (${item.status}${item.priority ? `, ${item.priority}` : ""})`,
@@ -101,7 +116,7 @@ export function synthesizeSprintPrompt(
     ? todoTasks
         .map((task) => {
           const steps = (task.technical_checklist ?? []).filter(Boolean);
-          const file = inferTargetFile(`${task.title}\n${task.description ?? ""}\n${steps.join("\n")}`);
+          const file = inferTargetFile(`${task.title}\n${task.description ?? ""}\n${steps.join("\n")}`, shapeInfo.fallback || "src/content.ts");
           return specBlock({
             file,
             action: `[${task.priority}] ${task.title}`,
@@ -115,7 +130,7 @@ export function synthesizeSprintPrompt(
     ? selectedEnhancements
         .map((item) => {
           const facing = founderCard(item, /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""}`) ? "zh" : "en");
-          const file = inferTargetFile(`${item.title}\n${item.description ?? ""}`);
+          const file = inferTargetFile(`${item.title}\n${item.description ?? ""}`, shapeInfo.fallback || "src/content.ts");
           return specBlock({
             file,
             action: `[${item.priority}] ${facing.title}`,
@@ -125,7 +140,14 @@ export function synthesizeSprintPrompt(
         .join("\n")
     : "- 本輪沒有勾選額外增強";
 
-  const fileList = targets.length ? targets.map((file) => `- \`${file}\``).join("\n") : "- `src/app/page.tsx`";
+  const fileList = targets.length
+    ? targets.map((file) => `- \`${file}\``).join("\n")
+    : shapeInfo.shape === "browser_extension"
+      ? "- `manifest.json`\n- `src/popup.ts`\n- `src/content.ts`"
+      : shapeInfo.shape === "unspecified"
+        ? "- 不要預設 `src/app/page.tsx`。只建立表格裡這件產品需要的檔案。"
+        : "- `src/app/page.tsx`";
+  const websiteRules = website;
 
   return `# Cursor Master Prompt — ${project.name}
 
@@ -138,8 +160,10 @@ export function synthesizeSprintPrompt(
 - **目標：** ${project.goal ?? "（無）"}
 - **對象：** ${project.target_audience ?? "（無）"}
 - **階段：** ${project.stage} · 類型：${project.product_type}
+- **補充：** ${shapeInfo.notes || "（無）"}
 - **Live URL：** ${url}
 - **GitHub：** ${github}
+- **形態：** ${shapeInfo.guard}
 
 ## 2. Exact target files
 只改下列檔案（及它們直接 import 的子元件）。禁止「improve UI」這種空話。
@@ -167,11 +191,15 @@ ${taskLines}
 ${enhancementLines}
 
 ## 5. Execution rules (Cursor)
-1. 先 \`Glob\`/\`Grep\` 確認目標檔存在；沒有就在最近的 App Router 路徑新建，不要重寫整個 repo。
-2. 優先 critical / high。每個畫面補齊 loading / empty / error 缺的那一態。
-3. 版面問題用 \`w-full max-w-xl mx-auto\` 或 \`grid-cols-1 md:grid-cols-3\`，並在 375px 重測。
+1. 先確認目標檔存在；沒有就只建立這個產品形態需要的檔案，不要重寫整個 repo。
+2. 優先 critical / high。
+${websiteRules
+  ? `3. 版面問題用 \`w-full max-w-xl mx-auto\` 或 \`grid-cols-1 md:grid-cols-3\`，並在 375px 重測。
 4. 首屏 >3s：\`next/dynamic\` 拆 chart/map/editor，搭配 Skeleton。
-5. HTTP 4xx/5xx：修 \`src/app/error.tsx\` / \`src/app/not-found.tsx\` / 對應 \`src/app/api/*\`。
+5. HTTP 4xx/5xx：修 \`src/app/error.tsx\` / \`src/app/not-found.tsx\` / 對應 \`src/app/api/*\`。`
+  : `3. 這不是網站。不要新建 Next.js、登入頁或儀表板。
+4. 擴充功能用 Manifest V3、popup、content script 和 chrome.storage。
+5. 在真實的求職網頁上試填，確認頁面沒有被換成我們的網站。`}
 6. 不要新增未要求的套件。
 
 ## 6. Build & verification command
@@ -193,6 +221,7 @@ npm run build
 市場調查、用戶訪談、撰寫報告、UI/UX mockups（非程式實作）。
 
 ## 9. 這一輪做完就停
-上面是這一輪的範圍，不是一次做完的指令。動手前先呼叫 get_active_roadmap，只把 shipping.nextStep.say 原文問使用者。使用者回覆「確認」之後，只做 shipping.nextStep.onConfirm 那一件，做完再問下一句。沒有這一次的確認，不要改程式。這一輪的任務和驗收都問完，才可以在使用者再次確認後呼叫 start_next_sprint，而且 confirmed 要是 true。不要自己開下一輪。
+把上面的修改一次做完，途中不要問使用者確認。驗收請在本機打開路徑自己看，用 MCP 標成通過或失敗，不要逐項問使用者。
+做完後呼叫 get_active_roadmap。只有 shipping.mustStop 是 true 時，才把 shipping.nextStep.say 問使用者。使用者回覆「確認」才呼叫 start_next_sprint，而且 confirmed 要是 true。不要自己開下一輪。
 `;
 }

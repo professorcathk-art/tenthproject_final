@@ -21,6 +21,7 @@ import type {
 import { DEMO_USER } from "@/lib/auth/session";
 import { inferTargetFile } from "@/lib/ai/executable-spec";
 import { founderCard, technicalStepsFrom } from "@/lib/project/founder-copy";
+import { INTAKE_TITLE, parseIntake, type ProjectIntake } from "@/lib/project/intake";
 import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -400,6 +401,63 @@ export async function saveAnalysisResults(
   store.enhancements.push(...enhancements);
   store.promptRuns.unshift(promptRun);
   await saveStore(store);
+}
+
+export async function saveProjectIntake(projectId: string, intake: ProjectIntake, lock: boolean) {
+  const now = new Date().toISOString();
+  const next: ProjectIntake = {
+    ...intake,
+    notes: intake.notes.slice(0, 8000),
+    fileNames: intake.fileNames.slice(0, 12),
+    locked: lock,
+  };
+
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const { data: existing } = await supabase
+      .from("project_artifacts")
+      .select("*")
+      .eq("project_id", projectId)
+      .eq("title", INTAKE_TITLE)
+      .eq("type", "note")
+      .maybeSingle();
+    const current = existing ? parseIntake(existing as ProjectArtifact) : null;
+    if (current?.locked && !lock) return current;
+    next.locked = lock || Boolean(current?.locked);
+    const payload = {
+      project_id: projectId,
+      type: "note",
+      title: INTAKE_TITLE,
+      extracted_text: JSON.stringify(next),
+    };
+    if (existing?.id) {
+      await supabase.from("project_artifacts").update(payload).eq("id", existing.id);
+    } else {
+      await supabase.from("project_artifacts").insert({ ...payload, id: uuidv4(), created_at: now });
+    }
+    return next;
+  }
+
+  const store = await ensureStore();
+  const index = store.artifacts.findIndex((item) => item.project_id === projectId && item.title === INTAKE_TITLE && item.type === "note");
+  const current = index >= 0 ? parseIntake(store.artifacts[index]) : null;
+  if (current?.locked && !lock) return current;
+  next.locked = lock || Boolean(current?.locked);
+  const artifact: ProjectArtifact = {
+    id: index >= 0 ? store.artifacts[index].id : uuidv4(),
+    project_id: projectId,
+    type: "note",
+    title: INTAKE_TITLE,
+    file_url: null,
+    content_url: null,
+    extracted_text: JSON.stringify(next),
+    summary: null,
+    created_at: index >= 0 ? store.artifacts[index].created_at : now,
+  };
+  if (index >= 0) store.artifacts[index] = artifact;
+  else store.artifacts.push(artifact);
+  await saveStore(store);
+  return next;
 }
 
 export async function addArtifact(artifact: ProjectArtifact) {

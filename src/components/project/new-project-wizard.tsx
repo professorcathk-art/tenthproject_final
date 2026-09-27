@@ -100,6 +100,29 @@ export function NewProjectWizard() {
       } else {
         await saveProjectFields(id);
       }
+      await fetch("/api/projects", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: id,
+          action: "save_intake",
+          lock: false,
+          intake: {
+            name: form.name,
+            description: form.description,
+            goal: form.goal,
+            target_audience: form.target_audience,
+            product_type: form.product_type,
+            stage: form.stage,
+            selected_tool: form.selected_tool,
+            website_url: form.website_url,
+            github_url: form.github_url,
+            notes: form.notes,
+            fileNames: files.map((file) => file.name),
+            locked: false,
+          },
+        }),
+      });
 
       const briefRes = await fetch("/api/ai/brief", {
         method: "POST",
@@ -137,9 +160,22 @@ export function NewProjectWizard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
-          description: confirmed.vision,
-          goal: confirmed.endGoal,
-          target_audience: confirmed.audience,
+          action: "save_intake",
+          lock: true,
+          intake: {
+            name: form.name,
+            description: form.description,
+            goal: form.goal,
+            target_audience: form.target_audience,
+            product_type: form.product_type,
+            stage: form.stage,
+            selected_tool: form.selected_tool,
+            website_url: form.website_url,
+            github_url: form.github_url,
+            notes: form.notes,
+            fileNames: files.map((file) => file.name),
+            locked: true,
+          },
         }),
       });
       if (!saved.ok) {

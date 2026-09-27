@@ -28,7 +28,9 @@ import {
   ensureProfile,
   applyApprovedSuggestions,
   saveAiSuggestions,
+  saveProjectIntake,
 } from "@/lib/db/store";
+import { intakeFromProject } from "@/lib/project/intake";
 
 function paidRequired() {
   return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
@@ -83,6 +85,12 @@ export async function POST(request: NextRequest) {
       website_url: body.website_url ?? null,
       github_url: body.github_url ?? null,
     });
+    const fileNames = Array.isArray(body.fileNames) ? body.fileNames.map((name: unknown) => String(name)).slice(0, 12) : [];
+    await saveProjectIntake(
+      project.id,
+      intakeFromProject(project, { notes: typeof body.notes === "string" ? body.notes : "", fileNames }),
+      false,
+    );
 
     return NextResponse.json({ project });
   } catch (error) {
@@ -184,6 +192,10 @@ export async function PATCH(request: NextRequest) {
     if (action === "apply_suggestions") {
       const result = await applyApprovedSuggestions(projectId, updates.suggestions ?? []);
       return NextResponse.json(result);
+    }
+    if (action === "save_intake") {
+      const intake = await saveProjectIntake(projectId, body.intake, Boolean(body.lock));
+      return NextResponse.json({ intake });
     }
     if (action === "save_suggestions") {
       const suggestions = await saveAiSuggestions(projectId, updates.suggestions ?? []);

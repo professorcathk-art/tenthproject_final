@@ -13,12 +13,12 @@ export const MCP_TOOLS = [
   {
     name: "get_active_roadmap",
     description:
-      "每次只做一件事之前先呼叫。只把 shipping.nextStep.say 問使用者。使用者回覆確認後，只做 shipping.nextStep.onConfirm。做完再呼叫一次。不要一次問很多步，也不要在沒確認時改程式。",
+      "做這輪之前先呼叫。若 shipping.mustStop 是 false，直接把這一輪做完，途中不要問使用者。若是 true，只把 shipping.nextStep.say 問使用者，等他回覆確認才開下一輪。",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "fetch_uat_status",
-    description: "查看驗收項目與狀態。出貨停住時，用它列出還沒標成通過或失敗的項目。",
+    description: "查看驗收項目與狀態。這一輪裡自己看、自己標，不要逐項問使用者。",
     inputSchema: {
       type: "object",
       properties: {
@@ -28,7 +28,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "update_uat_item",
-    description: "更新一條驗收。只有你實際測過，或使用者明確說通過或失敗，才可以改。",
+    description: "更新一條驗收。你在本機看過結果後，自己標成 passed 或 failed。不要為了每一項去問使用者。",
     inputSchema: {
       type: "object",
       properties: {
@@ -42,7 +42,7 @@ export const MCP_TOOLS = [
   {
     name: "get_sprint_prompt",
     description:
-      "讀取最新一輪出貨提示詞和 shipping 狀態。若 shipping.mustStop 是 true，停下來問使用者，不要把舊提示詞再做一遍，也不要自己開下一輪。",
+      "讀取最新一輪出貨提示詞和 shipping 狀態。mustStop 是 false 就照提示詞做完。mustStop 是 true 才停下來問使用者，不要自己開下一輪。",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
@@ -87,7 +87,7 @@ export const MCP_TOOLS = [
   {
     name: "start_next_sprint",
     description:
-      "只有使用者明確同意繼續下一衝刺才呼叫，而且 confirmed 必須是 true。沒有同意會被拒絕。還沒標成通過或失敗的驗收也會擋住。沒有傳入的 task_ids 不會變成新功能。開完之後做完那一輪就要再問一次。",
+      "只有使用者回覆確認、要開下一衝刺時才呼叫，而且 confirmed 必須是 true。這一輪還沒做完會被拒絕。開完之後把那一輪做完，途中不要再問。做完再呼叫 get_active_roadmap。",
     inputSchema: {
       type: "object",
       properties: {
@@ -353,6 +353,9 @@ function projectShipping(project: NonNullable<Awaited<ReturnType<typeof getProje
       priority: task.priority,
     })),
     openBugCount: bugs.length,
+    backlogCount:
+      (project.enhancements ?? []).filter((item) => item.status === "planned").length +
+      (project.ai_suggestions ?? []).filter((item) => item.approved && item.status !== "dismissed" && item.status !== "applied").length,
   });
 }
 
@@ -413,6 +416,6 @@ async function startNextSprint(
     promptRunId: opened.promptRun.id,
     prompt: opened.promptRun.prompt_text,
     backlog: opened.backlog,
-    askUser: "下一輪的範圍已經寫好。請立刻呼叫 get_active_roadmap，只把 nextStep.say 問使用者。使用者回覆「確認」才做那一件。",
+    askUser: "下一輪已經開好。請照提示詞把這一輪做完，途中不要問確認。做完再呼叫 get_active_roadmap。只有 mustStop 是 true 才問使用者要不要開下一衝刺。",
   };
 }

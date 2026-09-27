@@ -10,7 +10,9 @@ import {
   keepCodingItems,
   looksLikeNonCodingWork,
 } from "@/lib/ai/coding-constraints";
-import { applyConfirmedBrief, formatBriefForPrompt, type ProductBrief } from "@/lib/ai/product-brief";
+import { deliveryGuard, detectDeliveryShape } from "@/lib/ai/delivery-shape";
+import { applyConfirmedBrief, briefSourceFromProject, formatBriefForPrompt, type ProductBrief } from "@/lib/ai/product-brief";
+import { findIntakeArtifact, parseIntake } from "@/lib/project/intake";
 import { ensureFeatureTasks, fallbackFeatureTasks } from "@/lib/ai/feature-tasks";
 
 const SYSTEM_PROMPT = `You are a Technical Lead writing executable specs for Cursor (Next.js App Router, TypeScript, Tailwind, shadcn/ui).
@@ -69,8 +71,12 @@ function buildContext(
   brief?: ProductBrief | null,
 ) {
   const artifactSummary = artifacts
+    .filter((item) => item.title !== "建立專案時填的表")
     .map((a) => `- [${a.type}] ${a.title}${a.content_url ? `: ${a.content_url}` : ""}${a.summary ? ` — ${a.summary}` : ""}`)
     .join("\n");
+  const intake = parseIntake(findIntakeArtifact(artifacts));
+  const source = briefSourceFromProject(project, intake?.notes, intake?.fileNames);
+  const zh = /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""} ${intake?.notes ?? ""}`);
 
   return `
 Project Name: ${project.name}
@@ -80,14 +86,17 @@ Current Stage: ${project.stage}
 AI Tool: ${project.selected_tool}
 Target Audience: ${project.target_audience}
 Goal: ${project.goal}
+Extra notes from the original form: ${intake?.notes || "none"}
 Website URL: ${project.website_url ?? "none"}
 GitHub URL: ${project.github_url ?? "none"}
+
+${deliveryGuard(detectDeliveryShape(source), zh)}
 
 Artifacts:
 ${artifactSummary || "None uploaded yet"}
 
 ${existingState ? `Current Progress:\n${JSON.stringify(existingState, null, 2)}` : ""}
-${brief ? `\n${formatBriefForPrompt(brief)}` : ""}
+${brief ? `\n${formatBriefForPrompt(brief, source)}` : ""}
 `.trim();
 }
 
@@ -200,8 +209,8 @@ function generateFallbackAnalysis(
   };
 }
 
-function shapeAnalysis(analysis: AIAnalysis, brief?: ProductBrief | null) {
-  return brief ? applyConfirmedBrief(analysis, brief) : analysis;
+function shapeAnalysis(analysis: AIAnalysis, brief?: ProductBrief | null, source?: ReturnType<typeof briefSourceFromProject>) {
+  return brief ? applyConfirmedBrief(analysis, brief, source) : analysis;
 }
 
 export async function analyzeProject(
@@ -212,10 +221,12 @@ export async function analyzeProject(
   brief?: ProductBrief | null,
 ): Promise<AIAnalysis> {
   const client = getClient();
+  const intake = parseIntake(findIntakeArtifact(artifacts));
+  const source = briefSourceFromProject(project, intake?.notes, intake?.fileNames);
   const context = buildContext(project, artifacts, existingState, brief);
 
   if (!client) {
-    const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief);
+    const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief, source);
     if (brief) {
       draft.prompts = buildMasterPromptsFromTemplate({ project, analysis: draft, promptType });
     }
@@ -246,7 +257,7 @@ export async function analyzeProject(
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief);
+      const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief, source);
       if (brief) draft.prompts = buildMasterPromptsFromTemplate({ project, analysis: draft, promptType });
       return draft;
     }
@@ -270,7 +281,7 @@ export async function analyzeProject(
     if (!parsed.phases?.length) parsed.phases = fallback.phases;
     if (!parsed.enhancements?.length) parsed.enhancements = fallback.enhancements;
 
-    const shaped = shapeAnalysis(parsed, brief);
+    const shaped = shapeAnalysis(parsed, brief, source);
     shaped.prompts = await generateMasterPrompts({
       project,
       analysis: shaped,
@@ -282,7 +293,7 @@ export async function analyzeProject(
     return shaped;
   } catch (error) {
     console.error("AI analysis failed:", error);
-    const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief);
+    const draft = shapeAnalysis(generateFallbackAnalysis(project, promptType), brief, source);
     if (brief) draft.prompts = buildMasterPromptsFromTemplate({ project, analysis: draft, promptType });
     return draft;
   }

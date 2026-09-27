@@ -47,6 +47,7 @@ import { useI18n } from "@/components/i18n/provider";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABEL, SEVERITY_CLASS, isHealthyStatus, parseHttpStatus, pendingSuggestionCount } from "@/lib/project/audit";
 import { buildRetestPrompt } from "@/lib/ai/executable-spec";
+import { IntakeCard } from "@/components/project/intake-card";
 import { PromptVersionPanel } from "@/components/project/prompt-version-panel";
 import type { PromptRun } from "@/types";
 
@@ -346,6 +347,34 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
           </Button>
         </div>
       </div>
+
+      <IntakeCard
+        project={project}
+        promptText={project.prompt_runs?.[0]?.prompt_text ?? ""}
+        chinese={locale === "zh"}
+        labels={{
+          title: p.intakeTitle,
+          hint: p.intakeHint,
+          missingNotes: p.intakeMissingNotes,
+          empty: p.intakeEmpty,
+          shape: p.intakeShape,
+          drift: p.intakeDrift,
+          name: dict.wizard.name,
+          what: dict.wizard.what,
+          goal: dict.wizard.goal,
+          audience: dict.wizard.audience,
+          type: dict.wizard.steps[1],
+          stage: dict.wizard.steps[2],
+          tool: dict.wizard.steps[3],
+          notes: dict.wizard.notes,
+          files: dict.wizard.files,
+          website: dict.wizard.website,
+          github: dict.wizard.github,
+          productTypes: dict.wizard.productTypes,
+          stages: Object.fromEntries(Object.entries(dict.wizard.stages).map(([key, value]) => [key, value.label])),
+          tools: Object.fromEntries(AI_TOOLS.map((item) => [item.value, item.label])),
+        }}
+      />
 
       <div className="rounded-xl border bg-card px-4 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
