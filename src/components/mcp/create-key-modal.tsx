@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -21,13 +20,11 @@ export function CreateKeyModal({
   lockedProjectId?: string;
   labels: {
     title: string;
-    keyName: string;
-    placeholder: string;
-    nameRequired: string;
     cancel: string;
     submit: string;
     creating: string;
     whichProject: string;
+    connectsTo: string;
     keyError: string;
     netError: string;
   };
@@ -35,24 +32,23 @@ export function CreateKeyModal({
 }) {
   const initialProject = lockedProjectId || projects[0]?.id || "";
   const [projectId, setProjectId] = useState(initialProject);
-  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const multiple = !lockedProjectId && projects.length > 1;
+  const selected = projects.find((project) => project.id === projectId) ?? projects[0];
 
   useEffect(() => {
     if (!open) return;
     setProjectId(lockedProjectId || projects[0]?.id || "");
-    setName("");
     setError("");
   }, [open, lockedProjectId, projects]);
 
   async function submit() {
-    const label = name.replace(/\s+/g, " ").trim().slice(0, 40);
-    if (!label || !projectId) {
-      setError(labels.nameRequired);
+    if (!projectId || !selected) {
+      setError(labels.keyError);
       return;
     }
+    const label = selected.name.replace(/\s+/g, " ").trim().slice(0, 40) || "MCP";
     setLoading(true);
     setError("");
     try {
@@ -88,23 +84,15 @@ export function CreateKeyModal({
               </SelectContent>
             </Select>
           </div>
-        ) : null}
-        <div className="space-y-2">
-          <Label htmlFor="mcp-key-name">{labels.keyName}</Label>
-          <Input
-            id="mcp-key-name"
-            value={name}
-            maxLength={40}
-            placeholder={labels.placeholder}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </div>
+        ) : (
+          <p className="text-sm leading-relaxed text-slate-600">{labels.connectsTo.replace("{name}", selected?.name ?? "")}</p>
+        )}
         {error ? <p className="text-sm text-red-600">{error === "key" ? labels.keyError : error}</p> : null}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             {labels.cancel}
           </Button>
-          <Button type="button" onClick={submit} disabled={loading || !name.trim()}>
+          <Button type="button" onClick={submit} disabled={loading || !projectId}>
             {loading ? labels.creating : labels.submit}
           </Button>
         </DialogFooter>

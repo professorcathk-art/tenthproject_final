@@ -901,7 +901,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
 
           <TabsContent value="mcp" className="mt-4">
             <McpSettings
-              projects={[{ id: project.id, name: project.name }]}
+              projects={[{ id: project.id, name: project.name, tool: project.selected_tool }]}
               lockedProjectId={project.id}
               mcpUrl={`${SITE_URL}/api/mcp`}
             />

@@ -34,7 +34,7 @@ export default async function McpHubPage() {
 
   return (
     <McpSettings
-      projects={projects.map((project) => ({ id: project.id, name: project.name }))}
+      projects={projects.map((project) => ({ id: project.id, name: project.name, tool: project.selected_tool }))}
       mcpUrl={`${SITE_URL}/api/mcp`}
     />
   );

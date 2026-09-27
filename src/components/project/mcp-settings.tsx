@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,12 +20,14 @@ import { generateCursorSetupPrompt } from "@/lib/mcp/cursor-setup-prompt";
 interface ProjectOption {
   id: string;
   name: string;
+  tool?: string;
 }
 
 interface KeyRow {
   id: string;
   projectId: string;
   projectName: string;
+  tool?: string;
   key_prefix: string;
   label: string;
   last_used_at: string | null;
@@ -48,46 +50,45 @@ export function McpSettings({
     [lockedProjectId, projects],
   );
   const [rows, setRows] = useState<KeyRow[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const requestId = useRef(0);
   const [secrets, setSecrets] = useState<Record<string, string>>({});
   const [createOpen, setCreateOpen] = useState(false);
   const [promptOpen, setPromptOpen] = useState(false);
   const [prompt, setPrompt] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
   const [revokeRow, setRevokeRow] = useState<KeyRow | null>(null);
   const [revoking, setRevoking] = useState(false);
 
   const load = useCallback(async () => {
+    const id = ++requestId.current;
     const lists = await Promise.all(
       visibleProjects.map(async (project) => {
         const response = await fetch(`/api/mcp-keys?projectId=${project.id}`);
-        const data = (await response.json().catch(() => ({}))) as { keys?: Omit<KeyRow, "projectId" | "projectName">[] };
-        return (data.keys ?? []).map((key) => ({ ...key, projectId: project.id, projectName: project.name }));
+        const data = (await response.json().catch(() => ({}))) as { keys?: Omit<KeyRow, "projectId" | "projectName" | "tool">[] };
+        return (data.keys ?? []).map((key) => ({ ...key, projectId: project.id, projectName: project.name, tool: project.tool }));
       }),
     );
+    if (id !== requestId.current) return;
     setRows(lists.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1)));
+    setLoaded(true);
   }, [visibleProjects]);
 
   useEffect(() => {
-    let cancelled = false;
     load().catch(() => {
-      if (!cancelled) setRows([]);
+      setRows([]);
+      setLoaded(true);
     });
-    return () => {
-      cancelled = true;
-    };
   }, [load]);
 
-  function promptFor(apiKey: string, projectName: string, keyName: string) {
-    return generateCursorSetupPrompt(apiKey, {
-      mcpUrl,
-      projectName,
-      keyName,
-      testPrompt: m.example1,
-    });
+  function promptFor(secret: string, projectName: string, tool?: string) {
+    return generateCursorSetupPrompt(secret, { mcpUrl, projectName, tool });
   }
 
   function openPrompt(row: KeyRow) {
     const secret = secrets[row.id];
-    setPrompt(secret ? promptFor(secret, row.projectName, row.label) : null);
+    setApiKey(secret ?? null);
+    setPrompt(secret ? promptFor(secret, row.projectName, row.tool) : null);
     setPromptOpen(true);
   }
 
@@ -104,12 +105,14 @@ export function McpSettings({
       error?: string;
     };
     if (!response.ok || !data.key || !data.record || !project) return data.error || m.keyError;
+    requestId.current += 1;
     setSecrets((current) => ({ ...current, [data.record!.id]: data.key! }));
     setRows((current) => [
       {
         id: data.record!.id,
         projectId: project.id,
         projectName: project.name,
+        tool: project.tool,
         key_prefix: data.record!.key_prefix,
         label: data.record!.label,
         last_used_at: null,
@@ -117,7 +120,8 @@ export function McpSettings({
       },
       ...current,
     ]);
-    setPrompt(promptFor(data.key, project.name, data.record.label));
+    setApiKey(data.key);
+    setPrompt(promptFor(data.key, project.name, project.tool));
     setPromptOpen(true);
     return null;
   }
@@ -132,6 +136,7 @@ export function McpSettings({
         body: JSON.stringify({ keyId: revokeRow.id }),
       });
       if (!response.ok) return;
+      requestId.current += 1;
       setRows((current) => current.filter((row) => row.id !== revokeRow.id));
       setSecrets((current) => {
         const next = { ...current };
@@ -150,6 +155,13 @@ export function McpSettings({
         <div className="max-w-2xl">
           <h1 className="text-2xl font-semibold tracking-tight">{m.title}</h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">{m.subtitle}</p>
+          <ol className="mt-3 space-y-1 text-sm leading-relaxed text-slate-600">
+            {(lockedProjectId ? [m.how1Locked, m.how2, m.how3] : [m.how1, m.how2, m.how3]).map((step, index) => (
+              <li key={step}>
+                {index + 1}. {step}
+              </li>
+            ))}
+          </ol>
         </div>
         <Button onClick={() => setCreateOpen(true)}>{m.create}</Button>
       </div>
@@ -157,8 +169,7 @@ export function McpSettings({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{m.colName}</TableHead>
-            {!lockedProjectId && visibleProjects.length > 1 ? <TableHead>{m.colProject}</TableHead> : null}
+            {!lockedProjectId ? <TableHead>{m.colProject}</TableHead> : null}
             <TableHead>{m.colKey}</TableHead>
             <TableHead>{m.colCreated}</TableHead>
             <TableHead>{m.colUsed}</TableHead>
@@ -167,11 +178,21 @@ export function McpSettings({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.length ? (
+          {!loaded ? (
+            <TableRow>
+              <TableCell colSpan={lockedProjectId ? 5 : 6} className="py-8 text-slate-500">
+                {dict.common.loading}
+              </TableCell>
+            </TableRow>
+          ) : rows.length ? (
             rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell className="font-medium">{row.label}</TableCell>
-                {!lockedProjectId && visibleProjects.length > 1 ? <TableCell>{row.projectName}</TableCell> : null}
+                {!lockedProjectId ? (
+                  <TableCell className="font-medium">
+                    {row.projectName}
+                    {extraLabel(row) ? <div className="text-xs font-normal text-slate-500">{extraLabel(row)}</div> : null}
+                  </TableCell>
+                ) : null}
                 <TableCell className="font-mono text-xs">{row.key_prefix}…</TableCell>
                 <TableCell>{row.created_at.slice(0, 10)}</TableCell>
                 <TableCell>{lastUsedLabel(row.last_used_at, m)}</TableCell>
@@ -192,7 +213,7 @@ export function McpSettings({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={lockedProjectId || visibleProjects.length < 2 ? 6 : 7} className="py-8 text-slate-500">
+              <TableCell colSpan={lockedProjectId ? 5 : 6} className="py-8 text-slate-500">
                 {m.empty}
               </TableCell>
             </TableRow>
@@ -207,13 +228,11 @@ export function McpSettings({
         lockedProjectId={lockedProjectId}
         labels={{
           title: m.createTitle,
-          keyName: m.keyName,
-          placeholder: m.keyNamePlaceholder,
-          nameRequired: m.nameRequired,
           cancel: m.cancel,
           submit: m.createSubmit,
           creating: m.creating,
           whichProject: m.whichProject,
+          connectsTo: m.connectsTo,
           keyError: m.keyError,
           netError: m.netError,
         }}
@@ -223,11 +242,17 @@ export function McpSettings({
         open={promptOpen}
         onOpenChange={setPromptOpen}
         prompt={prompt}
+        apiKey={apiKey}
         labels={{
           title: m.promptTitle,
           subtitle: m.promptSubtitle,
+          keyLabel: m.keyLabel,
+          promptLabel: m.promptLabel,
           copy: m.copySetup,
+          copyKey: m.copyKey,
           toast: m.copiedToast,
+          copiedKey: m.copiedKey,
+          shownOnce: m.shownOnce,
           lost: m.lostSecret,
           fail: m.clipboardFail,
         }}
@@ -251,6 +276,12 @@ export function McpSettings({
       </Dialog>
     </div>
   );
+}
+
+function extraLabel(row: KeyRow) {
+  const label = row.label?.trim();
+  if (!label || label === row.projectName || label === "Cursor MCP" || label === "MCP") return null;
+  return label;
 }
 
 function lastUsedLabel(

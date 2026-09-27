@@ -10,7 +10,7 @@ function normalizeMcpKeyLabel(raw: unknown) {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 40);
-  return text || "Cursor MCP";
+  return text || "MCP";
 }
 
 export async function GET(request: NextRequest) {
