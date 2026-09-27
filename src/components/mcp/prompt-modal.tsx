@@ -19,6 +19,7 @@ export function PromptModal({
   prompt,
   apiKey,
   labels,
+  onCreateNew,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -35,8 +36,10 @@ export function PromptModal({
     copiedKey: string;
     shownOnce: string;
     lost: string;
+    lostAction: string;
     fail: string;
   };
+  onCreateNew?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -77,7 +80,11 @@ export function PromptModal({
             </Button>
             <p className="text-xs leading-relaxed text-slate-500">{failed ? labels.fail : labels.shownOnce}</p>
           </div>
-        ) : null}
+        ) : (
+          <Button type="button" onClick={onCreateNew}>
+            {labels.lostAction}
+          </Button>
+        )}
       </DialogContent>
     </Dialog>
   );

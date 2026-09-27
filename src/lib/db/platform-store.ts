@@ -4,6 +4,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { createHash, randomBytes } from "crypto";
+import { openApiKey, sealApiKey } from "@/lib/mcp/key-secret";
 import type {
   CaseHighlight,
   CaseStudy,
@@ -688,6 +689,7 @@ export async function createMcpApiKey(userId: string, projectId: string, label =
     project_id: projectId,
     key_prefix: rawKey.slice(0, 10),
     key_hash: hashApiKey(rawKey),
+    key_secret: sealApiKey(rawKey),
     label,
     last_used_at: null,
     created_at: new Date().toISOString(),
@@ -720,18 +722,20 @@ export async function validateMcpApiKey(key: string): Promise<McpApiKey | null> 
   return record ?? null;
 }
 
-export async function getMcpKeysForProject(userId: string, projectId: string): Promise<McpApiKey[]> {
+export async function getMcpKeysForProject(userId: string, projectId: string): Promise<Array<McpApiKey & { key: string | null }>> {
   if (isSupabaseConfigured()) {
     const { data } = await createServiceClient()
       .from("mcp_api_keys")
-      .select("id, user_id, project_id, key_prefix, label, last_used_at, created_at")
+      .select("id, user_id, project_id, key_prefix, key_secret, label, last_used_at, created_at")
       .eq("user_id", userId)
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
-    return (data ?? []) as McpApiKey[];
+    return ((data ?? []) as McpApiKey[]).map((row) => ({ ...row, key: openApiKey(row.key_secret) }));
   }
   const store = await ensurePlatformStore();
-  return store.mcpApiKeys.filter((k) => k.user_id === userId && k.project_id === projectId);
+  return store.mcpApiKeys
+    .filter((item) => item.user_id === userId && item.project_id === projectId)
+    .map((row) => ({ ...row, key: openApiKey(row.key_secret) }));
 }
 
 export async function revokeMcpApiKey(id: string, userId: string) {

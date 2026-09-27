@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 
 export function CreateKeyModal({
   open,
@@ -25,6 +25,7 @@ export function CreateKeyModal({
     creating: string;
     whichProject: string;
     connectsTo: string;
+    unnamed: string;
     keyError: string;
     netError: string;
   };
@@ -72,13 +73,13 @@ export function CreateKeyModal({
           <div className="space-y-2">
             <Label>{labels.whichProject}</Label>
             <Select value={projectId} onValueChange={(value) => value && setProjectId(value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
+              <SelectTrigger className="w-full max-w-full">
+                <span className="truncate">{selected?.name?.trim() || labels.unnamed}</span>
               </SelectTrigger>
               <SelectContent>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
-                    {project.name}
+                    {project.name.trim() || labels.unnamed}
                   </SelectItem>
                 ))}
               </SelectContent>

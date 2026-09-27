@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
     if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const keys = await getMcpKeysForProject(user.id, projectId);
-    return NextResponse.json({ keys });
+    return NextResponse.json({
+      keys: keys.map(({ key_hash: _hash, key_secret: _secret, key, ...row }) => ({ ...row, key })),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed";
     return NextResponse.json({ error: message }, { status: message === "Unauthorized" ? 401 : 500 });

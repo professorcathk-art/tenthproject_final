@@ -21,11 +21,12 @@ export default async function McpHubPage() {
 
   if (!projects.length) {
     return (
-      <div className="rounded-2xl bg-slate-900 p-8 text-center text-white">
-        <p className="font-medium">{dict.mcpPage.needProject}</p>
-        <Link href="/projects/new" className="mt-4 inline-block">
-          <Button variant="secondary">
-            {dict.portal.newProject} <ArrowRight className="ml-1 h-4 w-4" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
+        <h1 className="text-2xl font-semibold tracking-tight">{dict.mcp.needProjectTitle}</h1>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-600">{dict.mcp.needProjectBody}</p>
+        <Link href="/projects/new" className="mt-5 inline-block">
+          <Button>
+            {dict.mcp.needProjectAction} <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </Link>
       </div>

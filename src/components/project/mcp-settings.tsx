@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,12 +66,22 @@ export function McpSettings({
     const lists = await Promise.all(
       visibleProjects.map(async (project) => {
         const response = await fetch(`/api/mcp-keys?projectId=${project.id}`);
-        const data = (await response.json().catch(() => ({}))) as { keys?: Omit<KeyRow, "projectId" | "projectName" | "tool">[] };
+        const data = (await response.json().catch(() => ({}))) as {
+          keys?: Array<Omit<KeyRow, "projectId" | "projectName" | "tool"> & { key?: string | null }>;
+        };
         return (data.keys ?? []).map((key) => ({ ...key, projectId: project.id, projectName: project.name, tool: project.tool }));
       }),
     );
     if (id !== requestId.current) return;
-    setRows(lists.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1)));
+    const flat = lists.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    setSecrets((current) => {
+      const next = { ...current };
+      for (const row of flat) {
+        if (row.key) next[row.id] = row.key;
+      }
+      return next;
+    });
+    setRows(flat.map(({ key: _key, ...row }) => row));
     setLoaded(true);
   }, [visibleProjects]);
 
@@ -147,6 +158,18 @@ export function McpSettings({
     } finally {
       setRevoking(false);
     }
+  }
+
+  if (!visibleProjects.length) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
+        <h1 className="text-2xl font-semibold tracking-tight">{m.needProjectTitle}</h1>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-600">{m.needProjectBody}</p>
+        <Link href="/projects/new" className="mt-5 inline-block">
+          <Button>{m.needProjectAction}</Button>
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -233,6 +256,7 @@ export function McpSettings({
           creating: m.creating,
           whichProject: m.whichProject,
           connectsTo: m.connectsTo,
+          unnamed: m.unnamed,
           keyError: m.keyError,
           netError: m.netError,
         }}
@@ -254,7 +278,12 @@ export function McpSettings({
           copiedKey: m.copiedKey,
           shownOnce: m.shownOnce,
           lost: m.lostSecret,
+          lostAction: m.lostAction,
           fail: m.clipboardFail,
+        }}
+        onCreateNew={() => {
+          setPromptOpen(false);
+          setCreateOpen(true);
         }}
       />
 
