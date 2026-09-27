@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { CheckCircle2, Copy } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from "@/components/i18n/provider";
+import { CreateKeyModal } from "@/components/mcp/create-key-modal";
+import { PromptModal } from "@/components/mcp/prompt-modal";
 import { generateCursorSetupPrompt } from "@/lib/mcp/cursor-setup-prompt";
 
 interface ProjectOption {
@@ -18,8 +22,10 @@ interface ProjectOption {
   name: string;
 }
 
-interface KeyRecord {
+interface KeyRow {
   id: string;
+  projectId: string;
+  projectName: string;
   key_prefix: string;
   label: string;
   last_used_at: string | null;
@@ -37,313 +43,225 @@ export function McpSettings({
 }) {
   const { dict } = useI18n();
   const m = dict.mcp;
-  const initialId = lockedProjectId || projects[0]?.id || "";
-  const [projectId, setProjectId] = useState(initialId);
-  const [keys, setKeys] = useState<KeyRecord[]>([]);
-  const [newKey, setNewKey] = useState<string | null>(null);
-  const [setupPrompt, setSetupPrompt] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
-  const [copyFailed, setCopyFailed] = useState(false);
-  const [error, setError] = useState("");
-  const [replaced, setReplaced] = useState(false);
-  const [keyName, setKeyName] = useState(projects.find((item) => item.id === initialId)?.name || "");
-  const [nameEdited, setNameEdited] = useState(false);
+  const visibleProjects = useMemo(
+    () => (lockedProjectId ? projects.filter((project) => project.id === lockedProjectId) : projects),
+    [lockedProjectId, projects],
+  );
+  const [rows, setRows] = useState<KeyRow[]>([]);
+  const [secrets, setSecrets] = useState<Record<string, string>>({});
+  const [createOpen, setCreateOpen] = useState(false);
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [prompt, setPrompt] = useState<string | null>(null);
+  const [revokeRow, setRevokeRow] = useState<KeyRow | null>(null);
+  const [revoking, setRevoking] = useState(false);
 
-  const project = projects.find((item) => item.id === projectId) ?? projects[0];
-  const multiple = !lockedProjectId && projects.length > 1;
-  const latest = keys[0];
-
-  const config = newKey
-    ? JSON.stringify(
-        {
-          mcpServers: {
-            tenthproject: {
-              url: mcpUrl,
-              headers: { Authorization: `Bearer ${newKey}` },
-            },
-          },
-        },
-        null,
-        2,
-      )
-    : "";
+  const load = useCallback(async () => {
+    const lists = await Promise.all(
+      visibleProjects.map(async (project) => {
+        const response = await fetch(`/api/mcp-keys?projectId=${project.id}`);
+        const data = (await response.json().catch(() => ({}))) as { keys?: Omit<KeyRow, "projectId" | "projectName">[] };
+        return (data.keys ?? []).map((key) => ({ ...key, projectId: project.id, projectName: project.name }));
+      }),
+    );
+    setRows(lists.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1)));
+  }, [visibleProjects]);
 
   useEffect(() => {
-    if (!projectId) return;
     let cancelled = false;
-    fetch(`/api/mcp-keys?projectId=${projectId}`)
-      .then((response) => response.json())
-      .then((data: { keys?: KeyRecord[] }) => {
-        if (!cancelled) setKeys(data.keys ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setKeys([]);
-      });
+    load().catch(() => {
+      if (!cancelled) setRows([]);
+    });
     return () => {
       cancelled = true;
     };
-  }, [projectId]);
+  }, [load]);
 
-  useEffect(() => {
-    if (nameEdited) return;
-    const stored = keys[0]?.label?.trim();
-    setKeyName(stored || project?.name || "");
-  }, [nameEdited, keys, project?.name]);
-
-  function chooseProject(nextId: string) {
-    const next = projects.find((item) => item.id === nextId);
-    setProjectId(nextId);
-    setNameEdited(false);
-    setKeyName(next?.name || "");
-    setKeys([]);
-    setNewKey(null);
-    setSetupPrompt(null);
-    setCopyFailed(false);
-    setError("");
-    setReplaced(false);
-  }
-
-  function promptFor(apiKey: string, label: string) {
+  function promptFor(apiKey: string, projectName: string, keyName: string) {
     return generateCursorSetupPrompt(apiKey, {
       mcpUrl,
-      projectName: project?.name || m.project,
-      keyName: label,
+      projectName,
+      keyName,
       testPrompt: m.example1,
     });
   }
 
-  async function writeClipboard(text: string, id: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(id);
-      setCopyFailed(false);
-      window.setTimeout(() => setCopied((current) => (current === id ? null : current)), 2000);
-      if (id === "setup") toast.success(m.copiedToast);
-      return true;
-    } catch {
-      setCopyFailed(true);
-      return false;
-    }
+  function openPrompt(row: KeyRow) {
+    const secret = secrets[row.id];
+    setPrompt(secret ? promptFor(secret, row.projectName, row.label) : null);
+    setPromptOpen(true);
   }
 
-  async function issueKey() {
-    if (!projectId || !project) return null;
-    const label = keyName.replace(/\s+/g, " ").trim().slice(0, 40);
-    if (!label) {
-      setError(m.nameRequired);
-      return null;
-    }
-    const listed = await fetch(`/api/mcp-keys?projectId=${projectId}`).then((response) => response.json().catch(() => ({})));
-    const previous = (listed as { keys?: KeyRecord[] }).keys ?? keys;
+  async function createKey(input: { projectId: string; label: string }) {
+    const project = visibleProjects.find((item) => item.id === input.projectId) ?? projects.find((item) => item.id === input.projectId);
     const response = await fetch("/api/mcp-keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId, label }),
+      body: JSON.stringify({ projectId: input.projectId, label: input.label }),
     });
-    const data = (await response.json().catch(() => ({}))) as { key?: string; record?: KeyRecord; error?: string };
-    if (!response.ok || !data.key || !data.record) {
-      setError(data.error || m.keyError);
-      return null;
-    }
-    await Promise.all(
-      previous.map((key) =>
-        fetch("/api/mcp-keys", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ keyId: key.id }),
-        }),
-      ),
-    );
-    const prompt = promptFor(data.key, data.record.label || label);
-    setNewKey(data.key);
-    setSetupPrompt(prompt);
-    setKeys([{ ...data.record, last_used_at: data.record.last_used_at ?? null }]);
-    setReplaced(previous.length > 0);
-    return prompt;
+    const data = (await response.json().catch(() => ({}))) as {
+      key?: string;
+      record?: { id: string; key_prefix: string; label: string; created_at: string };
+      error?: string;
+    };
+    if (!response.ok || !data.key || !data.record || !project) return data.error || m.keyError;
+    setSecrets((current) => ({ ...current, [data.record!.id]: data.key! }));
+    setRows((current) => [
+      {
+        id: data.record!.id,
+        projectId: project.id,
+        projectName: project.name,
+        key_prefix: data.record!.key_prefix,
+        label: data.record!.label,
+        last_used_at: null,
+        created_at: data.record!.created_at,
+      },
+      ...current,
+    ]);
+    setPrompt(promptFor(data.key, project.name, data.record.label));
+    setPromptOpen(true);
+    return null;
   }
 
-  async function copySetup(rotate: boolean) {
-    if (!projectId) return;
-    setError("");
-    if (!rotate && setupPrompt) {
-      await writeClipboard(setupPrompt, "setup");
-      return;
-    }
-    setLoading(true);
+  async function revoke() {
+    if (!revokeRow) return;
+    setRevoking(true);
     try {
-      const prompt = await issueKey();
-      if (!prompt) return;
-      const ok = await writeClipboard(prompt, "setup");
-      if (!ok) setCopyFailed(true);
-    } catch {
-      setError(m.netError);
+      const response = await fetch("/api/mcp-keys", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyId: revokeRow.id }),
+      });
+      if (!response.ok) return;
+      setRows((current) => current.filter((row) => row.id !== revokeRow.id));
+      setSecrets((current) => {
+        const next = { ...current };
+        delete next[revokeRow.id];
+        return next;
+      });
+      setRevokeRow(null);
     } finally {
-      setLoading(false);
+      setRevoking(false);
     }
   }
-
-  const binding = lockedProjectId && project
-    ? m.step1Locked.replace("{name}", project.name)
-    : multiple || !project
-      ? m.step1Body
-      : m.step1Only.replace("{name}", project.name);
-
-  const primaryLabel = loading ? m.generating : setupPrompt ? m.copyAgain : latest ? m.regenerateCopy : m.generate;
-  const capabilities = [m.toolRoadmap, m.toolTask, m.toolUat, m.toolUpdate, m.toolSprint, m.toolBug, m.toolBuild];
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{m.title}</CardTitle>
-          <CardDescription className="max-w-2xl text-sm leading-relaxed">{m.subtitle}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          <section className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge>1</Badge>
-              <h2 className="text-sm font-semibold">{m.step1}</h2>
-            </div>
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{binding}</p>
-            {multiple ? (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">{m.pickProject}</p>
-                <Select value={projectId} onValueChange={(value) => value && chooseProject(value)}>
-                  <SelectTrigger className="w-full max-w-md">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="max-w-2xl text-sm leading-relaxed text-slate-500">{m.pickHint}</p>
-              </div>
-            ) : null}
-            <div className="max-w-md space-y-2">
-              <Label htmlFor="mcp-key-name">{m.keyName}</Label>
-              <Input
-                id="mcp-key-name"
-                value={keyName}
-                maxLength={40}
-                placeholder={m.keyNamePlaceholder}
-                onChange={(event) => {
-                  setNameEdited(true);
-                  setKeyName(event.target.value);
-                }}
-              />
-              <p className="text-sm leading-relaxed text-slate-500">{m.keyNameHint}</p>
-            </div>
-            {latest ? (
-              <div className="flex max-w-md flex-wrap items-center gap-2 rounded-xl border px-3 py-2">
-                <span className="text-sm font-medium">{latest.label}</span>
-                <Badge variant="secondary" className="font-mono">
-                  {latest.key_prefix}…
-                </Badge>
-                {latest.last_used_at ? <span className="text-xs text-emerald-700">{m.connected}</span> : null}
-              </div>
-            ) : null}
-            {!setupPrompt && latest ? (
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-500">
-                {m.oldKey.replace("{label}", latest.label).replace("{prefix}", latest.key_prefix)}
-              </p>
-            ) : null}
-            <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap">
-              <Button
-                size="lg"
-                className="h-auto whitespace-normal px-4 py-3 text-left"
-                onClick={() => copySetup(false)}
-                disabled={loading || !projectId || !keyName.trim()}
-              >
-                {copied === "setup" ? <CheckCircle2 className="mr-1 h-4 w-4" /> : null}
-                {copied === "setup" ? m.copied : primaryLabel}
-              </Button>
-              {setupPrompt ? (
-                <Button type="button" variant="outline" onClick={() => copySetup(true)} disabled={loading || !keyName.trim()}>
-                  {m.regenerate}
-                </Button>
-              ) : null}
-            </div>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            {setupPrompt && !copyFailed ? <p className="max-w-2xl text-sm leading-relaxed text-amber-900">{m.saveOnce}</p> : null}
-            {setupPrompt && replaced ? <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.rotateHint}</p> : null}
-            {copyFailed && setupPrompt ? (
-              <div className="space-y-2">
-                <p className="max-w-2xl text-sm leading-relaxed text-amber-900">{m.clipboardFail}</p>
-                <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed whitespace-pre-wrap text-slate-100">{setupPrompt}</pre>
-              </div>
-            ) : null}
-          </section>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-2xl">
+          <h1 className="text-2xl font-semibold tracking-tight">{m.title}</h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">{m.subtitle}</p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)}>{m.create}</Button>
+      </div>
 
-          <section className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge>2</Badge>
-              <h2 className="text-sm font-semibold">{m.step2}</h2>
-            </div>
-            <div className="max-w-2xl space-y-3 rounded-xl border bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:bg-slate-900 dark:text-slate-200">
-              <p>1. {m.step2Line1}</p>
-              <p>2. {m.step2Line2}</p>
-              <p>3. {m.step2Line3}</p>
-            </div>
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">{m.step3Body}</p>
-            <div className="rounded-xl border bg-slate-50 p-4 text-sm leading-relaxed dark:bg-slate-900">{m.example1}</div>
-            <Button type="button" variant="outline" onClick={() => writeClipboard(m.example1, "prompt")}>
-              {copied === "prompt" ? <CheckCircle2 className="mr-1 h-4 w-4 text-green-600" /> : <Copy className="mr-1 h-4 w-4" />}
-              {copied === "prompt" ? m.copied : m.copyPrompt}
-            </Button>
-            <p className="text-sm leading-relaxed text-emerald-800">{m.success}</p>
-          </section>
-
-          <Accordion>
-            <AccordionItem value="manual">
-              <AccordionTrigger className="text-sm font-medium">{m.manualTitle}</AccordionTrigger>
-              <AccordionContent className="space-y-3">
-                {newKey && config ? (
-                  <>
-                    <p className="max-w-2xl leading-relaxed text-slate-600">{m.manualBody}</p>
-                    <p className="font-mono text-xs text-slate-500">.cursor/mcp.json</p>
-                    <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">{config}</pre>
-                    <Button type="button" variant="outline" onClick={() => writeClipboard(config, "cfg")}>
-                      {copied === "cfg" ? <CheckCircle2 className="mr-1 h-4 w-4 text-green-600" /> : <Copy className="mr-1 h-4 w-4" />}
-                      {copied === "cfg" ? m.copied : m.copyConfig}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{m.colName}</TableHead>
+            {!lockedProjectId && visibleProjects.length > 1 ? <TableHead>{m.colProject}</TableHead> : null}
+            <TableHead>{m.colKey}</TableHead>
+            <TableHead>{m.colCreated}</TableHead>
+            <TableHead>{m.colUsed}</TableHead>
+            <TableHead>{m.colStatus}</TableHead>
+            <TableHead>{m.colActions}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.length ? (
+            rows.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell className="font-medium">{row.label}</TableCell>
+                {!lockedProjectId && visibleProjects.length > 1 ? <TableCell>{row.projectName}</TableCell> : null}
+                <TableCell className="font-mono text-xs">{row.key_prefix}…</TableCell>
+                <TableCell>{row.created_at.slice(0, 10)}</TableCell>
+                <TableCell>{lastUsedLabel(row.last_used_at, m)}</TableCell>
+                <TableCell>
+                  <Badge variant={row.last_used_at ? "secondary" : "outline"}>{row.last_used_at ? m.live : m.idle}</Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" size="sm" variant="outline" onClick={() => openPrompt(row)}>
+                      {m.copyRow}
                     </Button>
-                    <p className="max-w-2xl leading-relaxed text-amber-950">{m.gitignore}</p>
-                  </>
-                ) : (
-                  <p className="max-w-2xl leading-relaxed text-slate-500">{m.manualWaiting}</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </CardContent>
-      </Card>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setRevokeRow(row)}>
+                      {m.revoke}
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={lockedProjectId || visibleProjects.length < 2 ? 6 : 7} className="py-8 text-slate-500">
+                {m.empty}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{m.notesTitle}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm leading-relaxed text-slate-600">
-          <p>{lockedProjectId ? m.switchElsewhere : multiple ? m.switchHere : m.switchLater}</p>
-          <p>{m.rotateHint}</p>
-        </CardContent>
-      </Card>
+      <CreateKeyModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        projects={visibleProjects}
+        lockedProjectId={lockedProjectId}
+        labels={{
+          title: m.createTitle,
+          keyName: m.keyName,
+          placeholder: m.keyNamePlaceholder,
+          nameRequired: m.nameRequired,
+          cancel: m.cancel,
+          submit: m.createSubmit,
+          creating: m.creating,
+          whichProject: m.whichProject,
+          keyError: m.keyError,
+          netError: m.netError,
+        }}
+        onCreate={createKey}
+      />
+      <PromptModal
+        open={promptOpen}
+        onOpenChange={setPromptOpen}
+        prompt={prompt}
+        labels={{
+          title: m.promptTitle,
+          subtitle: m.promptSubtitle,
+          copy: m.copySetup,
+          toast: m.copiedToast,
+          lost: m.lostSecret,
+          fail: m.clipboardFail,
+        }}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{m.toolsTitle}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm leading-relaxed text-slate-600">
-            {capabilities.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      <Dialog open={Boolean(revokeRow)} onOpenChange={(open) => !open && setRevokeRow(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{m.revokeTitle}</DialogTitle>
+            <DialogDescription className="leading-relaxed">{m.revokeBody}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setRevokeRow(null)} disabled={revoking}>
+              {m.cancel}
+            </Button>
+            <Button type="button" variant="destructive" onClick={revoke} disabled={revoking}>
+              {m.revokeConfirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+function lastUsedLabel(
+  value: string | null,
+  labels: { neverUsed: string; justNow: string; minutesAgo: string; hoursAgo: string; daysAgo: string },
+) {
+  if (!value) return labels.neverUsed;
+  const minutes = Math.floor((Date.now() - new Date(value).getTime()) / 60000);
+  if (!Number.isFinite(minutes) || minutes < 1) return labels.justNow;
+  if (minutes < 60) return labels.minutesAgo.replace("{n}", String(minutes));
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return labels.hoursAgo.replace("{n}", String(hours));
+  return labels.daysAgo.replace("{n}", String(Math.floor(hours / 24)));
 }
