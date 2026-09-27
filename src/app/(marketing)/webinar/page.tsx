@@ -48,6 +48,13 @@ const cases = [
   },
 ];
 
+const gifts = [
+  "20+ Saas創業靈感及分析",
+  "Saas 工具站創作AI prompt",
+  "新手Vibe Coding 啟動手冊",
+  "Tenth Project 代金優惠券 HK$3,000",
+];
+
 const lessons = [
   {
     title: "👉 無需程式背景的實作方法（Vibe Coding）",
@@ -104,12 +111,29 @@ export default function WebinarPage() {
         <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-slate-500 sm:gap-x-5">
           <li>線上直播</li>
           <li>名額有限</li>
-          <li>出席送入門大禮包</li>
+          <li>出席送$6,000大禮包</li>
           <li>完全免費</li>
         </ul>
       </section>
 
-      <section className="mx-auto mt-20 max-w-5xl px-4 sm:px-6">
+      <section className="mx-auto mt-12 max-w-5xl px-4 sm:mt-16 sm:px-6">
+        <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-[0_12px_40px_-24px_rgba(16,185,129,0.7)] sm:p-8">
+          <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700">出席禮</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">出席送$6,000大禮包</h2>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+            {gifts.map((item) => (
+              <li key={item} className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-4">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700" aria-hidden="true">
+                  ✓
+                </span>
+                <span className="text-sm font-medium leading-6 text-slate-800">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-16 max-w-5xl px-4 sm:mt-20 sm:px-6">
         <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">為何現在啟動？</p>
         <h2 className="mt-3 max-w-xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           AI黃金窗口，
@@ -171,18 +195,6 @@ export default function WebinarPage() {
             </li>
           ))}
         </ul>
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-          <h3 className="text-lg font-semibold leading-snug text-emerald-800">
-            🎁 出席送入門大禮包
-            <span className="mt-1 block text-base">（價值HK$6,000）</span>
-          </h3>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
-            <li>20+ Saas創業靈感及分析</li>
-            <li>Saas 工具站創作AI prompt</li>
-            <li>新手Vibe Coding 啟動手冊</li>
-            <li>Tenth Project 代金優惠券 HK$3,000</li>
-          </ul>
-        </div>
       </section>
 
       <section className="mx-auto mt-20 max-w-5xl px-4 sm:px-6">
@@ -226,7 +238,7 @@ export default function WebinarPage() {
         <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 text-left sm:p-8">
           <p className="text-xs font-semibold tracking-wide text-emerald-700 uppercase">🎟️ 完全免費</p>
           <h3 className="mt-3 text-2xl font-semibold text-slate-950">加入通知群組</h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">透過WhatsApp群組取得說明會最新資訊、報名連結及出席入門大禮包。</p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">透過WhatsApp群組取得說明會最新資訊、報名連結及出席送$6,000大禮包。</p>
           <JoinLink className="mt-6 w-full">立即加入通知群組</JoinLink>
           <p className="mt-4 text-center text-xs leading-relaxed text-slate-500">按下按鈕後，將跳轉至WhatsApp加入群組。完全免費，無需信用卡。</p>
         </div>
