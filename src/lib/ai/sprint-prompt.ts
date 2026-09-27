@@ -193,6 +193,6 @@ npm run build
 市場調查、用戶訪談、撰寫報告、UI/UX mockups（非程式實作）。
 
 ## 9. 這一輪做完就停
-做完上面的修改，回報建置和驗收之後就停下來。呼叫 Tenth Project MCP 的 get_active_roadmap。若 shipping.mustStop 是 true，把 shipping.askUser 原句問使用者，等使用者回答。只有使用者明確同意繼續，才呼叫 start_next_sprint，而且 confirmed 要是 true。不要自己開下一輪。
+上面是這一輪的範圍，不是一次做完的指令。動手前先呼叫 get_active_roadmap，只把 shipping.nextStep.say 原文問使用者。使用者回覆「確認」之後，只做 shipping.nextStep.onConfirm 那一件，做完再問下一句。沒有這一次的確認，不要改程式。這一輪的任務和驗收都問完，才可以在使用者再次確認後呼叫 start_next_sprint，而且 confirmed 要是 true。不要自己開下一輪。
 `;
 }

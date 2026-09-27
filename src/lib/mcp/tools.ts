@@ -13,7 +13,7 @@ export const MCP_TOOLS = [
   {
     name: "get_active_roadmap",
     description:
-      "出貨前先呼叫。回傳 shipping.phase 與 shipping.askUser。phase 是 build 才寫程式；其他 phase 必須停下來，把 askUser 問使用者。沒有使用者同意，不要改程式，也不要開下一輪。任務的 technical_checklist 才是實作步驟，不要把 checklist 拆成新的看板卡片。",
+      "每次只做一件事之前先呼叫。只把 shipping.nextStep.say 問使用者。使用者回覆確認後，只做 shipping.nextStep.onConfirm。做完再呼叫一次。不要一次問很多步，也不要在沒確認時改程式。",
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
@@ -339,8 +339,19 @@ export async function executeMcpTool(
 function projectShipping(project: NonNullable<Awaited<ReturnType<typeof getProject>>>) {
   const bugs = (project.bugs ?? []).filter((bug) => bug.status === "open" || bug.status === "in_progress");
   return shippingCue({
-    tasks: (project.tasks ?? []).map((task) => ({ id: task.id, title: task.title, status: task.status })),
-    uatItems: (project.uat_items ?? []).map((item) => ({ id: item.id, title: item.title, status: item.status })),
+    uatItems: (project.uat_items ?? []).map((item) => ({
+      id: item.id,
+      title: item.title,
+      status: item.status,
+      expected_result: item.expected_result,
+      test_path: item.test_path,
+    })),
+    tasks: (project.tasks ?? []).map((task) => ({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      priority: task.priority,
+    })),
     openBugCount: bugs.length,
   });
 }
@@ -402,6 +413,6 @@ async function startNextSprint(
     promptRunId: opened.promptRun.id,
     prompt: opened.promptRun.prompt_text,
     backlog: opened.backlog,
-    askUser: "下一輪已經開好。請照提示詞做完，然後再呼叫 get_active_roadmap。若 mustStop 是 true，停下來問使用者要不要再繼續。",
+    askUser: "下一輪的範圍已經寫好。請立刻呼叫 get_active_roadmap，只把 nextStep.say 問使用者。使用者回覆「確認」才做那一件。",
   };
 }

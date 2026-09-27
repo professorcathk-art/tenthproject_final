@@ -1,25 +1,39 @@
 import { UNMARKED_UAT } from "@/lib/project/founder-copy";
 
 export const SHIPPING_RULES = `你是 Tenth Project 的出貨助手。這把連線只對應一個專案。
-開始改程式之前，先問使用者要不要出貨。沒有明確同意，不要改程式。
-同意之後先呼叫 get_active_roadmap，並遵守回傳的 shipping：
-phase 是 build 時，才照任務的 technical_checklist 寫程式。做完呼叫 report_build_status，把做完的任務用 update_task_status 標成 completed，把你測過或使用者確認過的驗收用 update_uat_item 標成 passed 或 failed。
-phase 是 waiting_for_uat、sprint_boundary 或 idle 時，立刻停下來，把 shipping.askUser 問使用者。不要繼續改程式，也不要自己開下一輪。
-只有使用者明確說要繼續下一衝刺，才呼叫 start_next_sprint，而且 confirmed 必須是 true。沒有點名的新功能不要放進 task_ids。
-每一輪結束都要再問一次。不要連續開很多輪。`;
+每次只推進一件事。先呼叫 get_active_roadmap，只把 shipping.nextStep.say 原文問使用者，然後停下。
+使用者回覆「確認」、「好」、「yes」或「confirm」都算同意。同意之後只做 shipping.nextStep.onConfirm 寫的那一件，做完再呼叫 get_active_roadmap，問下一句。
+不要一次列出很多步驟。沒有這一次的確認，不要改程式，也不要自己開下一輪。
+你看不到使用者的螢幕截圖，伺服器也不會替你分析畫面。驗收前請在本機打開 nextStep 裡的路徑看結果。沒看過就不要假裝測過。使用者回覆「確認失敗」時，把該驗收標成 failed。`;
 
-type Item = { id: string; title: string; status: string };
+type TaskItem = { id: string; title: string; status: string; priority?: string | null };
+type UatItem = {
+  id: string;
+  title: string;
+  status: string;
+  expected_result?: string | null;
+  test_path?: string | null;
+};
 
 function isOpenTask(status: string) {
   return status !== "done" && status !== "completed";
 }
 
+function priorityRank(priority?: string | null) {
+  if (priority === "high") return 0;
+  if (priority === "medium") return 1;
+  if (priority === "low") return 2;
+  return 3;
+}
+
 export function shippingCue(input: {
-  tasks?: Item[];
-  uatItems?: Item[];
+  tasks?: TaskItem[];
+  uatItems?: UatItem[];
   openBugCount?: number;
 }) {
-  const openTasks = (input.tasks ?? []).filter((item) => isOpenTask(item.status));
+  const openTasks = (input.tasks ?? [])
+    .filter((item) => isOpenTask(item.status))
+    .sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority));
   const unmarked = (input.uatItems ?? []).filter((item) => UNMARKED_UAT.has(item.status));
   const failed = (input.uatItems ?? []).filter((item) => item.status === "failed" || item.status === "reopened");
   const openBugCount = input.openBugCount ?? 0;
@@ -29,49 +43,49 @@ export function shippingCue(input: {
     failedUat: failed.length,
     openBugs: openBugCount,
   };
+  const unmarkedUat = unmarked.map(({ id, title, status }) => ({ id, title, status }));
+  const openTaskBrief = openTasks.map(({ id, title, status }) => ({ id, title, status }));
+
+  let phase: "build" | "waiting_for_uat" | "sprint_boundary" | "idle" = "idle";
+  let nextStep: { say: string; onConfirm: string };
 
   if (openTasks.length) {
-    return {
-      phase: "build" as const,
-      mustStop: false,
-      counts,
-      unmarkedUat: unmarked.map(({ id, title, status }) => ({ id, title, status })),
-      openTasks: openTasks.map(({ id, title, status }) => ({ id, title, status })),
-      askUser:
-        "若這次對話還沒得到同意，先問：要我照目前的路線圖出貨嗎？同意之後再改程式。已經同意就做完開放中的任務，做完要停下來，不要自己開下一衝刺。",
+    const task = openTasks[0];
+    phase = "build";
+    nextStep = {
+      say: `下一步：做出「${task.title}」。回覆「確認」，我就開始。`,
+      onConfirm: `只完成任務 ${task.id}「${task.title}」的 technical_checklist。做完呼叫 update_task_status 把這個任務標成 completed，再呼叫 get_active_roadmap。不要同時做其他任務。`,
     };
-  }
-
-  if (unmarked.length) {
-    const lines = unmarked.map((item) => `「${item.title}」`).join("、");
-    return {
-      phase: "waiting_for_uat" as const,
-      mustStop: true,
-      counts,
-      unmarkedUat: unmarked.map(({ id, title, status }) => ({ id, title, status })),
-      openTasks: [],
-      askUser: `這一輪先停住。這些驗收還沒有通過或失敗，所以不能開下一衝刺：${lines}。請告訴我每一項是通過還是失敗。`,
+  } else if (unmarked.length) {
+    const item = unmarked[0];
+    const path = item.test_path?.trim() || "這個產品的相關頁面";
+    const expected = item.expected_result?.trim() || "這項驗收描述的結果";
+    phase = "waiting_for_uat";
+    nextStep = {
+      say: `下一步：驗收「${item.title}」。請先在本機打開 ${path}，看是否符合「${expected}」。符合就回覆「確認」，我會標成通過。不符合就回覆「確認失敗」。`,
+      onConfirm: `使用者回覆確認：呼叫 update_uat_item，uat_id 為 ${item.id}，status 為 passed。使用者回覆確認失敗：status 為 failed，remark 寫你看到的問題。然後再呼叫 get_active_roadmap。不要一次改其他驗收。`,
     };
-  }
-
-  if (failed.length || openBugCount) {
-    return {
-      phase: "sprint_boundary" as const,
-      mustStop: true,
-      counts,
-      unmarkedUat: [],
-      openTasks: [],
-      askUser:
-        "這一輪可以收了。要我繼續出貨下一衝刺嗎？下一輪會帶上失敗的驗收和未解錯誤。新功能要你點名，我不會自己加。你同意之後我才會開始。",
+  } else if (failed.length || openBugCount) {
+    phase = "sprint_boundary";
+    nextStep = {
+      say: "下一步：開下一衝刺，先修失敗的驗收和未解錯誤。回覆「確認」就開始。",
+      onConfirm: "呼叫 start_next_sprint，confirmed 為 true。不要傳入使用者沒點名的 task_ids。拿到提示詞後照它做完這一輪，再呼叫 get_active_roadmap。",
+    };
+  } else {
+    phase = "idle";
+    nextStep = {
+      say: "這一輪已經做完。回覆「確認」就停在這裡。若你想做新功能，用一句話說要做什麼，我再請你確認。",
+      onConfirm: "使用者只回覆確認：不要開下一輪，告訴他可以先停。使用者提出新功能：先把那一句復述出來，再等他回覆確認，才開始做。",
     };
   }
 
   return {
-    phase: "idle" as const,
+    phase,
     mustStop: true,
     counts,
-    unmarkedUat: [],
-    openTasks: [],
-    askUser: "目前沒有未做完的任務，也沒有失敗的驗收。要繼續的話，請告訴我下一輪要做什麼。我不會自己加新功能。",
+    unmarkedUat,
+    openTasks: openTaskBrief,
+    askUser: nextStep.say,
+    nextStep,
   };
 }
