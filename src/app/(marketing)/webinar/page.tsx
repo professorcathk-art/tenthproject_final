@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { pageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-const GROUP_URL = "https://chat.whatsapp.com/Eoc2fSS90f6GvzQG7eZPun";
+const GROUP_URL = "https://chat.whatsapp.com/JTVLwF9xqm3LXZXLJCfWqD";
 
 export const metadata: Metadata = pageMetadata({
   title: "21天造出AI工具站分享會 | Vibe Coding x Tenth Project",
@@ -89,16 +88,13 @@ export default function WebinarPage() {
           <br />
           Vibe Coding究竟能做到什麼程度？AI Coding 又能如何盈利賺錢？
         </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-8 flex items-center justify-center">
           <JoinLink className={cn(buttonVariants({ size: "lg" }), "min-w-44")}>加入通知群組</JoinLink>
-          <Link href="#what-you-learn" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "min-w-44")}>
-            了解更多
-          </Link>
         </div>
         <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-500">
           <li>線上直播</li>
           <li>名額有限</li>
-          <li>出席送入門手冊</li>
+          <li>出席送入門大禮包</li>
           <li>完全免費</li>
         </ul>
       </section>
@@ -166,10 +162,13 @@ export default function WebinarPage() {
           ))}
         </ul>
         <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-          <h3 className="text-lg font-semibold text-emerald-800">🎁 出席特別獎勵</h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-700">
-            凡出席說明會的參加者，將獲贈《Vibe Coding入門手冊》電子版，名額有限，先到先得！
-          </p>
+          <h3 className="text-lg font-semibold text-emerald-800">🎁 出席送入門大禮包（價值HK$6,000）</h3>
+          <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
+            <li>20+ Saas創業靈感及分析</li>
+            <li>Saas 工具站創作AI prompt</li>
+            <li>新手Vibe Coding 啟動手冊</li>
+            <li>Tenth Project 代金優惠券 HK$3,000</li>
+          </ul>
         </div>
       </section>
 
@@ -214,7 +213,7 @@ export default function WebinarPage() {
         <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 text-left">
           <p className="text-xs font-semibold tracking-wide text-emerald-700 uppercase">🎟️ 完全免費</p>
           <h3 className="mt-3 text-2xl font-semibold text-slate-950">加入通知群組</h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">透過WhatsApp群組取得說明會最新資訊、報名連結及出席專屬手冊。</p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">透過WhatsApp群組取得說明會最新資訊、報名連結及出席入門大禮包。</p>
           <JoinLink className={cn(buttonVariants({ size: "lg" }), "mt-6 w-full")}>立即加入通知群組</JoinLink>
           <p className="mt-4 text-center text-xs leading-relaxed text-slate-500">按下按鈕後，將跳轉至WhatsApp加入群組。完全免費，無需信用卡。</p>
         </div>
