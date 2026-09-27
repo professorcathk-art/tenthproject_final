@@ -50,7 +50,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
           : "border-b border-slate-200/60 bg-white dark:border-slate-800/50 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
           <Link
             href="/"
@@ -87,7 +87,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <ThemeToggle
             className={overHero ? "border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white" : undefined}
           />
@@ -109,7 +109,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                 href="/login?redirect=/dashboard"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "font-semibold",
+                  "hidden font-semibold min-[380px]:inline-flex",
                   overHero && "text-white hover:bg-white/10 hover:text-white",
                 )}
               >

@@ -92,15 +92,16 @@ export default function WebinarPage() {
           <br />
           AI工具站分享會
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
-          想利用AI創立互聯網事業？不如試下用AI自動寫code做出你的<strong className="font-semibold whitespace-nowrap text-slate-900">第一個產品</strong>！
-          <br />
-          Vibe Coding究竟能做到什麼程度？AI Coding 又能如何盈利賺錢？
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
+          想利用AI創立互聯網事業？不如試下用AI自動寫code做出你的<strong className="font-semibold text-slate-900">第一個產品</strong>！
+          <span className="mt-2 block">
+            Vibe Coding究竟能做到什麼程度？<span className="whitespace-nowrap">AI Coding</span> 又能如何盈利賺錢？
+          </span>
         </p>
         <div className="mt-8 flex items-center justify-center">
-          <JoinLink className="min-w-52">加入通知群組</JoinLink>
+          <JoinLink className="w-full max-w-sm sm:w-auto sm:min-w-52">加入通知群組</JoinLink>
         </div>
-        <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-500">
+        <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-slate-500 sm:gap-x-5">
           <li>線上直播</li>
           <li>名額有限</li>
           <li>出席送入門大禮包</li>
@@ -171,8 +172,11 @@ export default function WebinarPage() {
           ))}
         </ul>
         <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-          <h3 className="text-lg font-semibold text-emerald-800">🎁 出席送入門大禮包（價值HK$6,000）</h3>
-          <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
+          <h3 className="text-lg font-semibold leading-snug text-emerald-800">
+            🎁 出席送入門大禮包
+            <span className="mt-1 block text-base">（價值HK$6,000）</span>
+          </h3>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
             <li>20+ Saas創業靈感及分析</li>
             <li>Saas 工具站創作AI prompt</li>
             <li>新手Vibe Coding 啟動手冊</li>
@@ -219,7 +223,7 @@ export default function WebinarPage() {
         <p className="mt-4 leading-relaxed text-slate-600">
           立即加入我們的WhatsApp通知群組，鎖定席位，第一時間獲得說明會詳情與報名連結。🚀
         </p>
-        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 text-left">
+        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 text-left sm:p-8">
           <p className="text-xs font-semibold tracking-wide text-emerald-700 uppercase">🎟️ 完全免費</p>
           <h3 className="mt-3 text-2xl font-semibold text-slate-950">加入通知群組</h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">透過WhatsApp群組取得說明會最新資訊、報名連結及出席入門大禮包。</p>

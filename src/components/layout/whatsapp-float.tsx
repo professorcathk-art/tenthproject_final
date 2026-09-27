@@ -1,6 +1,12 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 
 export function WhatsAppFloat() {
+  const pathname = usePathname();
+  if (pathname === "/webinar") return null;
+
   return (
     <a
       href={WHATSAPP_URL}
