@@ -36,8 +36,8 @@ export function SiteFooter() {
             <p className="text-sm font-semibold text-slate-900 mb-3">{dict.footer.company}</p>
             <ul className="space-y-2 text-sm text-slate-600">
               <li><Link href="/about" className="hover:text-slate-900">{dict.nav.about}</Link></li>
-              <li><Link href="/login?redirect=/dashboard" className="hover:text-slate-900">{dict.nav.login}</Link></li>
-              <li><Link href="/signup?redirect=/dashboard" className="hover:text-slate-900">{dict.nav.signup}</Link></li>
+              <li><Link href="/login?redirect=/menu" className="hover:text-slate-900">{dict.nav.login}</Link></li>
+              <li><Link href="/signup?redirect=/menu" className="hover:text-slate-900">{dict.nav.signup}</Link></li>
             </ul>
           </div>
           <div>

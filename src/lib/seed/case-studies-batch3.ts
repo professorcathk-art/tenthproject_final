@@ -44,7 +44,7 @@ Raven／GeoSpy 把專業地理推理收成一條短迴路：
 2. **網頁先試、隱私說清楚。** [服務條款](https://www.withraven.ai/tos/)寫明可經網頁、App 或 API 使用，試用須審核，正式使用要付費。官方針對調查場景強調：重點是地點與景物，不是拿來做人臉追蹤。
 3. **同一套模型，兩邊變現。** 輕量 Web／App 體驗吸地理迷與查核者；[企業與執法版本](https://graylark.com/raven)賣街景級定位、車款辨識與影像真偽。
 
-## 成功故事與成功之道
+## 他們怎麼做出成績
 
 公開時間線（綜合 Graylark 官網、PR Newswire 與 PitchBook／創辦團隊公開資訊）：
 
@@ -52,7 +52,7 @@ Raven／GeoSpy 把專業地理推理收成一條短迴路：
 - 2024–2025：GeoSpy 在 OSINT、GeoGuessr 玩家與短影音社群傳開，成為「沒有 GPS 也能估地點」的代名詞；Graylark 官網寫明種子輪約 **$10.7M**，投資人公開名單包括 General Catalyst、Hatch 等早期機構。
 - 2026 年 4–5 月：產品線更名 Raven，官網改為 [withraven.ai](https://www.withraven.ai/)，並把能力從「找地點」擴成視覺情報平台。
 
-成功之道可以收成三句：
+可以記三句：
 
 1. **把情報級能力做成 10 秒玩具。** 「丟張圖看 AI 猜不猜得中」天然會被轉發。
 2. **免費／試用漏斗養 B2B。** 大眾端驚艷一次，再導向 App 或機構授權。
@@ -78,7 +78,7 @@ Raven／GeoSpy 把專業地理推理收成一條短迴路：
 - 讓第一秒結果值得拿去挑戰朋友。
 - 用網頁當免費漏斗，不要一進來就逼下載 App、綁卡。
 
-## 創業者與矽谷視角
+## 你能從這裡學到什麼
 
 ChatGPT 也能看圖，但 Raven 證明**垂直空間 AI** 仍有位置：專門微調過的地貌與路牌模型，比通用聊天窗更穩、更能標信心。Graylark 走的是「大眾端玩具 → 機構端訂閱」雙軌。風險也很清楚：地理定位一旦被濫用，就是隱私與出口管制問題；護城河不在「會看圖」，而在資料、審核流程與誰敢把案件交給你。
 `,
@@ -157,13 +157,13 @@ Vertical spatial models still beat a general chat box on street furniture and mi
 2. **依個人過濾，不是同一份摘要。** 把抽象公式改成你較吃得下的例子或圖解。
 3. **閉環測驗。** 自動出 Flashcards 與練習題，盯錯題，再補同一條觀念。見[產品頁](https://thetawave.ai/)。
 
-## 成功故事與成功之道
+## 他們怎麼做出成績
 
 - 2023：李文軒與 Elena Zhong 在北京起步（[Forbes 公司檔](https://www.forbes.com/profile/thetawave-ai/)）。
 - 其後產品在歐美校園傳開；創辦人公開口徑提過數萬至更多學生使用，LinkedIn 簡介曾寫「逾 5 萬名來自 Stanford、MIT 等校的學生」。
 - 2026 年 5 月：登上 [Forbes 30 Under 30 Asia](https://www.forbes.com/sites/ywang/2026/05/27/30-under-30-asia-2026-meet-the-entrepreneurs-building-ai-for-individuals-and-enterprises/)。同一篇寫明累計融資 **逾 $7M**，投資方包括 BAI Capital（原 Bertelsmann Asia Investments）、Hillhouse Ventures、the MBA Fund、MiraclePlus。
 
-成功之道：
+他們做成，靠的是：
 
 1. 先做教學法，再堆模型。重點是盲點與複習路徑，不是更長的摘要。
 2. 對準學生每天已經在用的 PDF 與錄音，考試前省下最多時間。
@@ -186,7 +186,7 @@ Vertical spatial models still beat a general chat box on street furniture and mi
 - 把非結構化教材自動變成可點的複習工具。
 - 記下錯題，不要給所有人同一份講義。
 
-## 創業者與矽谷視角
+## 你能從這裡學到什麼
 
 純 AI 題庫護城河很薄。ThetaWave 賭的是：**學習軌跡愈多，路徑愈準，離開成本愈高**。這才是消費教育產品在生成式 AI 時代還能留下的東西。風險是學校採購週期、版權教材、以及每一家筆記 App 都在做同一句 slogan。
 `,
@@ -267,7 +267,7 @@ The moat is the path, not the summary. Switching cost rises only after the app h
 
 App Store 頁面寫明有免費基礎功能，以及「鑊氣家庭版」訂閱（公開頁面約 **HK$18／月**）。
 
-## 成功故事與成功之道
+## 他們怎麼做出成績
 
 創辦人把「Cook rice 變白飯」連同 MVP 發到 Threads，港媽與雙職父母大量轉發。上線後短時間下載破 **3 萬**，並一度進入香港區美食佳飲類 **Top 10**。食譜庫公開口徑是 100+ 道家常菜，持續加。融資 **$0**。
 
@@ -292,7 +292,7 @@ App Store 頁面寫明有免費基礎功能，以及「鑊氣家庭版」訂閱�
 
 找「兩種角色每天要對話、但沒有共同語言」的場景：看護與長者、裝修師傅與業主、跨國外包。用自己踩過的坑當發布文案。第一版只做 50–100 個最高頻情境。
 
-## 創業者與矽谷視角
+## 你能從這裡學到什麼
 
 賽道看起來窄——「香港外傭煮港菜」——但頻率極高、痛感極具體。一人、自籌、靠 Threads 飛輪做到數萬下載再收訂閱，是超在地化工具的教科書，不是全球 TAM 簡報。
 `,
@@ -357,11 +357,11 @@ A two-sided communication gap. Launch with the story, not the feature list. Fift
 3. **外觀與技能變現**，勝負可以拿來炫耀。
 4. **天然短影音：** 絕地逃生、神藏點，TikTok／Shorts 會自己長。
 
-## 成功故事與成功之道
+## 他們怎麼做出成績
 
 上線數月，早期公開口徑已是數千萬造訪、常態過萬 CCU。到 2026 年中後期，第三方統計（[GGAID](https://www.ggaid.com/roblox/games/hide-or-die-6369934270)、[RobloxGames.org](https://www.robloxgames.org/stats/hide-or-die)）把累計造訪寫到約 **7.7–7.9 億**，歷史峰值 CCU 約 **1.45 萬**（2026 年 6 月快照），收藏與評分亦到數百萬級。融資 **$0**，吃 Roblox 分潤。
 
-成功之道：把重型品類「民主化」到手機；把單局壓進碎片時間；用完局率餵平台推薦演算法。
+他們把很重的遊戲放到手機上，一局很短，打完就讓平台繼續推薦下一局。
 
 ## 成績
 
@@ -379,7 +379,7 @@ A two-sided communication gap. Launch with the story, not the feature list. Fift
 
 去 Steam 找一個重型玩法，刪到 10 分鐘內能講完。做出「會被剪進 Shorts 的 3 秒」。讓好友拉人成為預設社交動作。
 
-## 創業者與矽谷視角
+## 你能從這裡學到什麼
 
 Roblox／UEFN 把伺服器、跨平台與支付先包好，CAC 接近零。機制簡化往往比畫質堆疊更爆。風險是平台抽成、演算法翻臉、以及玩法被一週內複製。
 `,
@@ -444,13 +444,13 @@ Shrink a hardcore genre. Cap a match at ten minutes. Design the screenshot peopl
 3. **寄生在 WhatsApp／Telegram。** 粉絲不用再下載一個陌生 App。
 4. **低起步價。** 新聞稿寫月費 **$29**；平台靠訂閱與廣告／交易抽成，而不是先收一筆建站費。
 
-## 成功故事與成功之道
+## 他們怎麼做出成績
 
 - 2021–2022：Nas Academy／Nas.io 時期，Tracxn 等資料庫累計約 **$23M**（含 Lightspeed 領投的課程平台輪）。
 - 2026 年 4 月：品牌聚焦 [Nas.com](https://nas.com/)，**$27M Series A**，Khosla Ventures（Vinod Khosla、Nicole Fraenkel）領投，500 Global 跟投，天使包括 Deel 共同創辦人 Shuo Wang、DoorDash 共同創辦人 Stanley Tang、Tim Ferriss 等。見 [Business Insider](https://www.businessinsider.com/nas-daily-founder-ai-storefront-startup-funding-read-pitch-deck-2026-4)。
 - 同一則新聞稿： **350 萬名成員、150+ 國家、月費 $29**。
 
-成功之道：創辦人自己就是流量機器，把「什麼文案會爆」寫進產品；不強迫遷站；賣的是客人，不只是網站。
+創辦人自己就會帶來客人。他把「什麼文案會被轉發」做進產品裡，不強迫人搬家，賣的是找得到客人，不只是一個網站。
 
 ## 成績
 
@@ -469,7 +469,7 @@ Shrink a hardcore genre. Cap a match at ten minutes. Design the screenshot peopl
 
 把要開四個分頁才能做完的流程收成一句話或一張相片。優先幫客戶**帶來客人**，不要只幫他建一個沒人看的站。把你自己領域會爆的套路做成預設模板。
 
-## 創業者與矽谷視角
+## 你能從這裡學到什麼
 
 Khosla 押的是「一人公司」規模化：AI 讓個人不必先雇工程師與投放團隊。誰把創業摩擦降到接近零，誰就卡住下一代 Solo Business 的支付與分發。風險是平台一體化之後，商家會不會長出自己的站、以及廣告效果能不能持續正 ROI。
 `,

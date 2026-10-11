@@ -71,7 +71,7 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
             router.push("/login");
             return;
           }
-          router.push("/dashboard");
+          router.push("/menu");
           router.refresh();
           return;
         }
@@ -121,7 +121,7 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
         return;
       }
       const redirect = searchParams.get("redirect");
-      const next = redirect || (data.isAdmin ? "/admin" : "/dashboard");
+      const next = redirect && redirect !== "/dashboard" ? redirect : "/menu";
       router.push(next);
       router.refresh();
     } catch {
@@ -203,7 +203,7 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
                 : dict.auth.signingIn
               : split
                 ? mode === "login"
-                  ? "登入專案中心 ➔"
+                  ? "登入 ➔"
                   : "免費建立帳號 ➔"
                 : mode === "login"
                   ? dict.auth.signIn
@@ -221,14 +221,14 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
               {mode === "login" ? (
                 <>
                   還沒有帳號？{" "}
-                  <Link href="/signup?redirect=/dashboard" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
+                  <Link href="/signup?redirect=/menu" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
                     免費註冊
                   </Link>
                 </>
               ) : (
                 <>
                   已有帳號？{" "}
-                  <Link href="/login?redirect=/dashboard" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
+                  <Link href="/login?redirect=/menu" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">
                     立即登入
                   </Link>
                 </>
@@ -249,7 +249,7 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
               {mode === "login" && (
                 <>
                   {dict.auth.noAccount}{" "}
-                  <Link href="/signup?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
+                  <Link href="/signup?redirect=/menu" className="font-medium text-slate-900 hover:underline">
                     {dict.auth.createAccount}
                   </Link>
                 </>
@@ -257,13 +257,13 @@ function AuthFormInner({ mode, variant = "page" }: AuthFormProps) {
               {mode === "signup" && (
                 <>
                   {dict.auth.hasAccount}{" "}
-                  <Link href="/login?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
+                  <Link href="/login?redirect=/menu" className="font-medium text-slate-900 hover:underline">
                     {dict.auth.signIn}
                   </Link>
                 </>
               )}
               {mode === "reset" && (
-                <Link href="/login?redirect=/dashboard" className="font-medium text-slate-900 hover:underline">
+                <Link href="/login?redirect=/menu" className="font-medium text-slate-900 hover:underline">
                   {dict.auth.backToLogin}
                 </Link>
               )}

@@ -59,10 +59,10 @@ export function VipSkoolWelcome({ showHubLink = false }: { showHubLink?: boolean
       {showHubLink ? (
         <div className="pt-2 text-center">
           <Link
-            href="/dashboard"
+            href="/menu"
             className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-8 text-sm font-semibold text-white hover:bg-slate-800"
           >
-            進入會員學習與專案中心 ➔
+            進入會員中心 ➔
           </Link>
         </div>
       ) : null}

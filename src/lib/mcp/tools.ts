@@ -1,6 +1,7 @@
 import { getProject, updateUATItem, updateTask, logActivity, setPromptExecution } from "@/lib/db/store";
 import { openNextSprint } from "@/lib/ai/open-next-sprint";
 import { shippingCue } from "@/lib/mcp/shipping";
+import { isGenericAdvice } from "@/lib/project/founder-copy";
 import type { Task, UATStatus } from "@/types";
 
 const MCP_TASK_STATUS = {
@@ -174,7 +175,7 @@ export async function executeMcpTool(
           .filter((item) => item.approved && item.status !== "dismissed")
           .map((item) => ({ id: item.id, title: item.title, category: item.category, severity: item.severity })),
         plannedEnhancements: (project.enhancements ?? [])
-          .filter((item) => item.status === "planned")
+          .filter((item) => item.status === "planned" && !isGenericAdvice(item))
           .map((item) => ({ id: item.id, title: item.title, priority: item.priority })),
         openUat: (project.uat_items ?? [])
           .filter((item) => item.status === "not_started" || item.status === "in_progress" || item.status === "failed" || item.status === "reopened")
@@ -212,7 +213,7 @@ export async function executeMcpTool(
             .filter((item) => item.status === "applied")
             .map((item) => ({ id: item.id, title: item.title, category: item.category, severity: item.severity })),
           plannedEnhancements: (project.enhancements ?? [])
-            .filter((item) => item.status === "planned")
+            .filter((item) => item.status === "planned" && !isGenericAdvice(item))
             .map((item) => ({ id: item.id, title: item.title, description: item.description, priority: item.priority })),
         },
         openUat: (project.uat_items ?? [])
@@ -354,7 +355,7 @@ function projectShipping(project: NonNullable<Awaited<ReturnType<typeof getProje
     })),
     openBugCount: bugs.length,
     backlogCount:
-      (project.enhancements ?? []).filter((item) => item.status === "planned").length +
+      (project.enhancements ?? []).filter((item) => item.status === "planned" && !isGenericAdvice(item)).length +
       (project.ai_suggestions ?? []).filter((item) => item.approved && item.status !== "dismissed" && item.status !== "applied").length,
   });
 }

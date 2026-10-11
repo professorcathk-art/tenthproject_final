@@ -23,6 +23,7 @@ import type {
   PromptType,
 } from "@/types";
 import { briefFromAnswers, normalizeBrief } from "@/lib/ai/product-brief";
+import { isGenericAdvice } from "@/lib/project/founder-copy";
 
 export async function POST(request: NextRequest) {
   try {
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }));
 
-    const enhancements: Enhancement[] = analysis.enhancements.filter((e) => !existingEnhancementTitles.has(e.title)).map((e) => ({
+    const enhancements: Enhancement[] = analysis.enhancements.filter((e) => !existingEnhancementTitles.has(e.title) && !isGenericAdvice(e)).map((e) => ({
       id: uuidv4(),
       project_id: projectId,
       title: e.title,

@@ -1,6 +1,5 @@
 "use client";
 
-import { WebinarSignupButton } from "@/components/marketing/webinar-signup-dialog";
 import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
 import { MembershipSyllabus } from "@/components/membership/membership-syllabus";
 
@@ -49,7 +48,6 @@ export function AcademyBrochure() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <JoinLifetimeButton />
-          <WebinarSignupButton />
         </div>
       </header>
 
@@ -198,7 +196,6 @@ export function AcademyBrochure() {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <JoinLifetimeButton variant="dark">立即加入 Lifetime 會員</JoinLifetimeButton>
-          <WebinarSignupButton variant="dark" />
         </div>
       </section>
     </div>

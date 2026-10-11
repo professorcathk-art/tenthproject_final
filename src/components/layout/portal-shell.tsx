@@ -146,7 +146,7 @@ export function PortalShell({
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white px-4 py-5 lg:flex dark:border-slate-800 dark:bg-slate-950">
-        <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2 font-semibold">
+        <Link href="/menu" className="mb-8 flex items-center gap-2.5 px-2 font-semibold">
           <Image src="/tp-logo.svg" alt="Tenth Project" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
           <span className="tracking-tight">{dict.portal.brand}</span>
         </Link>
@@ -175,7 +175,7 @@ export function PortalShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 dark:border-slate-800 dark:bg-slate-950 lg:bg-white/80 lg:backdrop-blur-md lg:dark:bg-slate-950/70">
           <div className="flex min-w-0 items-center gap-2 lg:flex-1">
-            <Link href="/dashboard" className="inline-flex shrink-0 lg:hidden" aria-label="Tenth Project">
+            <Link href="/menu" className="inline-flex shrink-0 lg:hidden" aria-label="Tenth Project">
               <Image src="/tp-logo.svg" alt="" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
             </Link>
             <Sheet open={navOpen} onOpenChange={(open) => setNavPath(open ? pathname : null)}>
@@ -184,7 +184,7 @@ export function PortalShell({
                 {dict.portal.menu}
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
-                <Link href="/dashboard" onClick={() => setNavPath(null)} className="mt-8 flex items-center gap-2.5 px-2 font-semibold">
+                <Link href="/menu" onClick={() => setNavPath(null)} className="mt-8 flex items-center gap-2.5 px-2 font-semibold">
                   <Image src="/tp-logo.svg" alt="" width={32} height={32} unoptimized className="h-8 w-8 dark:invert" />
                   <span className="tracking-tight">{dict.portal.brand}</span>
                 </Link>

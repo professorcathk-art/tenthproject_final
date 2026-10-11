@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { useI18n } from "@/components/i18n/provider";
 import { CATEGORY_BADGE_CLASS, CATEGORY_LABEL, SEVERITY_CLASS } from "@/lib/project/audit";
-import { founderCard, UNMARKED_UAT } from "@/lib/project/founder-copy";
+import { founderCard, isGenericAdvice, UNMARKED_UAT } from "@/lib/project/founder-copy";
 import type { AiSuggestion, Enhancement, Task, UATItem } from "@/types";
 
 function PickRow({
@@ -77,7 +77,7 @@ export function NextSprintSheet({
     [suggestions],
   );
   const openEnhancements = useMemo(
-    () => enhancements.filter((item) => item.status === "suggested" || item.status === "planned"),
+    () => enhancements.filter((item) => (item.status === "suggested" || item.status === "planned") && !isGenericAdvice(item)),
     [enhancements],
   );
   const openTasks = useMemo(

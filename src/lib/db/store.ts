@@ -20,7 +20,7 @@ import type {
 } from "@/types";
 import { DEMO_USER } from "@/lib/auth/session";
 import { inferTargetFile } from "@/lib/ai/executable-spec";
-import { founderCard, technicalStepsFrom } from "@/lib/project/founder-copy";
+import { founderCard, isGenericAdvice, technicalStepsFrom } from "@/lib/project/founder-copy";
 import { INTAKE_TITLE, parseIntake, type ProjectIntake } from "@/lib/project/intake";
 import { isSupabaseConfigured, createServiceClient } from "@/lib/supabase/server";
 
@@ -841,6 +841,39 @@ export async function deletePhase(id: string, projectId: string) {
   await saveStore(store);
 }
 
+export function phaseStatusForTasks(tasks: { status: string }[]): ProjectPhase["status"] | null {
+  if (!tasks.length) return null;
+  if (tasks.every((task) => task.status === "done")) return "completed";
+  if (tasks.some((task) => task.status !== "todo")) return "in_progress";
+  return "pending";
+}
+
+export async function syncPhaseProgress(projectId: string) {
+  if (isSupabaseConfigured()) {
+    const supabase = createServiceClient();
+    const [{ data: phases }, { data: tasks }] = await Promise.all([
+      supabase.from("project_phases").select("*").eq("project_id", projectId),
+      supabase.from("tasks").select("phase_id,status").eq("project_id", projectId),
+    ]);
+    for (const phase of (phases ?? []) as ProjectPhase[]) {
+      const next = phaseStatusForTasks((tasks ?? []).filter((task) => task.phase_id === phase.id));
+      if (!next || next === phase.status) continue;
+      await supabase.from("project_phases").update({ status: next }).eq("id", phase.id).eq("project_id", projectId);
+    }
+    return;
+  }
+
+  const store = await ensureStore();
+  let changed = false;
+  for (const phase of store.phases.filter((item) => item.project_id === projectId)) {
+    const next = phaseStatusForTasks(store.tasks.filter((task) => task.project_id === projectId && task.phase_id === phase.id));
+    if (!next || next === phase.status) continue;
+    phase.status = next;
+    changed = true;
+  }
+  if (changed) await saveStore(store);
+}
+
 export async function updateTask(taskId: string, projectId: string, updates: Partial<Task>) {
   const now = new Date().toISOString();
 
@@ -854,6 +887,7 @@ export async function updateTask(taskId: string, projectId: string, updates: Par
       .select()
       .single();
     if (error) throw error;
+    if (updates.status) await syncPhaseProgress(projectId);
     return data as Task;
   }
 
@@ -862,6 +896,7 @@ export async function updateTask(taskId: string, projectId: string, updates: Par
   if (idx === -1) throw new Error("Task not found");
   store.tasks[idx] = { ...store.tasks[idx], ...updates, updated_at: now };
   await saveStore(store);
+  if (updates.status) await syncPhaseProgress(projectId);
   return store.tasks[idx];
 }
 
@@ -1082,6 +1117,7 @@ export async function queueEnhancementsForSprint(projectId: string, enhancementI
   }
 
   for (const item of enhancements) {
+    if (isGenericAdvice(item)) continue;
     const facing = founderCard(item, locale);
     const key = facing.title.toLowerCase();
     if (!taskTitles.has(key) && !taskTitles.has(item.title.toLowerCase())) {

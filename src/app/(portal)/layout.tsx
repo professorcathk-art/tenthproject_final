@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = await getSession();
   if (!isAuthenticated || !user) {
-    redirect("/login?redirect=/dashboard");
+    redirect("/login?redirect=/menu");
   }
 
   const quota = await getProjectQuota(user.email, user.id, user.isAdmin);

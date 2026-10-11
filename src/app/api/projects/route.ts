@@ -31,6 +31,7 @@ import {
   saveProjectIntake,
 } from "@/lib/db/store";
 import { intakeFromProject } from "@/lib/project/intake";
+import type { Project } from "@/types";
 
 function paidRequired() {
   return NextResponse.json({ error: "PAID_REQUIRED" }, { status: 403 });
@@ -194,7 +195,34 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(result);
     }
     if (action === "save_intake") {
+      const raw = (body.intake ?? {}) as {
+        name?: string;
+        product_type?: string;
+        stage?: string;
+        selected_tool?: string;
+      };
+      if (body.syncProject) {
+        const name = String(raw.name ?? "").trim();
+        const allowedType = ["webapp", "small_tool", "software", "automation", "landing_page", "dashboard", "other"];
+        const allowedStage = ["idea", "developing", "launch_ready", "post_launch"];
+        const allowedTool = ["cursor", "lovable", "gemini", "claude", "chatgpt", "other"];
+        if (!name || !allowedType.includes(String(raw.product_type)) || !allowedStage.includes(String(raw.stage)) || !allowedTool.includes(String(raw.selected_tool))) {
+          return NextResponse.json({ error: "Invalid intake" }, { status: 400 });
+        }
+      }
       const intake = await saveProjectIntake(projectId, body.intake, Boolean(body.lock));
+      if (body.syncProject) {
+        const project = await updateProject(projectId, user.id, {
+          name: intake.name,
+          description: intake.description,
+          goal: intake.goal,
+          target_audience: intake.target_audience,
+          product_type: intake.product_type as Project["product_type"],
+          stage: intake.stage as Project["stage"],
+          selected_tool: intake.selected_tool as Project["selected_tool"],
+        });
+        return NextResponse.json({ intake, project });
+      }
       return NextResponse.json({ intake });
     }
     if (action === "save_suggestions") {

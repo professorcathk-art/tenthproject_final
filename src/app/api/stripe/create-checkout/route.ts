@@ -43,10 +43,10 @@ export async function POST(req: Request) {
 
     const stripe = getStripe();
     const checkout = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       line_items: [{ price: getLifetimePriceId(), quantity: 1 }],
       mode: "payment",
       allow_promotion_codes: true,
+      invoice_creation: { enabled: true },
       customer_email: email,
       metadata: {
         name,

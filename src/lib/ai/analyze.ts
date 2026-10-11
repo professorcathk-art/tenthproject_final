@@ -14,6 +14,7 @@ import { deliveryGuard, detectDeliveryShape } from "@/lib/ai/delivery-shape";
 import { applyConfirmedBrief, briefSourceFromProject, formatBriefForPrompt, type ProductBrief } from "@/lib/ai/product-brief";
 import { findIntakeArtifact, parseIntake } from "@/lib/project/intake";
 import { ensureFeatureTasks, fallbackFeatureTasks } from "@/lib/ai/feature-tasks";
+import { isGenericAdvice } from "@/lib/project/founder-copy";
 
 const SYSTEM_PROMPT = `You are a Technical Lead writing executable specs for Cursor (Next.js App Router, TypeScript, Tailwind, shadcn/ui).
 STRICT RULE: NEVER output vague cards like "improve UI", "optimize UX", or "conduct UAT".
@@ -31,7 +32,7 @@ CRITICAL TASK GENERATION RULES:
    Good: "🚀 排出今天的行程", "🔐 註冊登入，資料只給本人看", "🎨 手機打開也不會擠在一起".
    Bad: "🔗 路由與 API", "🗄️ 資料庫設計", "🎨 前端組件", "Install Tailwind".
 
-Enhancement titles follow the same founder-facing rule as tasks. Never title one "Skeleton for async panels" or "Error boundary for fetch 500". Put the file path and the code action in the description. A Traditional Chinese project gets Traditional Chinese enhancement titles, for example "資料載入時先看到等待的樣子" and "出錯時顯示說明，並可以再試一次".
+Enhancement titles follow the same founder-facing rule as tasks. Only include an enhancement when it is specific to this product. Do not add generic advice such as loading skeletons, error boundaries, or onboarding. If nothing specific is missing, return an empty enhancements array. A Traditional Chinese project gets Traditional Chinese titles. Put the file path and the code action in the description.
 UAT items still need a target file or route, a concrete code action, and a testable result (375px + desktop, npm run build).
 Phases and tasks must be engineering work only. Never market research, interviews, or reports.
 
@@ -154,31 +155,7 @@ function generateFallbackAnalysis(
         phase: "Polish",
       },
     ],
-    enhancements: /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`)
-      ? [
-          {
-            title: "⏳ 資料載入時，先看到等待的樣子",
-            description: "Target: src/app/page.tsx. Action: add a Skeleton while data loads. Acceptance: no blank flash; npm run build passes.",
-            priority: "medium",
-          },
-          {
-            title: "⚠️ 出錯時顯示說明，並可以再試一次",
-            description: "Target: src/app/error.tsx. Action: show an explanation and a retry when the API returns 500. Acceptance: the page is not blank.",
-            priority: "high",
-          },
-        ]
-      : [
-          {
-            title: "Show a waiting state while data loads",
-            description: "Target: src/app/page.tsx. Action: add a Skeleton while data loads. Acceptance: no blank flash; npm run build passes.",
-            priority: "medium",
-          },
-          {
-            title: "Show an explanation and a retry when something fails",
-            description: "Target: src/app/error.tsx. Action: show an explanation and a retry when the API returns 500. Acceptance: the page is not blank.",
-            priority: "high",
-          },
-        ],
+    enhancements: [],
     phases: /[\u4e00-\u9fff]/.test(`${project.name ?? ""} ${project.description ?? ""} ${project.goal ?? ""}`)
       ? [
           { name: "第一版", description: "網站骨架、主畫面、資料", tasks: ["版面", "主流程", "儲存"] },
@@ -268,7 +245,9 @@ export async function analyzeProject(
       keepCodingItems(parsed.tasks, (t) => `${t.title} ${t.description ?? ""} ${(t.technical_checklist ?? []).join(" ")}`),
     );
     parsed.missingItems = keepCodingItems(parsed.missingItems, (s) => s);
-    parsed.enhancements = keepCodingItems(parsed.enhancements, (e) => `${e.title} ${e.description ?? ""}`);
+    parsed.enhancements = keepCodingItems(parsed.enhancements, (e) => `${e.title} ${e.description ?? ""}`).filter(
+      (item) => !isGenericAdvice(item),
+    );
     parsed.phases = (parsed.phases ?? [])
       .map((phase) => ({
         ...phase,
@@ -279,7 +258,7 @@ export async function analyzeProject(
     if (!parsed.uatItems?.length) parsed.uatItems = fallback.uatItems;
     if (!parsed.tasks?.length) parsed.tasks = fallback.tasks;
     if (!parsed.phases?.length) parsed.phases = fallback.phases;
-    if (!parsed.enhancements?.length) parsed.enhancements = fallback.enhancements;
+    parsed.enhancements = (parsed.enhancements ?? []).filter((item) => !isGenericAdvice(item));
 
     const shaped = shapeAnalysis(parsed, brief, source);
     shaped.prompts = await generateMasterPrompts({

@@ -1,5 +1,25 @@
 export const UNMARKED_UAT = new Set(["not_started", "in_progress", "needs_review"]);
 
+const GENERIC_ADVICE = new Set([
+  "skeleton for async panels",
+  "error boundary for fetch 500",
+  "add loading states",
+  "improve onboarding",
+  "show a waiting state while data loads",
+  "show an explanation and a retry when something fails",
+  "資料載入時，先看到等待的樣子",
+  "資料載入時先看到等待的樣子",
+  "出錯時顯示說明，並可以再試一次",
+]);
+
+export function isGenericAdvice(item: { title?: string | null }) {
+  const title = (item.title ?? "")
+    .replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, "")
+    .trim()
+    .toLowerCase();
+  return GENERIC_ADVICE.has(title);
+}
+
 const KNOWN: Record<string, { zh: string; en: string; zhBody: string; enBody: string }> = {
   "Skeleton for async panels": {
     zh: "⏳ 資料載入時，先看到等待的樣子",

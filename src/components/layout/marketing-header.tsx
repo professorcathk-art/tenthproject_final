@@ -94,7 +94,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
           <LanguageToggle tone={overHero ? "inverse" : "default"} />
           {loggedIn ? (
             <Link
-              href="/dashboard"
+              href="/menu"
               className={cn(
                 buttonVariants({ size: "sm" }),
                 "hidden rounded-full font-semibold min-[400px]:inline-flex",
@@ -106,7 +106,7 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
           ) : (
             <>
               <Link
-                href="/login?redirect=/dashboard"
+                href="/login?redirect=/menu"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
                   "hidden font-semibold min-[380px]:inline-flex",
@@ -154,12 +154,12 @@ export function MarketingHeader({ loggedIn = false }: { loggedIn?: boolean }) {
                   );
                 })}
                 {loggedIn ? (
-                  <Link href="/dashboard" onClick={() => setNavPath(null)} className="mt-3 px-3 py-2 text-sm font-semibold">
+                  <Link href="/menu" onClick={() => setNavPath(null)} className="mt-3 px-3 py-2 text-sm font-semibold">
                     {dict.nav.enterPortal}
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login?redirect=/dashboard" onClick={() => setNavPath(null)} className="mt-3 px-3 py-2 text-sm font-semibold">
+                    <Link href="/login?redirect=/menu" onClick={() => setNavPath(null)} className="mt-3 px-3 py-2 text-sm font-semibold">
                       {dict.nav.login}
                     </Link>
                     <Link href="/enterprise#booking" onClick={() => setNavPath(null)} className="px-3 py-2 text-sm font-semibold">

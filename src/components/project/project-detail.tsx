@@ -46,6 +46,7 @@ import { zhTW, enUS } from "date-fns/locale";
 import { useI18n } from "@/components/i18n/provider";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABEL, SEVERITY_CLASS, isHealthyStatus, parseHttpStatus, pendingSuggestionCount } from "@/lib/project/audit";
+import { founderCard, isGenericAdvice } from "@/lib/project/founder-copy";
 import { buildRetestPrompt } from "@/lib/ai/executable-spec";
 import { IntakeCard } from "@/components/project/intake-card";
 import { PromptVersionPanel } from "@/components/project/prompt-version-panel";
@@ -93,7 +94,7 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
   const tasks = project.tasks ?? [];
   const uatItems = project.uat_items ?? [];
   const bugs = project.bugs ?? [];
-  const enhancements = project.enhancements ?? [];
+  const enhancements = (project.enhancements ?? []).filter((item) => !isGenericAdvice(item));
   const phases = project.phases ?? [];
   const suggestions = useMemo(() => project.ai_suggestions ?? [], [project.ai_suggestions]);
   const latestRun = project.test_runs?.[0];
@@ -351,13 +352,18 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
       <IntakeCard
         project={project}
         promptText={project.prompt_runs?.[0]?.prompt_text ?? ""}
-        chinese={locale === "zh"}
+        onSaved={async (tool) => {
+          setSelectedTool(tool);
+          await refreshProject();
+        }}
         labels={{
           title: p.intakeTitle,
-          hint: p.intakeHint,
-          missingNotes: p.intakeMissingNotes,
+          edit: p.intakeEdit,
+          cancel: p.intakeCancel,
+          save: p.save,
+          needName: p.intakeNeedName,
+          saveFailed: p.intakeSaveFailed,
           empty: p.intakeEmpty,
-          shape: p.intakeShape,
           drift: p.intakeDrift,
           name: dict.wizard.name,
           what: dict.wizard.what,
@@ -581,7 +587,10 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                     <Plus className="mr-1 h-4 w-4" /> {p.addEnhancement}
                   </Button>
                 </div>
-                {enhancements.map((e) => (
+                {enhancements.length === 0 ? <p className="text-sm text-slate-500">{p.noEnhancements}</p> : null}
+                {enhancements.map((e) => {
+                  const facing = founderCard(e, locale === "zh" ? "zh" : "en");
+                  return (
                   <div key={e.id} className="rounded-lg border p-3 text-sm">
                     {editing === `enh:${e.id}` ? (
                       <div className="space-y-2">
@@ -595,8 +604,8 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                     ) : (
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="font-medium">{e.title}</div>
-                          <div className="text-slate-500 text-xs mt-1">{e.description}</div>
+                          <div className="font-medium">{facing.title}</div>
+                          {facing.summary ? <div className="text-slate-500 text-xs mt-1">{facing.summary}</div> : null}
                         </div>
                         <div className="flex gap-1">
                           <Button size="sm" variant="ghost" onClick={() => startEdit(`enh:${e.id}`, e.title, e.description ?? "")}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -605,7 +614,8 @@ export function ProjectDetail({ initialProject }: ProjectDetailProps) {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           </TabsContent>
