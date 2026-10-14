@@ -32,7 +32,7 @@ import {
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useI18n } from "@/components/i18n/provider";
-import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { LifetimePlanLink } from "@/components/membership/join-lifetime-button";
 import { cn } from "@/lib/utils";
 
 type PortalUser = { email: string; name?: string; isAdmin: boolean };
@@ -153,9 +153,9 @@ export function PortalShell({
         <PortalNavLinks items={nav} pathname={pathname} />
         <div className="mt-auto space-y-3">
           {paid ? null : (
-            <JoinLifetimeButton className="h-10 w-full shadow-[0_0_18px_rgba(251,191,36,0.45)]">
+            <LifetimePlanLink className="h-10 w-full shadow-[0_0_18px_rgba(251,191,36,0.45)]">
               {locale === "en" ? "⚡ Upgrade to VIP lifetime" : "⚡ 升級 VIP 終身會員"}
-            </JoinLifetimeButton>
+            </LifetimePlanLink>
           )}
           <div className="rounded-2xl border border-slate-200/80 px-3 py-3 text-xs text-slate-500 dark:border-slate-800">
             <p className="font-semibold text-slate-900 dark:text-white">
@@ -207,9 +207,9 @@ export function PortalShell({
           </div>
           <div className="flex items-center gap-2">
             {paid ? null : (
-              <JoinLifetimeButton className="hidden h-9 px-4 text-xs shadow-[0_0_18px_rgba(251,191,36,0.45)] sm:inline-flex">
+              <LifetimePlanLink className="hidden h-9 px-4 text-xs shadow-[0_0_18px_rgba(251,191,36,0.45)] sm:inline-flex">
                 {locale === "en" ? "⚡ Upgrade to VIP lifetime" : "⚡ 升級 VIP 終身會員"}
-              </JoinLifetimeButton>
+              </LifetimePlanLink>
             )}
             <Link href="/projects/new" className="hidden sm:block">
               <Button size="sm" className="rounded-full font-semibold">

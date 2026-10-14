@@ -1,5 +1,5 @@
 import { NewProjectWizard } from "@/components/project/new-project-wizard";
-import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { LifetimePlanLink } from "@/components/membership/join-lifetime-button";
 import { paidMemberOrLock } from "@/components/portal/paid-feature-lock";
 import { getSession } from "@/lib/auth/session";
 import { getProjectQuota } from "@/lib/membership/limits";
@@ -21,7 +21,7 @@ export default async function NewProjectPage() {
     return (
       <div className="rounded-3xl glass-panel border border-emerald-500/20 bg-emerald-50/50 p-8 text-center dark:border-emerald-500/30 dark:bg-slate-900/50">
         <p className="text-sm font-semibold leading-relaxed text-slate-800 dark:text-slate-100">{FREE_TIER_LIMIT_MESSAGE}</p>
-        <JoinLifetimeButton className="mt-6">🚀 立即升級終身會員</JoinLifetimeButton>
+        <LifetimePlanLink className="mt-6">🚀 立即升級終身會員</LifetimePlanLink>
       </div>
     );
   }

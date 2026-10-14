@@ -34,7 +34,8 @@ export default async function LearningHomePage() {
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600 dark:border-slate-800">
           <BookOpen className="h-4 w-4" /> {dict.portal.learning}
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">{dict.courses.title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{dict.portal.learning}</h1>
+        <p className="mt-2 max-w-2xl text-base font-medium text-slate-800 dark:text-slate-100">{dict.courses.title}</p>
         <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">{dict.courses.subtitle}</p>
         <JoinLifetimeButton className="mt-4">{dict.courses.unlockFull}</JoinLifetimeButton>
       </div>

@@ -38,7 +38,7 @@ export const dictionaries = {
     portal: {
       brand: "會員中心",
       hub: "專案中心",
-      learning: "我的課程",
+      learning: "Lifetime 會員計劃",
       mcp: "MCP & API 設定",
       vault: "專屬靈感庫",
       community: "VIP 社群",
@@ -920,7 +920,7 @@ export const dictionaries = {
     portal: {
       brand: "Member portal",
       hub: "Project Hub",
-      learning: "My learning",
+      learning: "Lifetime membership",
       mcp: "MCP & API",
       vault: "Member vault",
       community: "VIP community",

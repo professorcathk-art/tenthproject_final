@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/components/i18n/provider";
-import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { LifetimePlanLink } from "@/components/membership/join-lifetime-button";
 
 export function VipContentGate({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
@@ -17,7 +17,7 @@ export function VipContentGate({ children }: { children: React.ReactNode }) {
               ? "🔒 This is for VIP lifetime members. Upgrade to see the full system architecture and the copy-paste prompts."
               : "🔒 這是 VIP 終身會員專屬內容。升級 VIP 即可查看完整系統架構與 Copy-Paste Prompt。"}
           </p>
-          <JoinLifetimeButton className="mt-4">{en ? "⚡ Upgrade to VIP lifetime" : "⚡ 升級 VIP 終身會員解鎖"}</JoinLifetimeButton>
+          <LifetimePlanLink className="mt-4">{en ? "⚡ Upgrade to VIP lifetime" : "⚡ 升級 VIP 終身會員解鎖"}</LifetimePlanLink>
         </div>
       </div>
     </div>

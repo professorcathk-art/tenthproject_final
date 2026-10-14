@@ -1,4 +1,4 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { markCheckoutNotified, markCheckoutPaid, prepareAbandonedNotice } from "@/lib/db/platform-store";
 import { notifyAdmin } from "@/lib/email/notify-admin";
@@ -17,6 +17,13 @@ function sessionCustomerId(session: Stripe.Checkout.Session) {
     return session.customer.id;
   }
   return null;
+}
+
+function paidAmount(session: Stripe.Checkout.Session) {
+  if (session.amount_total == null) return "—";
+  const major = session.amount_total / 100;
+  const formatted = major.toLocaleString("en-HK", { maximumFractionDigits: 2 });
+  return (session.currency || "").toLowerCase() === "hkd" ? `HK$${formatted}` : `${(session.currency || "").toUpperCase()} ${formatted}`;
 }
 
 export async function POST(req: Request) {
@@ -89,16 +96,27 @@ export async function POST(req: Request) {
           existingUserId: session.metadata?.user_id || null,
         });
         await markCheckoutPaid(session.id).catch((error) => console.error("markCheckoutPaid:", error));
-        after(() =>
-          notifyAdmin(
-            `新付款｜${name} — ${email}`,
-            ["Lifetime 付款成功。", "", `姓名：${name}`, `電郵：${email}`, `WhatsApp：${whatsapp || "—"}`, `Stripe session：${session.id}`].join("\n"),
-          ).catch((error) => console.error("sale email:", error)),
-        );
       } catch (error) {
         console.error("grantLifetimeMembership:", error);
         return NextResponse.json({ error: "Failed to grant membership" }, { status: 500 });
       }
+    }
+
+    const notice = await notifyAdmin(
+      `新付款｜${name} — ${email || "未知電郵"}`,
+      [
+        "Lifetime 付款成功。",
+        "",
+        `姓名：${name}`,
+        `電郵：${email || "—"}`,
+        `WhatsApp：${whatsapp || "—"}`,
+        `金額：${paidAmount(session)}`,
+        `Stripe session：${session.id}`,
+        ...(email ? [] : ["", "這筆付款沒有電郵，會員資格尚未開通。"]),
+      ].join("\n"),
+    );
+    if (process.env.RESEND_API_KEY && !notice.sent) {
+      return NextResponse.json({ error: "Failed to send payment email" }, { status: 500 });
     }
   }
 

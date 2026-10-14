@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
-import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { LifetimePlanLink } from "@/components/membership/join-lifetime-button";
 import { getLocale } from "@/lib/i18n/server";
 import { getMembershipAccess } from "@/lib/auth/membership";
 import { getSession } from "@/lib/auth/session";
@@ -30,7 +30,7 @@ export async function VipPlaybookGate({ paid, children }: { paid: boolean; child
               ? "Upgrade to VIP lifetime membership to unlock the full Agile SaaS Guide from 0 to 1 and the Zero-Cost Acquisition and Growth Guide, including every hands-on prompt template and the pitfalls from real builds."
               : "升級 VIP 終身會員即可解鎖完整的《SaaS 從 0 到 1 敏捷開發指南》與《零成本獲客與增長指南》，獲取所有實戰 Prompt 模板與踩坑教學。"}
           </p>
-          <JoinLifetimeButton>{en ? "⚡ Upgrade to lifetime membership" : "⚡ 立即升級終身會員解鎖"}</JoinLifetimeButton>
+          <LifetimePlanLink>{en ? "⚡ Upgrade to lifetime membership" : "⚡ 立即升級終身會員解鎖"}</LifetimePlanLink>
         </div>
       </div>
     </div>

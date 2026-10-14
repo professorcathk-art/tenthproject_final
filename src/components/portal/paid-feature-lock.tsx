@@ -1,5 +1,5 @@
 import { Lock } from "lucide-react";
-import { JoinLifetimeButton } from "@/components/membership/join-lifetime-button";
+import { LifetimePlanLink } from "@/components/membership/join-lifetime-button";
 import { getLocale } from "@/lib/i18n/server";
 import { getMembershipAccess } from "@/lib/auth/membership";
 import { getSession } from "@/lib/auth/session";
@@ -31,7 +31,7 @@ export async function PaidFeatureLock({ feature }: { feature: "hub" | "mcp" }) {
           {en ? "This is for VIP lifetime members" : "此功能為 VIP 終身會員專屬"}
         </h1>
         <p className="mb-6 text-sm leading-relaxed text-slate-500">{body}</p>
-        <JoinLifetimeButton>{en ? "Upgrade to lifetime membership" : "立即升級終身會員"}</JoinLifetimeButton>
+        <LifetimePlanLink>{en ? "Upgrade to lifetime membership" : "立即升級終身會員"}</LifetimePlanLink>
       </div>
     </div>
   );
