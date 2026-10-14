@@ -16,6 +16,8 @@ import { GuestUnlockModal } from "@/components/inspiration/guest-unlock-modal";
 import { CaseConversionCta } from "@/components/inspiration/case-conversion-cta";
 import { isPublicInspirationSlug } from "@/lib/inspiration/public-cases";
 
+export const revalidate = 300;
+
 export async function generateStaticParams() {
   const studies = await getCaseStudyCards();
   return studies.map((study) => ({ slug: study.slug }));

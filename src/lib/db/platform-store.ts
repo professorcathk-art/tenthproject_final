@@ -401,7 +401,7 @@ async function fetchCaseStudyCards(publishedOnly: boolean): Promise<CaseStudyCar
 
 const cachedCaseStudyCards = unstable_cache(
   async (publishedOnly: boolean) => fetchCaseStudyCards(publishedOnly),
-  ["case-study-cards"],
+  ["case-study-cards-v6"],
   { revalidate: 300, tags: [CASE_STUDIES_TAG] },
 );
 
@@ -463,7 +463,7 @@ async function fetchCaseStudyBySlug(slug: string): Promise<CaseStudy | null> {
 
 const cachedCaseStudyBySlug = unstable_cache(
   async (slug: string) => fetchCaseStudyBySlug(slug),
-  ["case-study-by-slug"],
+  ["case-study-by-slug-v6"],
   { revalidate: 300, tags: [CASE_STUDIES_TAG] },
 );
 
