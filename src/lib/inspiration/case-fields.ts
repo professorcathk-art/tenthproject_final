@@ -8,11 +8,11 @@ export const CLONE_MARKER = "<!--clone-->";
 export const CASE_ENCODED_PREFIXES = ["cat:", "site:", "hl:", DIFF_PREFIX, DECK_PREFIX] as const;
 
 export const DIFFICULTY_LABELS: Record<number, { zh: string; en: string }> = {
-  1: { zh: "週末可模仿", en: "Weekend imitate" },
-  2: { zh: "輕量 vibe coding", en: "Light vibe coding" },
-  3: { zh: "可模仿核心迴路", en: "Imitable core loop" },
-  4: { zh: "要平台／整合能力", en: "Needs platform work" },
-  5: { zh: "接近自研系統", en: "Near custom system" },
+  1: { zh: "週末就能做出來", en: "Weekend imitate" },
+  2: { zh: "一個人做得出來", en: "Light vibe coding" },
+  3: { zh: "可以做出主要功能", en: "Imitable core loop" },
+  4: { zh: "要接很多系統", en: "Needs platform work" },
+  5: { zh: "接近自己做一整套", en: "Near custom system" },
 };
 
 export function clampDifficulty(value: unknown): number {
