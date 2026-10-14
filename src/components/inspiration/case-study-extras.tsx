@@ -59,7 +59,7 @@ export function CaseClonePrompt({ study }: { study: Pick<CaseStudy, "clone_promp
           {copied ? dict.inspiration.copiedClone : dict.inspiration.copyClone}
         </Button>
       </div>
-      <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm leading-7 text-slate-100">{prompt}</pre>
+      <pre className="mt-4 max-h-[36rem] overflow-auto whitespace-pre-wrap text-sm leading-7 text-slate-100">{prompt}</pre>
     </section>
   );
 }
