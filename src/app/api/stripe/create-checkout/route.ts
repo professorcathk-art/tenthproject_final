@@ -47,6 +47,7 @@ export async function POST(req: Request) {
       mode: "payment",
       allow_promotion_codes: true,
       invoice_creation: { enabled: true },
+      excluded_payment_method_types: ["alipay", "wechat_pay"],
       customer_email: email,
       metadata: {
         name,
