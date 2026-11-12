@@ -3,7 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { pageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-const GROUP_URL = "https://chat.whatsapp.com/JTVLwF9xqm3LXZXLJCfWqD";
+const GROUP_URL = "https://chat.whatsapp.com/HwCoHOwiPb71R8tbSM84Tn";
 
 export const metadata: Metadata = pageMetadata({
   title: "21天造出AI工具站分享會 | Vibe Coding x Tenth Project",
